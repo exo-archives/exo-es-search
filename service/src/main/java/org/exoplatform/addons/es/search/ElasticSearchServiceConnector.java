@@ -48,9 +48,9 @@ import java.util.*;
  * tclement@exoplatform.com
  * 7/30/15
  */
-public abstract class AbstractElasticSearchServiceConnector extends SearchServiceConnector {
+public abstract class ElasticSearchServiceConnector extends SearchServiceConnector {
 
-  private static final Log LOG = ExoLogger.getLogger(AbstractElasticSearchServiceConnector.class);
+  private static final Log LOG = ExoLogger.getLogger(ElasticSearchServiceConnector.class);
 
   private static final String HOST = (System.getProperty("elasticsearch.host") != null) ?
       System.getProperty("elasticsearch.host") : "localhost";
@@ -66,7 +66,7 @@ public abstract class AbstractElasticSearchServiceConnector extends SearchServic
 
   private Map<String, String> sortMapping = new HashMap<String, String>();
 
-  public AbstractElasticSearchServiceConnector(InitParams initParams) {
+  public ElasticSearchServiceConnector(InitParams initParams) {
     super(initParams);
     //Indicate in which order element will be displayed
     sortMapping.put("relevancy", "_score");

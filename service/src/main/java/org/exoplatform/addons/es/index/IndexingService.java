@@ -1,24 +1,38 @@
 package org.exoplatform.addons.es.index;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by TClement on 7/29/15.
  */
-public interface IndexingService {
+public abstract class IndexingService {
+
+  Map<String, IndexingServiceConnector> connectors = new HashMap<String, IndexingServiceConnector>();
 
   /**
    *
    * Add Indexing Connector to the service
    *
    * @param indexingServiceConnector the indexing connector to add
+   *
+   * @LevelAPI Experimental
    */
-  void addConnector (IndexingServiceConnector indexingServiceConnector);
+  void addConnector (IndexingServiceConnector indexingServiceConnector) {
+    connectors.put(indexingServiceConnector.getType(), indexingServiceConnector);
+  }
 
   /**
    *
-   * Index all document in the indexing queue
+   * Gets all current connectors.
    *
+   * @return Connectors.
+   *
+   * @LevelAPI Experimental
    */
-  void index();
+  public Map<String, IndexingServiceConnector> getConnectors() {
+    return connectors;
+  }
 
   /**
    *
@@ -27,7 +41,17 @@ public interface IndexingService {
    * @param indexingServiceConnector
    * @param id id of the document
    * @param operation operation to the index {create, update, delete, init}
+   *
+   * @LevelAPI Experimental
    */
-  void addToIndexQueue(IndexingServiceConnector indexingServiceConnector, Long id, String operation);
+  public abstract void addToIndexQueue(IndexingServiceConnector indexingServiceConnector, Long id, String operation);
+
+  /**
+   *
+   * Index all document in the indexing queue
+   *
+   * @LevelAPI Experimental
+   */
+  public abstract void index();
 
 }
