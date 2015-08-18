@@ -28,20 +28,39 @@
   <component>
     <key>org.exoplatform.addons.es.index.IndexingService</key>
     <type>org.exoplatform.addons.es.index.impl.ElasticIndexingService</type>
+
+    <component-plugins>
+
+      <component-plugin>
+        <name>BlogAuthorIndexingConnector</name>
+        <set-method>addConnector</set-method>
+        <type>org.exoplatform.addons.es.index.connector.AuthorIndexingServiceConnector</type>
+        <description>Blog Connector for testing Elastic Indexing Service</description>
+        <init-params>
+          <properties-param>
+            <name>constructor.params</name>
+            <property name="index" value="blog"/>
+            <property name="type" value="author"/>
+          </properties-param>
+        </init-params>
+      </component-plugin>
+
+      <component-plugin>
+        <name>BlogPostIndexingConnector</name>
+        <set-method>addConnector</set-method>
+        <type>org.exoplatform.addons.es.index.connector.BlogPostIndexingServiceConnector</type>
+        <description>Blog Connector for testing Elastic Indexing Service</description>
+        <init-params>
+          <properties-param>
+            <name>constructor.params</name>
+            <property name="index" value="blog"/>
+            <property name="type" value="post"/>
+          </properties-param>
+        </init-params>
+      </component-plugin>
+
+    </component-plugins>
+
   </component>
 
-  <component>
-    <type>org.exoplatform.commons.persistence.impl.EntityManagerService</type>
-    <init-params>
-      <value-param>
-        <name>persistence.unit.name</name>
-        <value>exo-pu</value>
-      </value-param>
-    </init-params>
-  </component>
-
-  <component>
-    <key>org.exoplatform.addons.es.dao.IndexingQueueDAO</key>
-    <type>org.exoplatform.addons.es.dao.impl.IndexingQueueDAOImpl</type>
-  </component>
 </configuration>

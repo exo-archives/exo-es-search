@@ -22,6 +22,9 @@ import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 
 import javax.management.RuntimeOperationsException;
 import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
 import java.util.Date;
 import java.util.List;
 
@@ -34,28 +37,50 @@ import java.util.List;
 public class IndexingQueueDAOImpl extends GenericDAOJPAImpl<IndexingQueue, Long> implements IndexingQueueDAO {
 
   @Override
-  public void insert(IndexingQueue queue) {
-    //TODO: Is there any way else to avoid native query in this insert case
-    String sql = "INSERT INTO ES_INDEX_QUEUE (QUEUE_ID, INDEX_NAME, ENTITY_TYPE, ENTITY_ID, OPERATION_TYPE, OPERATION_TIMESTAMP) VALUES (NULL, ?, ?, ?, ?, CURRENT_TIMESTAMP())";
-    EntityManager em = getEntityManager();
-    int inserted = em.createNativeQuery(sql)
-            .setParameter(1, queue.getIndexName())
-            .setParameter(2, queue.getEntityType())
-            .setParameter(3, queue.getEntityId())
-            .setParameter(4, queue.getOperation())
-            .executeUpdate();
-    if (inserted <= 0) {
-      //TODO: how to handle insert failure here?
-      throw new RuntimeOperationsException(null, "Insert into database failure");
-    }
-  }
-
-  @Override
   public List<IndexingQueue> findQueueFromLastTime(Date lastTime) {
     return getEntityManager()
-            .createNamedQuery("findAllIndexingQueueFromLastTime", IndexingQueue.class)
+            .createNamedQuery("IndexingQueue.findAllIndexingQueueFromLastTime", IndexingQueue.class)
             .setParameter("lastTime", lastTime)
             .getResultList();
   }
+
+  @Override
+  public List<IndexingQueue> findQueueBeforeLastTime(Date lastTime) {
+    //TODO TEST
+    return getEntityManager()
+        .createNamedQuery("IndexingQueue.findAllIndexingQueueBeforeLastTime", IndexingQueue.class)
+        .setParameter("lastTime", lastTime)
+        .getResultList();
+  }
+
+  @Override
+  public List<IndexingQueue> findQueueBeforeLastTimeByOperation(Date lastTime, String operation) {
+    //TODO TEST
+    return getEntityManager()
+        .createNamedQuery("IndexingQueue.findAllIndexingQueueBeforeLastTimeByOperation", IndexingQueue.class)
+        .setParameter("lastTime", lastTime)
+        .setParameter("operation", operation)
+        .getResultList();
+  }
+
+  @Override
+  public List<IndexingQueue> findQueueBeforeLastTimeByOperations(Date lastTime, List<String> operation) {
+    //TODO TEST
+    return getEntityManager()
+        .createNamedQuery("IndexingQueue.findAllIndexingQueueBeforeLastTimeByOperations", IndexingQueue.class)
+        .setParameter("lastTime", lastTime)
+        .setParameter("operation", operation)
+        .getResultList();
+  }
+
+  @Override
+  public Date getCurrentTimestamp() {
+    //TODO TEST
+    return getEntityManager()
+        .createNamedQuery("IndexingQueue.getCurrentTimestamp", IndexingQueue.class)
+        .getSingleResult()
+        .getTimestamp();
+  }
+
 }
 

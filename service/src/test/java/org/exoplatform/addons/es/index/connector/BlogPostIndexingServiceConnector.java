@@ -14,31 +14,44 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with this program. If not, see http://www.gnu.org/licenses/ .
 */
-package org.exoplatform.addons.es.dao;
+package org.exoplatform.addons.es.index.connector;
 
-import org.exoplatform.addons.es.domain.IndexingQueue;
-import org.exoplatform.commons.api.persistence.GenericDAO;
+import org.exoplatform.addons.es.domain.Document;
+import org.exoplatform.addons.es.index.IndexingServiceConnector;
+import org.exoplatform.container.xml.InitParams;
 
-import java.util.Date;
 import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
  * Author : Thibault Clement
  * tclement@exoplatform.com
- * 7/29/15
+ * 8/18/15
  */
-public interface IndexingQueueDAO extends GenericDAO<IndexingQueue, Long> {
+public class BlogPostIndexingServiceConnector extends IndexingServiceConnector {
 
-  List<IndexingQueue> findQueueFromLastTime(Date lastTime);
+  public BlogPostIndexingServiceConnector(InitParams initParams) {
+    super(initParams);
+  }
 
-  List<IndexingQueue> findQueueBeforeLastTime(Date lastTime);
+  @Override
+  public String init() {
+    return null;
+  }
 
-  List<IndexingQueue> findQueueBeforeLastTimeByOperation(Date lastTime, String operation);
+  @Override
+  public Document index(String id) {
+    return null;
+  }
 
-  List<IndexingQueue> findQueueBeforeLastTimeByOperations(Date lastTime, List<String> operations);
+  @Override
+  public String delete(String id) {
+    return null;
+  }
 
-  Date getCurrentTimestamp();
-
+  @Override
+  public List<String> deleteAll() {
+    return null;
+  }
 }
 

@@ -36,7 +36,11 @@ import java.util.Date;
 @Entity
 @Table(name = "ES_INDEX_QUEUE")
 @NamedQueries({
-        @NamedQuery(name = "findAllIndexingQueueFromLastTime", query = "SELECT q FROM IndexingQueue q WHERE q.timestamp >= :lastTime")
+    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueFromLastTime", query = "SELECT q FROM IndexingQueue q WHERE q.timestamp >= :lastTime"),
+    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTime", query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime GROUP BY q.operation"),
+    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTimeByOperation", query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime AND q.operation = :operation"),
+    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTimeByOperations", query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime AND q.operation IN :operations"),
+    @NamedQuery(name = "IndexingQueue.getCurrentTimestamp", query = "SELECT CURRENT_TIMESTAMP")
 })
 public class IndexingQueue {
 
@@ -44,9 +48,6 @@ public class IndexingQueue {
   @GeneratedValue
   @Column(name = "QUEUE_ID")
   Long id;
-
-  @Column(name = "INDEX_NAME")
-  String indexName;
 
   @Column(name = "ENTITY_TYPE")
   String entityType;
@@ -56,7 +57,6 @@ public class IndexingQueue {
 
   @Column(name = "OPERATION_TYPE")
   String operation;
-
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "OPERATION_TIMESTAMP")
@@ -79,14 +79,6 @@ public class IndexingQueue {
 
   public void setId(Long id) {
     this.id = id;
-  }
-
-  public String getIndexName() {
-    return indexName;
-  }
-
-  public void setIndexName(String indexName) {
-    this.indexName = indexName;
   }
 
   public String getEntityId() {

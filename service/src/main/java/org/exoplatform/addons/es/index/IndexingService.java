@@ -18,15 +18,15 @@ public abstract class IndexingService {
    *
    * @LevelAPI Experimental
    */
-  void addConnector (IndexingServiceConnector indexingServiceConnector) {
+  public void addConnector (IndexingServiceConnector indexingServiceConnector) {
     connectors.put(indexingServiceConnector.getType(), indexingServiceConnector);
   }
 
   /**
    *
-   * Gets all current connectors.
+   * Gets all current connectors
    *
-   * @return Connectors.
+   * @return Connectors
    *
    * @LevelAPI Experimental
    */

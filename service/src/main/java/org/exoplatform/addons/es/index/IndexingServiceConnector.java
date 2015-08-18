@@ -16,6 +16,12 @@
 */
 package org.exoplatform.addons.es.index;
 
+import org.exoplatform.addons.es.domain.Document;
+import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.container.xml.PropertiesParam;
+
+import java.util.List;
+
 /**
  * Created by The eXo Platform SAS
  * Author : Thibault Clement
@@ -26,6 +32,64 @@ public abstract class IndexingServiceConnector {
 
   String index;
   String type;
+
+  public IndexingServiceConnector(InitParams initParams) {
+    PropertiesParam param = initParams.getPropertiesParam("constructor.params");
+    this.index = param.getProperty("index");
+    this.type = param.getProperty("type");
+  }
+
+  /**
+   *
+   * Initialise the index
+   *
+   * @return JSON containing index initialisation parameters
+   *
+   * @LevelAPI Experimental
+   */
+  public abstract String init();
+
+  /**
+   *
+   * Transform an entity to Document in order to be indexed
+   *
+   * @param id Id of entity to index
+   *
+   * @return List of Document to index
+   *
+   * @LevelAPI Experimental
+   */
+  public abstract Document index (String id);
+
+  /**
+   *
+   * Transform a list of entities to Document in order to be deleted from index
+   *
+   * @param id Ids of entities to delete from
+   *
+   * @return List of Ids to delete from index
+   *
+   * @LevelAPI Experimental
+   */
+  public abstract String delete (String id);
+
+  /**
+   *
+   * Transform all entities to Document in order to be deleted from index
+   *
+   * @return List of Ids to delete from index
+   *
+   * @LevelAPI Experimental
+   */
+  public abstract List<String> deleteAll ();
+
+  public String getIndex() {
+    return index;
+  }
+
+  public void setIndex(String index) {
+    this.index = index;
+  }
 
   public String getType() {
     return type;
