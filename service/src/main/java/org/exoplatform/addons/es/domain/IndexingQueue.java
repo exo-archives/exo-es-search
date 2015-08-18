@@ -16,6 +16,15 @@
 */
 package org.exoplatform.addons.es.domain;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import java.util.Date;
 
 /**
@@ -24,12 +33,33 @@ import java.util.Date;
  * tclement@exoplatform.com
  * 7/22/15
  */
+@Entity
+@Table(name = "ES_INDEX_QUEUE")
+@NamedQueries({
+        @NamedQuery(name = "findAllIndexingQueueFromLastTime", query = "SELECT q FROM IndexingQueue q WHERE q.timestamp >= :lastTime")
+})
 public class IndexingQueue {
 
+  @Id
+  @GeneratedValue
+  @Column(name = "QUEUE_ID")
   Long id;
-  String entityId;
+
+  @Column(name = "INDEX_NAME")
+  String indexName;
+
+  @Column(name = "ENTITY_TYPE")
   String entityType;
+
+  @Column(name = "ENTITY_ID")
+  String entityId;
+
+  @Column(name = "OPERATION_TYPE")
   String operation;
+
+
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column(name = "OPERATION_TIMESTAMP")
   Date timestamp;
 
   public IndexingQueue() {
@@ -49,6 +79,14 @@ public class IndexingQueue {
 
   public void setId(Long id) {
     this.id = id;
+  }
+
+  public String getIndexName() {
+    return indexName;
+  }
+
+  public void setIndexName(String indexName) {
+    this.indexName = indexName;
   }
 
   public String getEntityId() {
@@ -79,8 +117,5 @@ public class IndexingQueue {
     return timestamp;
   }
 
-  public void setTimestamp(Date timestamp) {
-    this.timestamp = timestamp;
-  }
 }
 

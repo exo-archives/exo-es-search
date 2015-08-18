@@ -24,6 +24,7 @@ package org.exoplatform.addons.es.index;
  */
 public abstract class IndexingServiceConnector {
 
+  String index;
   String type;
 
   public String getType() {

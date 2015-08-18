@@ -20,6 +20,11 @@ import org.exoplatform.addons.es.dao.IndexingQueueDAO;
 import org.exoplatform.addons.es.domain.IndexingQueue;
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 
+import javax.management.RuntimeOperationsException;
+import javax.persistence.EntityManager;
+import java.util.Date;
+import java.util.List;
+
 /**
  * Created by The eXo Platform SAS
  * Author : Thibault Clement
@@ -27,5 +32,30 @@ import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
  * 7/29/15
  */
 public class IndexingQueueDAOImpl extends GenericDAOJPAImpl<IndexingQueue, Long> implements IndexingQueueDAO {
+
+  @Override
+  public void insert(IndexingQueue queue) {
+    //TODO: Is there any way else to avoid native query in this insert case
+    String sql = "INSERT INTO ES_INDEX_QUEUE (QUEUE_ID, INDEX_NAME, ENTITY_TYPE, ENTITY_ID, OPERATION_TYPE, OPERATION_TIMESTAMP) VALUES (NULL, ?, ?, ?, ?, CURRENT_TIMESTAMP())";
+    EntityManager em = getEntityManager();
+    int inserted = em.createNativeQuery(sql)
+            .setParameter(1, queue.getIndexName())
+            .setParameter(2, queue.getEntityType())
+            .setParameter(3, queue.getEntityId())
+            .setParameter(4, queue.getOperation())
+            .executeUpdate();
+    if (inserted <= 0) {
+      //TODO: how to handle insert failure here?
+      throw new RuntimeOperationsException(null, "Insert into database failure");
+    }
+  }
+
+  @Override
+  public List<IndexingQueue> findQueueFromLastTime(Date lastTime) {
+    return getEntityManager()
+            .createNamedQuery("findAllIndexingQueueFromLastTime", IndexingQueue.class)
+            .setParameter("lastTime", lastTime)
+            .getResultList();
+  }
 }
 

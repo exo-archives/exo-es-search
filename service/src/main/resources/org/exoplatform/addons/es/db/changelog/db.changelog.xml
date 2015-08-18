@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+  <!-- Managing both DB that use sequences and db that use auto increment -->
+  <property name="autoIncrement" value="true" dbms="mysql,mssql,h2,sybase,db2,hsqldb"/>
+  <property name="autoIncrement" value="false" dbms="oracle,postgresql"/>
+
+  <changeSet author="tuyennt@exoplatform.com" id="1.0.0-1">
+    <createTable tableName="ES_INDEX_QUEUE">
+      <column name="QUEUE_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="PK_ES_INDEX_QUEUE" unique="true"/>
+      </column>
+      <column name="INDEX_NAME" type="VARCHAR(50)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="ENTITY_TYPE" type="VARCHAR(50)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="ENTITY_ID" type="VARCHAR(50)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="OPERATION_TYPE" type="CHAR(1)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="OPERATION_TIMESTAMP" type="TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+</databaseChangeLog>

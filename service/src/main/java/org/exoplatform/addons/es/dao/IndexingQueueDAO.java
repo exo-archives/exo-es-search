@@ -19,6 +19,9 @@ package org.exoplatform.addons.es.dao;
 import org.exoplatform.addons.es.domain.IndexingQueue;
 import org.exoplatform.commons.api.persistence.GenericDAO;
 
+import java.util.Date;
+import java.util.List;
+
 /**
  * Created by The eXo Platform SAS
  * Author : Thibault Clement
@@ -27,5 +30,7 @@ import org.exoplatform.commons.api.persistence.GenericDAO;
  */
 public interface IndexingQueueDAO extends GenericDAO<IndexingQueue, Long> {
 
+  void insert(IndexingQueue queue);
+  List<IndexingQueue> findQueueFromLastTime(Date lastTime);
 }
 

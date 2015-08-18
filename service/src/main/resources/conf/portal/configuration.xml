@@ -30,4 +30,18 @@
     <type>org.exoplatform.addons.es.index.impl.ElasticIndexingService</type>
   </component>
 
+  <component>
+    <type>org.exoplatform.commons.persistence.impl.EntityManagerService</type>
+    <init-params>
+      <value-param>
+        <name>persistence.unit.name</name>
+        <value>exo-pu</value>
+      </value-param>
+    </init-params>
+  </component>
+
+  <component>
+    <key>org.exoplatform.addons.es.dao.IndexingQueueDAO</key>
+    <type>org.exoplatform.addons.es.dao.impl.IndexingQueueDAOImpl</type>
+  </component>
 </configuration>
