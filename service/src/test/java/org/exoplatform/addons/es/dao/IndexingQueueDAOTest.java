@@ -81,8 +81,12 @@ public class IndexingQueueDAOTest extends AbstractDAOTest {
 
     //Then
     indexingQueue = indexingQueueDAO.find(indexingQueue.getId());
-    Assert.assertThat(startDate, Matchers.lessThanOrEqualTo(indexingQueue.getTimestamp().getTime()));
-    Assert.assertThat(System.currentTimeMillis(), Matchers.greaterThanOrEqualTo(indexingQueue.getTimestamp().getTime()));
+    Assert.assertThat(
+        startDate,
+        Matchers.lessThanOrEqualTo(indexingQueue.getTimestamp().getTime()));
+    Assert.assertThat(
+        System.currentTimeMillis(),
+        Matchers.greaterThanOrEqualTo(indexingQueue.getTimestamp().getTime()));
   }
 
 }

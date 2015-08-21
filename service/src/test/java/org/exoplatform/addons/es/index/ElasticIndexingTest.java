@@ -14,11 +14,13 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with this program. If not, see http://www.gnu.org/licenses/ .
 */
-package org.exoplatform.addons.es;
+package org.exoplatform.addons.es.index;
 
-import org.exoplatform.addons.es.index.IndexingService;
-import org.exoplatform.addons.es.index.IndexingServiceConnector;
-import org.exoplatform.addons.es.index.connector.BlogPostIndexingServiceConnector;
+import org.exoplatform.addons.es.AbstractElasticTest;
+import org.exoplatform.addons.es.blogpost.BlogPostIndexingServiceConnector;
+import org.exoplatform.addons.es.blogpost.Blogpost;
+import org.exoplatform.addons.es.blogpost.BlogpostService;
+import org.exoplatform.addons.es.index.impl.ElasticIndexingService;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
@@ -45,12 +47,17 @@ TO FIX IT WE NEED TO BE ABLE TO START AN EMBEDDED ES
  */
 public class ElasticIndexingTest extends AbstractElasticTest {
 
+  private static final String CONNECTOR_INDEX = "blog";
+  private static final String CONNECTOR_TYPE = "post";
+
   private IndexingService indexingService;
+  private BlogpostService blogpostService;
 
   @Before
   public void setUp() {
     PortalContainer container = PortalContainer.getInstance();
     indexingService = container.getComponentInstanceOfType(IndexingService.class);
+    blogpostService = new BlogpostService();
   }
 
   @After
@@ -64,7 +71,7 @@ public class ElasticIndexingTest extends AbstractElasticTest {
     //Given
     Map<String, IndexingServiceConnector> indexingServiceConnectors = indexingService.getConnectors();
     Assert.assertEquals(0, indexingServiceConnectors.size());
-    addConnector();
+    addBlogPostConnector();
 
     //When
     indexingServiceConnectors = indexingService.getConnectors();
@@ -76,7 +83,7 @@ public class ElasticIndexingTest extends AbstractElasticTest {
   //@Test
   public void testCreateIndex() {
     //Given
-    addConnector();
+    addBlogPostConnector();
 
     //When
     indexingService.index();
@@ -86,14 +93,42 @@ public class ElasticIndexingTest extends AbstractElasticTest {
     //Thibault: I check locally with my ES and it's working
   }
 
-  private void addConnector() {
+  //@Test
+  public void testDeleteAllIndexedDocument() {
+
+    //Given
+    addBlogPostConnector();
+    blogpostService.initData();
+    indexingService.addToIndexQueue(CONNECTOR_TYPE, null, ElasticIndexingService.DELETE_ALL);
+
+    //When
+    indexingService.index();
+
+    //Then
+    //TODO Check if a bulk delete request has been send
+    //Thibault: I check locally with my ES and it's working
+  }
+
+  private void addBlogPostConnector() {
     PropertiesParam propertiesParam = new PropertiesParam();
-    propertiesParam.getProperties().put("index", "blog");
-    propertiesParam.getProperties().put("type", "post");
+    propertiesParam.getProperties().put("index", CONNECTOR_INDEX);
+    propertiesParam.getProperties().put("type", CONNECTOR_TYPE);
     InitParams initParams = new InitParams();
     initParams.put("constructor.params", propertiesParam);
 
     indexingService.addConnector(new BlogPostIndexingServiceConnector(initParams));
+  }
+
+  private Blogpost getDefaultBlogpost() {
+
+    Blogpost deathStartProject = new Blogpost();
+    deathStartProject.setId(1L);
+    deathStartProject.setAuthor("Thibault");
+    deathStartProject.setTitle("Death Star Project");
+    deathStartProject.setContent("The new Death Star Project is under the responsability of the Vador Team : Benoit," +
+        " Thibault and Tuyen");
+    return deathStartProject;
+
   }
 
 }

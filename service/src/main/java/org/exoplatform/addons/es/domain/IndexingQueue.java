@@ -36,10 +36,14 @@ import java.util.Date;
 @Entity
 @Table(name = "ES_INDEX_QUEUE")
 @NamedQueries({
-    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueFromLastTime", query = "SELECT q FROM IndexingQueue q WHERE q.timestamp >= :lastTime"),
-    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTime", query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime GROUP BY q.operation"),
-    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTimeByOperation", query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime AND q.operation = :operation"),
-    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTimeByOperations", query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime AND q.operation IN :operations")
+    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueFromLastTime",
+        query = "SELECT q FROM IndexingQueue q WHERE q.timestamp >= :lastTime"),
+    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTime",
+        query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime GROUP BY q.operation"),
+    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTimeByOperation",
+        query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime AND q.operation = :operation"),
+    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTimeByOperations",
+        query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime AND q.operation IN :operations")
 })
 public class IndexingQueue {
 

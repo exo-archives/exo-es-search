@@ -42,6 +42,14 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
+/*
+
+WARNING
+THIS CLASS IS JUST A DRAFT FOR NOW
+NEED TO BE REFACTORING
+
+ */
+
 /**
  * Created by The eXo Platform SAS
  * Author : Thibault Clement

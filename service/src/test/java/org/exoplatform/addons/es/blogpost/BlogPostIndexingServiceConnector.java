@@ -14,12 +14,13 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with this program. If not, see http://www.gnu.org/licenses/ .
 */
-package org.exoplatform.addons.es.index.connector;
+package org.exoplatform.addons.es.blogpost;
 
 import org.exoplatform.addons.es.domain.Document;
 import org.exoplatform.addons.es.index.IndexingServiceConnector;
 import org.exoplatform.container.xml.InitParams;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,28 +31,40 @@ import java.util.List;
  */
 public class BlogPostIndexingServiceConnector extends IndexingServiceConnector {
 
+  public final static String PREFIX_ID = "blog_post_";
+
+  BlogpostService blogpostService;
+
   public BlogPostIndexingServiceConnector(InitParams initParams) {
     super(initParams);
-  }
-
-  @Override
-  public String init() {
-    return null;
+    blogpostService = new BlogpostService();
   }
 
   @Override
   public Document index(String id) {
-    return null;
+    return toDocument(blogpostService.findBlogpost(Long.parseLong(id)));
   }
 
   @Override
   public String delete(String id) {
-    return null;
+    return String.valueOf(blogpostService.findBlogpost(Long.parseLong(id)).getId());
   }
 
   @Override
   public List<String> deleteAll() {
-    return null;
+    List<String> postIds = new ArrayList<>();
+    List<Blogpost> blogposts = blogpostService.findAll();
+    for (Blogpost blogpost: blogposts) {
+      postIds.add(PREFIX_ID+String.valueOf(blogpost.getId()));
+    }
+    return postIds;
   }
+
+  private Document toDocument(Blogpost blogpost) {
+    Document postDocument = new Document();
+    //TODO transform blogpost object to document object
+    return postDocument;
+  }
+
 }
 

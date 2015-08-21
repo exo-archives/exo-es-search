@@ -26,11 +26,11 @@
     xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
 
   <component>
-    <type>org.exoplatform.addons.es.index.connector.BlogPostIndexingServiceConnector</type>
+    <type>org.exoplatform.addons.es.blogpost.connector.BlogPostIndexingServiceConnector</type>
   </component>
 
   <component>
-    <type>org.exoplatform.addons.es.index.connector.AuthorIndexingServiceConnector</type>
+    <type>org.exoplatform.addons.es.blogpost.connector.AuthorIndexingServiceConnector</type>
   </component>
 
   <external-component-plugins>
@@ -38,7 +38,7 @@
     <component-plugin>
       <name>AuthorIndexingServiceConnector</name>
       <set-method>addConnector</set-method>
-      <type>org.exoplatform.addons.es.index.connector.AuthorIndexingServiceConnector</type>
+      <type>org.exoplatform.addons.es.blogpost.connector.AuthorIndexingServiceConnector</type>
       <description>Blog Connector for testing Elastic Indexing Service</description>
       <init-params>
         <properties-param>
@@ -51,7 +51,7 @@
     <component-plugin>
       <name>BlogPostIndexingServiceConnector</name>
       <set-method>addConnector</set-method>
-      <type>org.exoplatform.addons.es.index.connector.BlogPostIndexingServiceConnector</type>
+      <type>org.exoplatform.addons.es.blogpost.connector.BlogPostIndexingServiceConnector</type>
       <description>Blog Connector for testing Elastic Indexing Service</description>
       <init-params>
         <properties-param>

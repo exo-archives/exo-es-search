@@ -1,5 +1,8 @@
 package org.exoplatform.addons.es.index;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,6 +10,8 @@ import java.util.Map;
  * Created by TClement on 7/29/15.
  */
 public abstract class IndexingService {
+
+  private static final Log LOG = ExoLogger.getExoLogger(IndexingService.class);
 
   Map<String, IndexingServiceConnector> connectors = new HashMap<String, IndexingServiceConnector>();
 
@@ -19,7 +24,13 @@ public abstract class IndexingService {
    * @LevelAPI Experimental
    */
   public void addConnector (IndexingServiceConnector indexingServiceConnector) {
-    connectors.put(indexingServiceConnector.getType(), indexingServiceConnector);
+    if (connectors.containsKey(indexingServiceConnector.getType())) {
+      LOG.error("Impossible to add connector " + indexingServiceConnector.getType()
+          + ". A connector with the same name has already been registered.");
+    } else {
+      connectors.put(indexingServiceConnector.getType(), indexingServiceConnector);
+      LOG.error("A new Indexing Connector has been added: " + indexingServiceConnector.getType());
+    }
   }
 
   /**
