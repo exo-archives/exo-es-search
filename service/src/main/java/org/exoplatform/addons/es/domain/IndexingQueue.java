@@ -39,8 +39,7 @@ import java.util.Date;
     @NamedQuery(name = "IndexingQueue.findAllIndexingQueueFromLastTime", query = "SELECT q FROM IndexingQueue q WHERE q.timestamp >= :lastTime"),
     @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTime", query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime GROUP BY q.operation"),
     @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTimeByOperation", query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime AND q.operation = :operation"),
-    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTimeByOperations", query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime AND q.operation IN :operations"),
-    @NamedQuery(name = "IndexingQueue.getCurrentTimestamp", query = "SELECT CURRENT_TIMESTAMP")
+    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTimeByOperations", query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime AND q.operation IN :operations")
 })
 public class IndexingQueue {
 
@@ -59,7 +58,7 @@ public class IndexingQueue {
   String operation;
 
   @Temporal(TemporalType.TIMESTAMP)
-  @Column(name = "OPERATION_TIMESTAMP")
+  @Column(name = "OPERATION_TIMESTAMP", insertable = false, updatable = false)
   Date timestamp;
 
   public IndexingQueue() {

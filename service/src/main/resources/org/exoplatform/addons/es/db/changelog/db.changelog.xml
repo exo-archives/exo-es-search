@@ -18,13 +18,13 @@
   <changeSet author="tuyennt@exoplatform.com" id="1.0.0-1">
     <createTable tableName="ES_INDEX_QUEUE">
       <column name="QUEUE_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
-        <constraints nullable="false" primaryKey="true" primaryKeyName="PK_ES_INDEX_QUEUE" unique="true"/>
+        <constraints nullable="false" primaryKey="true" primaryKeyName="PK_ES_INDEX_QUEUE"/>
       </column>
       <column name="ENTITY_TYPE" type="VARCHAR(50)">
         <constraints nullable="false"/>
       </column>
       <column name="ENTITY_ID" type="VARCHAR(50)">
-        <constraints nullable="false"/>
+        <constraints nullable="true"/>
       </column>
       <column name="OPERATION_TYPE" type="CHAR(1)">
         <constraints nullable="false"/>

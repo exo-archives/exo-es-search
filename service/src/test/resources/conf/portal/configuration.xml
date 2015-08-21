@@ -26,41 +26,41 @@
     xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
 
   <component>
-    <key>org.exoplatform.addons.es.index.IndexingService</key>
-    <type>org.exoplatform.addons.es.index.impl.ElasticIndexingService</type>
-
-    <component-plugins>
-
-      <component-plugin>
-        <name>BlogAuthorIndexingConnector</name>
-        <set-method>addConnector</set-method>
-        <type>org.exoplatform.addons.es.index.connector.AuthorIndexingServiceConnector</type>
-        <description>Blog Connector for testing Elastic Indexing Service</description>
-        <init-params>
-          <properties-param>
-            <name>constructor.params</name>
-            <property name="index" value="blog"/>
-            <property name="type" value="author"/>
-          </properties-param>
-        </init-params>
-      </component-plugin>
-
-      <component-plugin>
-        <name>BlogPostIndexingConnector</name>
-        <set-method>addConnector</set-method>
-        <type>org.exoplatform.addons.es.index.connector.BlogPostIndexingServiceConnector</type>
-        <description>Blog Connector for testing Elastic Indexing Service</description>
-        <init-params>
-          <properties-param>
-            <name>constructor.params</name>
-            <property name="index" value="blog"/>
-            <property name="type" value="post"/>
-          </properties-param>
-        </init-params>
-      </component-plugin>
-
-    </component-plugins>
-
+    <type>org.exoplatform.addons.es.index.connector.BlogPostIndexingServiceConnector</type>
   </component>
+
+  <component>
+    <type>org.exoplatform.addons.es.index.connector.AuthorIndexingServiceConnector</type>
+  </component>
+
+  <external-component-plugins>
+    <target-component>org.exoplatform.addons.es.index.IndexingServices</target-component>
+    <component-plugin>
+      <name>AuthorIndexingServiceConnector</name>
+      <set-method>addConnector</set-method>
+      <type>org.exoplatform.addons.es.index.connector.AuthorIndexingServiceConnector</type>
+      <description>Blog Connector for testing Elastic Indexing Service</description>
+      <init-params>
+        <properties-param>
+          <name>constructor.params</name>
+          <property name="index" value="blog"/>
+          <property name="type" value="author"/>
+        </properties-param>
+      </init-params>
+    </component-plugin>
+    <component-plugin>
+      <name>BlogPostIndexingServiceConnector</name>
+      <set-method>addConnector</set-method>
+      <type>org.exoplatform.addons.es.index.connector.BlogPostIndexingServiceConnector</type>
+      <description>Blog Connector for testing Elastic Indexing Service</description>
+      <init-params>
+        <properties-param>
+          <name>constructor.params</name>
+          <property name="index" value="blog"/>
+          <property name="type" value="post"/>
+        </properties-param>
+      </init-params>
+    </component-plugin>
+  </external-component-plugins>
 
 </configuration>

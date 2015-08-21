@@ -14,44 +14,32 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with this program. If not, see http://www.gnu.org/licenses/ .
 */
-package org.exoplatform.addons.es.index.connector;
+package org.exoplatform.addons.es;
 
-import org.exoplatform.addons.es.domain.Document;
-import org.exoplatform.addons.es.index.IndexingServiceConnector;
-import org.exoplatform.container.xml.InitParams;
-
-import java.util.List;
+import org.exoplatform.addons.es.dao.AbstractDAOTest;
 
 /**
  * Created by The eXo Platform SAS
  * Author : Thibault Clement
  * tclement@exoplatform.com
- * 8/18/15
+ * 8/19/15
  */
-public class AuthorIndexingServiceConnector extends IndexingServiceConnector {
+public abstract class AbstractElasticTest extends AbstractDAOTest {
 
-  public AuthorIndexingServiceConnector(InitParams initParams) {
-    super(initParams);
+  //Only work with ES 0.20
+  /*
+  private EmbeddedElasticTestServer embeddedElasticTestServer;
+
+  @Before
+  public void startElasticServer () {
+    embeddedElasticTestServer = new EmbeddedElasticTestServer();
   }
 
-  @Override
-  public String init() {
-    return null;
+  @After
+  public void stopElasticServer () {
+    embeddedElasticTestServer.shutdown();
   }
 
-  @Override
-  public Document index(String id) {
-    return null;
-  }
+ */
 
-  @Override
-  public String delete(String id) {
-    return null;
-  }
-
-  @Override
-  public List<String> deleteAll() {
-    return null;
-  }
 }
-

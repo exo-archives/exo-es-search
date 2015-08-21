@@ -38,13 +38,13 @@ public abstract class IndexingService {
    *
    * Add a new document to the index queue
    *
-   * @param indexingServiceConnector
+   * @param connectorName Name of the connector
    * @param id id of the document
    * @param operation operation to the index {create, update, delete, init}
    *
    * @LevelAPI Experimental
    */
-  public abstract void addToIndexQueue(IndexingServiceConnector indexingServiceConnector, Long id, String operation);
+  public abstract void addToIndexQueue(String connectorName, Long id, String operation);
 
   /**
    *
@@ -53,5 +53,14 @@ public abstract class IndexingService {
    * @LevelAPI Experimental
    */
   public abstract void index();
+
+  /**
+   *
+   * Clear the indexQueue
+   *
+   * @LevelAPI Experimental
+   *
+   */
+  public abstract void clearIndexQueue();
 
 }

@@ -11,12 +11,18 @@
 
   <artifactId>exo-es-search-service</artifactId>
 
+  <properties>
+    <!-- Issue with the PLF pom parent that trigger lucene 3.6.2 (Only working with elastic version < 0.20.6) -->
+    <elasticsearch.version>0.20.6</elasticsearch.version>
+  </properties>
+
   <dependencies>
 
     <!-- PLF dependencies -->
     <dependency>
       <groupId>org.exoplatform.commons</groupId>
       <artifactId>commons-api</artifactId>
+      <version>${platform.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -60,9 +66,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>1.2.145</version>
+      <groupId>org.hsqldb</groupId>
+      <artifactId>hsqldb</artifactId>
+      <version>2.3.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -71,7 +77,54 @@
       <version>3.3.2</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-all</artifactId>
+      <scope>test</scope>
+      <version>1.3</version>
+    </dependency>
+
+    <!-- ES Test -->
+    <dependency>
+      <groupId>org.elasticsearch</groupId>
+      <artifactId>elasticsearch</artifactId>
+      <version>${elasticsearch.version}</version>
+      <scope>test</scope>
+    </dependency>
 
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.3</version>
+        <configuration>
+          <source>1.7</source>
+          <target>1.7</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.liquibase</groupId>
+        <artifactId>liquibase-maven-plugin</artifactId>
+        <version>3.3.2</version>
+        <configuration>
+          <!-- $ mvn liquibase:update -->
+          <driver>org.hsqldb.jdbcDriver</driver>
+          <url>jdbc:hsqldb:file:target/hsql-db</url>
+          <username>sa</username>
+          <password></password>
+          <!-- $ mvn liquibase:diff -->
+          <referenceDriver>org.hsqldb.jdbcDriver</referenceDriver>
+          <referenceUrl>jdbc:hsqldb:file:target/hsql-db</referenceUrl>
+          <referenceUsername>sa</referenceUsername>
+          <referencePassword></referencePassword>
+          <!-- db.changelog file -->
+          <changeLogFile>src/main/resources/org/exoplatform/addons/es/db/changelog/db.changelog.xml</changeLogFile>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

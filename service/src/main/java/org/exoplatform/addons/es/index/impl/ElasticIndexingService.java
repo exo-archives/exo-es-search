@@ -16,6 +16,13 @@
 */
 package org.exoplatform.addons.es.index.impl;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.exoplatform.addons.es.dao.IndexingQueueDAO;
 import org.exoplatform.addons.es.domain.Document;
 import org.exoplatform.addons.es.domain.IndexingQueue;
@@ -24,10 +31,14 @@ import org.exoplatform.addons.es.index.IndexingServiceConnector;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.json.simple.JSONObject;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by The eXo Platform SAS
@@ -45,6 +56,8 @@ public class ElasticIndexingService extends IndexingService {
   public static final String DELETE = "D";
   public static final String DELETE_ALL = "X";
 
+  public static final String ES_CLIENT = (System.getProperty("elasticsearch.client") != null) ?
+      System.getProperty("elasticsearch.client") : "http://127.0.0.1:9200";
   private static final Integer BATCH_NUMBER = Integer.valueOf((System.getProperty("indexing.batch") != null) ?
       System.getProperty("indexing.batch") : "1000");
 
@@ -58,28 +71,28 @@ public class ElasticIndexingService extends IndexingService {
   @Override
   public void addConnector(IndexingServiceConnector indexingServiceConnector) {
     getConnectors().put(indexingServiceConnector.getType(), indexingServiceConnector);
-    //When a new connector is added, ES
-    addToIndexQueue(indexingServiceConnector, null, INIT);
+    //When a new connector is added, ES index and type need to be created
+    addToIndexQueue(indexingServiceConnector.getType(), null, INIT);
   }
 
   @Override
-  public void addToIndexQueue(IndexingServiceConnector indexingServiceConnector, Long id, String operation) {
+  public void addToIndexQueue(String connectorName, Long id, String operation) {
 
     switch (operation) {
       //A new type of document need to be initialise
-      case INIT: addInitOperation(indexingServiceConnector);
+      case INIT: addInitOperation(connectorName);
         break;
       //A new entity need to be indexed
-      case CREATE: addCreateOperation(indexingServiceConnector, id);
+      case CREATE: addCreateOperation(connectorName, id);
         break;
       //An existing entity need to be updated in the index
-      case UPDATE: addUpdateOperation(indexingServiceConnector, id);
+      case UPDATE: addUpdateOperation(connectorName, id);
         break;
       //An existing entity need to be deleted from the index
-      case DELETE: addDeleteOperation(indexingServiceConnector, id);
+      case DELETE: addDeleteOperation(connectorName, id);
         break;
       //All entities of a specific type need to be deleted
-      case DELETE_ALL: addDeleteAllOperation(indexingServiceConnector);
+      case DELETE_ALL: addDeleteAllOperation(connectorName);
         break;
       default: LOG.info(operation+" is not an accepted operation for the Index Queue.");
         break;
@@ -89,31 +102,36 @@ public class ElasticIndexingService extends IndexingService {
     // SQL statement)
   }
 
-  private void addInitOperation(IndexingServiceConnector indexingServiceConnector) {
-    IndexingQueue indexingQueue = initIndexingQueue(indexingServiceConnector, INIT);
+  @Override
+  public void clearIndexQueue() {
+    indexingQueueDAO.deleteAll();
+  }
+
+  private void addInitOperation(String connector) {
+    IndexingQueue indexingQueue = initIndexingQueue(getConnectors().get(connector), INIT);
     indexingQueueDAO.create(indexingQueue);
   }
 
-  private void addCreateOperation (IndexingServiceConnector indexingServiceConnector, Long id) {
-    IndexingQueue indexingQueue = initIndexingQueue(indexingServiceConnector, CREATE);
+  private void addCreateOperation (String connector, Long id) {
+    IndexingQueue indexingQueue = initIndexingQueue(getConnectors().get(connector), CREATE);
     indexingQueue.setEntityId(String.valueOf(id));
     indexingQueueDAO.create(indexingQueue);
   }
 
-  private void addUpdateOperation (IndexingServiceConnector indexingServiceConnector, Long id) {
-    IndexingQueue indexingQueue = initIndexingQueue(indexingServiceConnector, UPDATE);
+  private void addUpdateOperation (String connector, Long id) {
+    IndexingQueue indexingQueue = initIndexingQueue(getConnectors().get(connector), UPDATE);
     indexingQueue.setEntityId(String.valueOf(id));
     indexingQueueDAO.create(indexingQueue);
   }
 
-  private void addDeleteOperation (IndexingServiceConnector indexingServiceConnector, Long id) {
-    IndexingQueue indexingQueue = initIndexingQueue(indexingServiceConnector, DELETE);
+  private void addDeleteOperation (String connector, Long id) {
+    IndexingQueue indexingQueue = initIndexingQueue(getConnectors().get(connector), DELETE);
     indexingQueue.setEntityId(String.valueOf(id));
     indexingQueueDAO.create(indexingQueue);
   }
 
-  private void addDeleteAllOperation (IndexingServiceConnector indexingServiceConnector) {
-    IndexingQueue indexingQueue = initIndexingQueue(indexingServiceConnector, DELETE_ALL);
+  private void addDeleteAllOperation (String connector) {
+    IndexingQueue indexingQueue = initIndexingQueue(getConnectors().get(connector), DELETE_ALL);
     indexingQueueDAO.create(indexingQueue);
   }
 
@@ -135,18 +153,19 @@ public class ElasticIndexingService extends IndexingService {
     String initBulkRequest = "";
     indexingQueues = indexingQueueDAO.findQueueBeforeLastTimeByOperation(startIndexing, INIT);
     for (IndexingQueue indexingQueue : indexingQueues) {
-      initBulkRequest = createInitRequest(getConnectors().get(indexingQueue.getEntityType()).init());
+      sendInitRequest(getConnectors().get(indexingQueue.getEntityType()));
     }
-    sendRequest(initBulkRequest);
 
+
+    /*
     // TODO 2: Process all the requests for “remove all documents of type” (Operation type = X) in the indexing queue
     // (if any)
-    String delateAllBulkRequest = "";
+    String deleteAllBulkRequest = "";
     indexingQueues = indexingQueueDAO.findQueueBeforeLastTimeByOperation(startIndexing, DELETE_ALL);
     for (IndexingQueue indexingQueue : indexingQueues) {
-      delateAllBulkRequest += createDeleteAllRequest(getConnectors().get(indexingQueue.getEntityType()).deleteAll());
+      deleteAllBulkRequest += createDeleteAllRequest(getConnectors().get(indexingQueue.getEntityType()).deleteAll());
     }
-    sendRequest(delateAllBulkRequest);
+    sendRequest(deleteAllBulkRequest);
 
     // TODO 3: Process the indexing requests (per batchs of 1000 rows max. This value is configurable) In detail:
     // get the timestamp of start of processing
@@ -191,16 +210,102 @@ public class ElasticIndexingService extends IndexingService {
         counter = 0;
       }
 
-    }
+    }*/
 
     // TODO 4: In case of error, the entityID+entityType will be logged in a “error queue” to allow a manual
     // reprocessing of the indexing operation. However, in a first version of the implementation, the error will only
     // be logged with ERROR level in the log file of platform.
   }
 
-  private String createInitRequest(String configJSON) {
-    //TODO check the configJSON, provide a default one if null
-    return null;
+  private void sendInitRequest(IndexingServiceConnector indexingServiceConnector) {
+
+    //Send request to create index
+    sendCreateIndexRequest(indexingServiceConnector);
+
+    //Send request to create type
+    sendCreateTypeRequest(indexingServiceConnector);
+
+  }
+
+  private String getIndexJSON(Map<String, String> settings) {
+    /*
+      {
+        "settings" :
+          {
+            "number_of_shards" : "5",
+            "number_of_replicas" : "1",
+            "other_setting" : "value of my setting"
+          }
+      }
+     */
+
+    JSONObject indexSettings = new JSONObject();
+    for (String setting: settings.keySet()) {
+      indexSettings.put(setting, settings.get(setting));
+    }
+    JSONObject indexJSON = new JSONObject();
+    indexJSON.put("settings", indexSettings);
+
+    return indexJSON.toJSONString();
+  }
+
+  private void sendCreateIndexRequest(IndexingServiceConnector indexingServiceConnector) {
+    try {
+
+      HttpClient client = new DefaultHttpClient();
+
+      //TODO check if index already exist (can been already created by another type of the application)
+
+      HttpPost httpIndexRequest = new HttpPost(ES_CLIENT + "/" + indexingServiceConnector.getIndex() + "/");
+      httpIndexRequest.setEntity(new StringEntity(getIndexJSON(getIndexingSettings(indexingServiceConnector)), "UTF-8"));
+      handleHttpResponse(client.execute(httpIndexRequest));
+
+      LOG.info("New Index created on ES: "+indexingServiceConnector.getIndex());
+
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    } catch (ClientProtocolException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void sendCreateTypeRequest(IndexingServiceConnector indexingServiceConnector) {
+    try {
+
+      HttpClient client = new DefaultHttpClient();
+
+      HttpPost httpTypeRequest = new HttpPost(ES_CLIENT + "/" + indexingServiceConnector.getIndex() + "/_mapping/" + indexingServiceConnector.getType() );
+      httpTypeRequest.setEntity(new StringEntity(indexingServiceConnector.getMappingJSON(), "UTF-8"));
+      handleHttpResponse(client.execute(httpTypeRequest));
+
+      LOG.info("New Type created on ES: " + indexingServiceConnector.getType() + " for Index: " + indexingServiceConnector.getIndex());
+
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    } catch (ClientProtocolException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private Map<String, String> getIndexingSettings(IndexingServiceConnector indexingServiceConnector) {
+    Map<String, String> indexSettings = new HashMap<>();
+    indexSettings.put("number_of_shards", String.valueOf(indexingServiceConnector.getShards()));
+    indexSettings.put("number_of_replicas", String.valueOf(indexingServiceConnector.getReplicas()));
+    return indexSettings;
+  }
+
+  private void handleHttpResponse(HttpResponse httpResponse) throws IOException {
+    if (httpResponse.getStatusLine().getStatusCode() != 200) {
+      LOG.error("Error when trying to send request to ES. The reason is: " + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"));
+      //System.out.println(("Error when trying to send request to ES. The reason is: " + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8")));
+    } else {
+      LOG.info("Success request to ES: " + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"));
+      //System.out.println(("Success request to ES: " + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8")));
+    }
   }
 
   private String createIndexRequests(Document document) {
@@ -218,9 +323,11 @@ public class ElasticIndexingService extends IndexingService {
     return null;
   }
 
-  private void sendRequest(String request) {
+  private void sendRequest(String JsonRequest) {
     //TODO send to ES
+
   }
+
 
 }
 

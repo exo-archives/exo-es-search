@@ -18,13 +18,9 @@ package org.exoplatform.addons.es.dao.impl;
 
 import org.exoplatform.addons.es.dao.IndexingQueueDAO;
 import org.exoplatform.addons.es.domain.IndexingQueue;
+import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 
-import javax.management.RuntimeOperationsException;
-import javax.persistence.EntityManager;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
 import java.util.Date;
 import java.util.List;
 
@@ -37,6 +33,7 @@ import java.util.List;
 public class IndexingQueueDAOImpl extends GenericDAOJPAImpl<IndexingQueue, Long> implements IndexingQueueDAO {
 
   @Override
+  @ExoTransactional
   public List<IndexingQueue> findQueueFromLastTime(Date lastTime) {
     return getEntityManager()
             .createNamedQuery("IndexingQueue.findAllIndexingQueueFromLastTime", IndexingQueue.class)
@@ -45,6 +42,7 @@ public class IndexingQueueDAOImpl extends GenericDAOJPAImpl<IndexingQueue, Long>
   }
 
   @Override
+  @ExoTransactional
   public List<IndexingQueue> findQueueBeforeLastTime(Date lastTime) {
     //TODO TEST
     return getEntityManager()
@@ -54,6 +52,7 @@ public class IndexingQueueDAOImpl extends GenericDAOJPAImpl<IndexingQueue, Long>
   }
 
   @Override
+  @ExoTransactional
   public List<IndexingQueue> findQueueBeforeLastTimeByOperation(Date lastTime, String operation) {
     //TODO TEST
     return getEntityManager()
@@ -64,6 +63,7 @@ public class IndexingQueueDAOImpl extends GenericDAOJPAImpl<IndexingQueue, Long>
   }
 
   @Override
+  @ExoTransactional
   public List<IndexingQueue> findQueueBeforeLastTimeByOperations(Date lastTime, List<String> operation) {
     //TODO TEST
     return getEntityManager()
@@ -74,12 +74,10 @@ public class IndexingQueueDAOImpl extends GenericDAOJPAImpl<IndexingQueue, Long>
   }
 
   @Override
+  @ExoTransactional
   public Date getCurrentTimestamp() {
-    //TODO TEST
-    return getEntityManager()
-        .createNamedQuery("IndexingQueue.getCurrentTimestamp", IndexingQueue.class)
-        .getSingleResult()
-        .getTimestamp();
+    //TODO return Timestamp from DB
+    return new Date();
   }
 
 }

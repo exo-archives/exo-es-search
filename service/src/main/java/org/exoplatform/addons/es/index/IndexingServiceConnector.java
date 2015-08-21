@@ -19,6 +19,7 @@ package org.exoplatform.addons.es.index;
 import org.exoplatform.addons.es.domain.Document;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
+import org.json.simple.JSONObject;
 
 import java.util.List;
 
@@ -32,11 +33,23 @@ public abstract class IndexingServiceConnector {
 
   String index;
   String type;
+  String mapping;
+  Integer shards;
+  Integer replicas;
+
+  private static final Integer DEFAULT_REPLICAS_NUMBER = Integer.valueOf((System.getProperty("indexing.replicasNumber.default") != null) ?
+      System.getProperty("indexing.replicasNumber.default") : "1");
+
+  private static final Integer DEFAULT_SHARDS_NUMBER = Integer.valueOf((System.getProperty("indexing.shardsNumber.default") != null) ?
+      System.getProperty("indexing.shardsNumber.default") : "5");
 
   public IndexingServiceConnector(InitParams initParams) {
     PropertiesParam param = initParams.getPropertiesParam("constructor.params");
     this.index = param.getProperty("index");
     this.type = param.getProperty("type");
+    this.mapping = param.getProperty("mapping");
+    this.shards = DEFAULT_SHARDS_NUMBER;
+    this.replicas = DEFAULT_REPLICAS_NUMBER;
   }
 
   /**
@@ -83,6 +96,40 @@ public abstract class IndexingServiceConnector {
    */
   public abstract List<String> deleteAll ();
 
+  public String getMappingJSON() {
+
+    if (mapping == null || mapping.isEmpty()) {
+
+      //Return default mapping:
+      /*
+        {
+            "type_name" : {
+                "properties" : {
+                    "permissions" : {"type" : "string", "index" : not_analyzed }
+                }
+            }
+        }
+       */
+
+      JSONObject permissionAttributes = new JSONObject();
+      permissionAttributes.put("type", "string");
+      permissionAttributes.put("index", "not_analyzed");
+
+      JSONObject permission = new JSONObject();
+      permission.put("permissions", permissionAttributes);
+
+      JSONObject mappingProperties = new JSONObject();
+      mappingProperties.put("properties",permission);
+
+      JSONObject mappingJSON = new JSONObject();
+      mappingJSON.put(type, mappingProperties);
+
+      return mappingJSON.toJSONString();
+    }
+    //Else return the map[ping provide by developer
+    return mapping;
+  }
+
   public String getIndex() {
     return index;
   }
@@ -97,6 +144,30 @@ public abstract class IndexingServiceConnector {
 
   public void setType(String type) {
     this.type = type;
+  }
+
+  public String getMapping() {
+    return mapping;
+  }
+
+  public void setMapping(String mapping) {
+    this.mapping = mapping;
+  }
+
+  public Integer getShards() {
+    return shards;
+  }
+
+  public void setShards(Integer shards) {
+    this.shards = shards;
+  }
+
+  public Integer getReplicas() {
+    return replicas;
+  }
+
+  public void setReplicas(Integer replicas) {
+    this.replicas = replicas;
   }
 }
 
