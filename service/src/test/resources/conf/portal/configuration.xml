@@ -34,24 +34,11 @@
   </component>
 
   <external-component-plugins>
-    <target-component>org.exoplatform.addons.es.index.IndexingServices</target-component>
-    <component-plugin>
-      <name>AuthorIndexingServiceConnector</name>
-      <set-method>addConnector</set-method>
-      <type>org.exoplatform.addons.es.blogpost.connector.AuthorIndexingServiceConnector</type>
-      <description>Blog Connector for testing Elastic Indexing Service</description>
-      <init-params>
-        <properties-param>
-          <name>constructor.params</name>
-          <property name="index" value="blog"/>
-          <property name="type" value="author"/>
-        </properties-param>
-      </init-params>
-    </component-plugin>
+    <target-component>org.exoplatform.addons.es.index.IndexingService</target-component>
     <component-plugin>
       <name>BlogPostIndexingServiceConnector</name>
       <set-method>addConnector</set-method>
-      <type>org.exoplatform.addons.es.blogpost.connector.BlogPostIndexingServiceConnector</type>
+      <type>org.exoplatform.addons.es.blogpost.BlogPostElasticIndexingServiceConnector</type>
       <description>Blog Connector for testing Elastic Indexing Service</description>
       <init-params>
         <properties-param>

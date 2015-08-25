@@ -17,11 +17,11 @@
 package org.exoplatform.addons.es.blogpost;
 
 import org.exoplatform.addons.es.domain.Document;
-import org.exoplatform.addons.es.index.IndexingServiceConnector;
+import org.exoplatform.addons.es.index.elastic.ElasticIndexingServiceConnector;
 import org.exoplatform.container.xml.InitParams;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by The eXo Platform SAS
@@ -29,19 +29,29 @@ import java.util.List;
  * tclement@exoplatform.com
  * 8/18/15
  */
-public class BlogPostIndexingServiceConnector extends IndexingServiceConnector {
+public class BlogPostElasticIndexingServiceConnector extends ElasticIndexingServiceConnector {
 
   public final static String PREFIX_ID = "blog_post_";
 
   BlogpostService blogpostService;
 
-  public BlogPostIndexingServiceConnector(InitParams initParams) {
+  public BlogPostElasticIndexingServiceConnector(InitParams initParams) {
     super(initParams);
     blogpostService = new BlogpostService();
   }
 
+  public BlogPostElasticIndexingServiceConnector(InitParams initParams, BlogpostService blogpostService) {
+    super(initParams);
+    this.blogpostService = blogpostService;
+  }
+
   @Override
-  public Document index(String id) {
+  public Document create(String id) {
+    return toDocument(blogpostService.findBlogpost(Long.parseLong(id)));
+  }
+
+  @Override
+  public Document update(String id) {
     return toDocument(blogpostService.findBlogpost(Long.parseLong(id)));
   }
 
@@ -50,19 +60,19 @@ public class BlogPostIndexingServiceConnector extends IndexingServiceConnector {
     return String.valueOf(blogpostService.findBlogpost(Long.parseLong(id)).getId());
   }
 
-  @Override
-  public List<String> deleteAll() {
-    List<String> postIds = new ArrayList<>();
-    List<Blogpost> blogposts = blogpostService.findAll();
-    for (Blogpost blogpost: blogposts) {
-      postIds.add(PREFIX_ID+String.valueOf(blogpost.getId()));
-    }
-    return postIds;
-  }
-
   private Document toDocument(Blogpost blogpost) {
     Document postDocument = new Document();
-    //TODO transform blogpost object to document object
+    postDocument.setId(PREFIX_ID+blogpost.getId());
+    postDocument.setCreatedDate(blogpost.getPostDate());
+    postDocument.setType("blog");
+    postDocument.setUrl("");
+    Map<String, String> fields = new HashMap<>();
+    fields.put("title", blogpost.getTitle());
+    fields.put("content", blogpost.getContent());
+    fields.put("author", blogpost.getAuthor());
+    postDocument.setFields(fields);
+    String[] permissions = {"admin", "jedi"};
+    postDocument.setPermissions(permissions);
     return postDocument;
   }
 

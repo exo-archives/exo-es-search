@@ -17,7 +17,7 @@
 package org.exoplatform.addons.es.dao;
 
 import org.exoplatform.addons.es.domain.IndexingQueue;
-import org.exoplatform.addons.es.index.impl.ElasticIndexingService;
+import org.exoplatform.addons.es.index.elastic.ElasticIndexingService;
 import org.exoplatform.container.PortalContainer;
 import org.hamcrest.Matchers;
 import org.junit.After;

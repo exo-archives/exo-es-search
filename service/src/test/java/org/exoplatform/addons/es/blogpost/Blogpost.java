@@ -16,6 +16,8 @@
 */
 package org.exoplatform.addons.es.blogpost;
 
+import java.util.Date;
+
 /**
  * Created by The eXo Platform SAS
  * Author : Thibault Clement
@@ -25,6 +27,7 @@ package org.exoplatform.addons.es.blogpost;
 public class Blogpost {
 
   private Long id;
+  private Date postDate;
   private String title;
   private String author;
   private String content;
@@ -32,8 +35,9 @@ public class Blogpost {
   public Blogpost() {
   }
 
-  public Blogpost(Long id, String title, String author, String content) {
+  public Blogpost(Long id, Date postDate, String title, String author, String content) {
     this.id = id;
+    this.postDate = postDate;
     this.title = title;
     this.author = author;
     this.content = content;
@@ -69,6 +73,14 @@ public class Blogpost {
 
   public void setContent(String content) {
     this.content = content;
+  }
+
+  public Date getPostDate() {
+    return postDate;
+  }
+
+  public void setPostDate(Date postDate) {
+    this.postDate = postDate;
   }
 }
 

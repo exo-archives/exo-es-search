@@ -64,20 +64,27 @@ public class IndexingQueueDAOImpl extends GenericDAOJPAImpl<IndexingQueue, Long>
 
   @Override
   @ExoTransactional
-  public List<IndexingQueue> findQueueBeforeLastTimeByOperations(Date lastTime, List<String> operation) {
+  public List<IndexingQueue> findQueueBeforeLastTimeByOperations(Date lastTime, List<String> operations) {
     //TODO TEST
     return getEntityManager()
         .createNamedQuery("IndexingQueue.findAllIndexingQueueBeforeLastTimeByOperations", IndexingQueue.class)
         .setParameter("lastTime", lastTime)
-        .setParameter("operation", operation)
+        .setParameter("operations", operations)
         .getResultList();
   }
 
   @Override
   @ExoTransactional
   public Date getCurrentTimestamp() {
-    //TODO return Timestamp from DB
+    //TODO return Timestamp from DB :)
     return new Date();
+  }
+
+  @Override
+  @ExoTransactional
+  public void DeleteAllBefore(Date lastTime) {
+    //TODO create criteria to delete only row before lastTime instead deleteAll()
+    deleteAll();
   }
 
 }

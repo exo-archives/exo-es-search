@@ -16,11 +16,15 @@
 */
 package org.exoplatform.addons.es.index;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.exoplatform.addons.es.AbstractElasticTest;
-import org.exoplatform.addons.es.blogpost.BlogPostIndexingServiceConnector;
+import org.exoplatform.addons.es.blogpost.BlogPostElasticIndexingServiceConnector;
 import org.exoplatform.addons.es.blogpost.Blogpost;
 import org.exoplatform.addons.es.blogpost.BlogpostService;
-import org.exoplatform.addons.es.index.impl.ElasticIndexingService;
+import org.exoplatform.addons.es.index.elastic.ElasticIndexingService;
+import org.exoplatform.addons.es.index.elastic.ElasticIndexingServiceConnector;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
@@ -28,6 +32,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 
+import java.util.Date;
 import java.util.Map;
 
 /*
@@ -64,12 +69,13 @@ public class ElasticIndexingTest extends AbstractElasticTest {
   public void tearDown() {
     indexingService.getConnectors().clear();
     indexingService.clearIndexQueue();
+    cleanElastic();
   }
 
   //@Test
   public void testInitConnector() {
     //Given
-    Map<String, IndexingServiceConnector> indexingServiceConnectors = indexingService.getConnectors();
+    Map<String, ElasticIndexingServiceConnector> indexingServiceConnectors = indexingService.getConnectors();
     Assert.assertEquals(0, indexingServiceConnectors.size());
     addBlogPostConnector();
 
@@ -86,10 +92,10 @@ public class ElasticIndexingTest extends AbstractElasticTest {
     addBlogPostConnector();
 
     //When
-    indexingService.index();
+    indexingService.process();
 
     //Then
-    //TODO Check if index well created and type also. First we need to start an embedded ES
+    //TODO Check if create well created and type also. First we need to start an embedded ES
     //Thibault: I check locally with my ES and it's working
   }
 
@@ -98,15 +104,33 @@ public class ElasticIndexingTest extends AbstractElasticTest {
 
     //Given
     addBlogPostConnector();
-    blogpostService.initData();
     indexingService.addToIndexQueue(CONNECTOR_TYPE, null, ElasticIndexingService.DELETE_ALL);
 
     //When
-    indexingService.index();
+    indexingService.process();
 
     //Then
     //TODO Check if a bulk delete request has been send
     //Thibault: I check locally with my ES and it's working
+  }
+
+  //@Test
+  public void testIndexingDocument() {
+
+    //Given
+    addBlogPostConnector();
+    blogpostService.initData();
+    for (Blogpost blogpost: blogpostService.findAll()) {
+      indexingService.addToIndexQueue(CONNECTOR_TYPE, blogpost.getId(), ElasticIndexingService.CREATE);
+    }
+
+    //When
+    indexingService.process();
+
+    //Then
+    //TODO Check if a CUD bulk request has been send and that all document are indexed
+    //Thibault: I check locally with my ES and it's working
+
   }
 
   private void addBlogPostConnector() {
@@ -116,7 +140,13 @@ public class ElasticIndexingTest extends AbstractElasticTest {
     InitParams initParams = new InitParams();
     initParams.put("constructor.params", propertiesParam);
 
-    indexingService.addConnector(new BlogPostIndexingServiceConnector(initParams));
+    indexingService.addConnector(new BlogPostElasticIndexingServiceConnector(initParams, blogpostService));
+  }
+
+  private void cleanElastic() {
+    HttpClient client = new DefaultHttpClient();
+
+    HttpDelete httpDeleteRequest = new HttpDelete("http://127.0.0.1:9200/" + CONNECTOR_INDEX);
   }
 
   private Blogpost getDefaultBlogpost() {
@@ -124,6 +154,7 @@ public class ElasticIndexingTest extends AbstractElasticTest {
     Blogpost deathStartProject = new Blogpost();
     deathStartProject.setId(1L);
     deathStartProject.setAuthor("Thibault");
+    deathStartProject.setPostDate(new Date());
     deathStartProject.setTitle("Death Star Project");
     deathStartProject.setContent("The new Death Star Project is under the responsability of the Vador Team : Benoit," +
         " Thibault and Tuyen");

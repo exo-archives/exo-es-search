@@ -19,6 +19,12 @@
 
 package org.exoplatform.addons.es.domain;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -28,8 +34,9 @@ public class Document {
   private String type;
   private String id;
   private String url;
+  private Date createdDate;
   private String[] permissions;
-  private Map<String, Object> fields;
+  private Map<String, String> fields;
 
   public String getType() {
     return type;
@@ -55,6 +62,14 @@ public class Document {
     this.url = url;
   }
 
+  public Date getCreatedDate() {
+    return createdDate;
+  }
+
+  public void setCreatedDate(Date createdDate) {
+    this.createdDate = createdDate;
+  }
+
   public String[] getPermissions() {
     return permissions;
   }
@@ -63,11 +78,26 @@ public class Document {
     this.permissions = permissions;
   }
 
-  public Map<String, Object> getFields() {
+  public Map<String, String> getFields() {
     return fields;
   }
 
-  public void setFields(Map<String, Object> fields) {
+  public void setFields(Map<String, String> fields) {
     this.fields = fields;
+  }
+
+  public String toJSON() {
+    String json;
+    JSONObject obj = new JSONObject();
+    JSONArray permissionsJSON = new JSONArray();
+    permissionsJSON.addAll(permissions != null ? Arrays.asList(permissions) : Collections.EMPTY_LIST);
+    obj.put("permissions", permissionsJSON);
+    obj.put("url", url);
+    obj.put("createdDate", createdDate.getTime());
+    for(String fieldName: fields.keySet()) {
+      obj.put(fieldName, fields.get(fieldName));
+    }
+    json = obj.toJSONString();
+    return json;
   }
 }

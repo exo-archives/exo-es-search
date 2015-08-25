@@ -27,7 +27,7 @@
 
   <component>
     <key>org.exoplatform.addons.es.index.IndexingService</key>
-    <type>org.exoplatform.addons.es.index.impl.ElasticIndexingService</type>
+    <type>org.exoplatform.addons.es.index.elastic.ElasticIndexingService</type>
   </component>
 
   <component>
