@@ -14,17 +14,20 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with this program. If not, see http://www.gnu.org/licenses/ .
 */
-package org.exoplatform.addons.es.index;
+package org.exoplatform.addons.es;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.exoplatform.addons.es.AbstractElasticTest;
 import org.exoplatform.addons.es.blogpost.BlogPostElasticIndexingServiceConnector;
 import org.exoplatform.addons.es.blogpost.Blogpost;
+import org.exoplatform.addons.es.blogpost.BlogpostElasticSearchConnector;
 import org.exoplatform.addons.es.blogpost.BlogpostService;
+import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.addons.es.index.elastic.ElasticIndexingService;
 import org.exoplatform.addons.es.index.elastic.ElasticIndexingServiceConnector;
+import org.exoplatform.addons.es.search.ElasticSearchServiceConnector;
+import org.exoplatform.commons.api.search.data.SearchResult;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
@@ -32,6 +35,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
@@ -50,19 +54,21 @@ TO FIX IT WE NEED TO BE ABLE TO START AN EMBEDDED ES
  * tclement@exoplatform.com
  * 8/20/15
  */
-public class ElasticIndexingTest extends AbstractElasticTest {
+public class ElasticTest extends AbstractElasticTest {
 
   private static final String CONNECTOR_INDEX = "blog";
   private static final String CONNECTOR_TYPE = "post";
 
   private IndexingService indexingService;
   private BlogpostService blogpostService;
+  private ElasticSearchServiceConnector searchServiceConnector;
 
   @Before
   public void setUp() {
     PortalContainer container = PortalContainer.getInstance();
     indexingService = container.getComponentInstanceOfType(IndexingService.class);
     blogpostService = new BlogpostService();
+    searchServiceConnector = getBlogPostSearchConnector();
   }
 
   @After
@@ -133,6 +139,29 @@ public class ElasticIndexingTest extends AbstractElasticTest {
 
   }
 
+  //@Test
+  public void testSearchingDocument() throws InterruptedException {
+
+    //Given
+    addBlogPostConnector();
+    blogpostService.initData();
+    for (Blogpost blogpost: blogpostService.findAll()) {
+      indexingService.addToIndexQueue(CONNECTOR_TYPE, blogpost.getId(), ElasticIndexingService.CREATE);
+    }
+    indexingService.process();
+    Thread.sleep(2 * 1000);
+
+
+    //When
+    Collection<SearchResult> searchResults =
+        searchServiceConnector.search(null, "death", null, 0, 10, "relevancy", "asc");
+
+    //Then
+    Assert.assertEquals(1, searchResults.size());
+    //Thibault: I check locally with my ES and it's working
+
+  }
+
   private void addBlogPostConnector() {
     PropertiesParam propertiesParam = new PropertiesParam();
     propertiesParam.getProperties().put("index", CONNECTOR_INDEX);
@@ -141,6 +170,18 @@ public class ElasticIndexingTest extends AbstractElasticTest {
     initParams.put("constructor.params", propertiesParam);
 
     indexingService.addConnector(new BlogPostElasticIndexingServiceConnector(initParams, blogpostService));
+  }
+
+  private BlogpostElasticSearchConnector getBlogPostSearchConnector() {
+
+    PropertiesParam propertiesParam = new PropertiesParam();
+    propertiesParam.getProperties().put("index", CONNECTOR_INDEX);
+    propertiesParam.getProperties().put("type", CONNECTOR_TYPE);
+    propertiesParam.getProperties().put("fields", "title,content,author");
+    InitParams initParams = new InitParams();
+    initParams.put("constructor.params", propertiesParam);
+
+    return new BlogpostElasticSearchConnector(initParams);
   }
 
   private void cleanElastic() {

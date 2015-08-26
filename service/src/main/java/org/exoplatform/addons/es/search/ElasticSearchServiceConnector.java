@@ -28,6 +28,7 @@ import org.exoplatform.commons.api.search.SearchServiceConnector;
 import org.exoplatform.commons.api.search.data.SearchContext;
 import org.exoplatform.commons.api.search.data.SearchResult;
 import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
@@ -42,14 +43,6 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
-/*
-
-WARNING
-THIS CLASS IS JUST A DRAFT FOR NOW
-NEED TO BE REFACTORING
-
- */
-
 /**
  * Created by The eXo Platform SAS
  * Author : Thibault Clement
@@ -60,22 +53,29 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
 
   private static final Log LOG = ExoLogger.getLogger(ElasticSearchServiceConnector.class);
 
-  private static final String HOST = (System.getProperty("elasticsearch.host") != null) ?
-      System.getProperty("elasticsearch.host") : "localhost";
-  private static final String PORT = (System.getProperty("elasticsearch.port") != null) ?
-      System.getProperty("elasticsearch.port") : "9200";
+  private static final String HOST = (System.getProperty("exo.elasticsearch.host") != null) ?
+      System.getProperty("exo.elasticsearch.host") : "127.0.0.1";
+  private static final String PORT = (System.getProperty("exo.elasticsearch.port") != null) ?
+      System.getProperty("exo.elasticsearch.port") : "9200";
 
   //ES information
-  protected String index;
-  protected String type;
+  private String index;
+  private String type;
+  private List<String> searchFields;
 
   //SearchResult information
-  protected String img;
+  private String img;
+  private String titleElasticFieldName = "title";
+  private String descElasticFieldName = "description";
 
   private Map<String, String> sortMapping = new HashMap<String, String>();
 
   public ElasticSearchServiceConnector(InitParams initParams) {
     super(initParams);
+    PropertiesParam param = initParams.getPropertiesParam("constructor.params");
+    this.index = param.getProperty("index");
+    this.type = param.getProperty("type");
+    this.searchFields = new ArrayList<>(Arrays.asList(param.getProperty("fields").split(",")));
     //Indicate in which order element will be displayed
     sortMapping.put("relevancy", "_score");
     sortMapping.put("date", "createdDate");
@@ -95,7 +95,6 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
 
   public String buildQuery(String query, int offset, int limit, String sort, String order) {
 
-    //TODO Review query below
     String esQuery = "{\n" +
         "     \"from\" : " + offset + ", \"size\" : " + limit + ",\n" +
         "     \"sort\" : [\n" +
@@ -105,6 +104,7 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
         "        \"filtered\" : {\n" +
         "            \"query\" : {\n" +
         "                \"query_string\" : {\n" +
+        "                    \"fields\" : [" + getFields() + "],\n" +
         "                    \"query\" : \"" + query + "\"\n" +
         "                }\n" +
         "            },\n" +
@@ -123,6 +123,8 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
         "}";
 
     LOG.info("Search Query request to ES : "+esQuery);
+    //TODO REMOVE
+    System.out.println("Search Query request to ES : "+esQuery);
 
     return esQuery;
   }
@@ -153,6 +155,8 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
     }
 
     LOG.info("ES JSON Response: "+jsonResponse);
+    //TODO remove
+    System.out.println("ES JSON Response: "+jsonResponse);
 
     return jsonResponse;
 
@@ -171,13 +175,14 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
       e.printStackTrace();
     }
 
+    //TODO check if response is succesfull
     JSONObject jsonResult = (JSONObject) json.get("hits");
     JSONArray jsonHits = (JSONArray) jsonResult.get("hits");
 
     for(Object jsonHit : jsonHits) {
       JSONObject hitSource = (JSONObject) ((JSONObject) jsonHit).get("_source");
-      String title = (String) hitSource.get("title");
-      String description = (String) hitSource.get("description");
+      String title = (String) hitSource.get(titleElasticFieldName);
+      String description = (String) hitSource.get(descElasticFieldName);
       String url = (String) hitSource.get("url");
       Long createdDate = (Long) hitSource.get("createdDate");
       Double score = (Double) ((JSONObject) jsonHit).get("_score");
@@ -197,9 +202,28 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
 
   }
 
+  private String getFields() {
+    List<String> fields = new ArrayList<>();
+    for (String searchField: searchFields) {
+      fields.add("\"" + searchField + "\"");
+    }
+    return StringUtils.join(fields, ",");
+  }
+
   private String getPermissionFilter() {
-    return "{\"term\" : { \"permissions\" : \"" + getCurrentUser() + "\" }}," +
-        "{\"term\" : { \"permissions\" : \"" + StringUtils.join(getUserMemberships(), "|") + "\" }}";
+
+    String memberships = "";
+    Set<String> membershipSet = getUserMemberships();
+    if (membershipSet != null) {
+      for (String membership : membershipSet) {
+        memberships += "\"" + membership + "\"";
+      }
+      return "{\"term\" : { \"permissions\" : \"" + getCurrentUser() + "\" }}," +
+          "{\"terms\" : { \"permissions\" : [" + memberships + " ]}}";
+    }
+    else {
+      return "{\"term\" : { \"permissions\" : \"" + getCurrentUser() + "\" }}";
+    }
   }
 
   public String getCurrentUser() {
@@ -259,5 +283,28 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
     this.img = img;
   }
 
+  public String getDescElasticFieldName() {
+    return descElasticFieldName;
+  }
+
+  public void setDescElasticFieldName(String descElasticFieldName) {
+    this.descElasticFieldName = descElasticFieldName;
+  }
+
+  public String getTitleElasticFieldName() {
+    return titleElasticFieldName;
+  }
+
+  public void setTitleElasticFieldName(String titleElasticFieldName) {
+    this.titleElasticFieldName = titleElasticFieldName;
+  }
+
+  public List<String> getSearchFields() {
+    return searchFields;
+  }
+
+  public void setSearchFields(List<String> searchFields) {
+    this.searchFields = searchFields;
+  }
 }
 

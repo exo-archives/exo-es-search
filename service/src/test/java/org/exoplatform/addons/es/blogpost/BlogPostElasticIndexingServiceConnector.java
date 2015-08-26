@@ -71,7 +71,7 @@ public class BlogPostElasticIndexingServiceConnector extends ElasticIndexingServ
     fields.put("content", blogpost.getContent());
     fields.put("author", blogpost.getAuthor());
     postDocument.setFields(fields);
-    String[] permissions = {"admin", "jedi"};
+    String[] permissions = {"admin", "jedi", "null"};
     postDocument.setPermissions(permissions);
     return postDocument;
   }
