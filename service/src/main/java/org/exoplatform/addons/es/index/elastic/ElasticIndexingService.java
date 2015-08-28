@@ -58,11 +58,10 @@ public class ElasticIndexingService extends IndexingService {
   private static final Integer BATCH_NUMBER = Integer.valueOf((System.getProperty("exo.indexing.batch") != null) ?
       System.getProperty("exo.indexing.batch") : "1000");
 
-  private IndexingQueueDAO indexingQueueDAO;
+  private final IndexingQueueDAO indexingQueueDAO;
 
-  public ElasticIndexingService() {
-    PortalContainer container = PortalContainer.getInstance();
-    indexingQueueDAO = container.getComponentInstanceOfType(IndexingQueueDAO.class);
+  public ElasticIndexingService(IndexingQueueDAO indexingQueueDAO) {
+    this.indexingQueueDAO = indexingQueueDAO;
   }
 
   @Override
@@ -73,7 +72,7 @@ public class ElasticIndexingService extends IndexingService {
   }
 
   @Override
-  public void addToIndexQueue(String connectorName, Long id, String operation) {
+  public void addToIndexQueue(String connectorName, String id, String operation) {
 
     switch (operation) {
       //A new type of document need to be initialise
@@ -485,21 +484,21 @@ public class ElasticIndexingService extends IndexingService {
     indexingQueueDAO.create(indexingQueue);
   }
 
-  private void addCreateOperation (String connector, Long id) {
+  private void addCreateOperation (String connector, String id) {
     IndexingQueue indexingQueue = initIndexingQueue(getConnectors().get(connector), CREATE);
-    indexingQueue.setEntityId(String.valueOf(id));
+    indexingQueue.setEntityId(id);
     indexingQueueDAO.create(indexingQueue);
   }
 
-  private void addUpdateOperation (String connector, Long id) {
+  private void addUpdateOperation (String connector, String id) {
     IndexingQueue indexingQueue = initIndexingQueue(getConnectors().get(connector), UPDATE);
-    indexingQueue.setEntityId(String.valueOf(id));
+    indexingQueue.setEntityId(id);
     indexingQueueDAO.create(indexingQueue);
   }
 
-  private void addDeleteOperation (String connector, Long id) {
+  private void addDeleteOperation (String connector, String id) {
     IndexingQueue indexingQueue = initIndexingQueue(getConnectors().get(connector), DELETE);
-    indexingQueue.setEntityId(String.valueOf(id));
+    indexingQueue.setEntityId(id);
     indexingQueueDAO.create(indexingQueue);
   }
 

@@ -127,7 +127,7 @@ public class ElasticTest extends AbstractElasticTest {
     addBlogPostConnector();
     blogpostService.initData();
     for (Blogpost blogpost: blogpostService.findAll()) {
-      indexingService.addToIndexQueue(CONNECTOR_TYPE, blogpost.getId(), ElasticIndexingService.CREATE);
+      indexingService.addToIndexQueue(CONNECTOR_TYPE, String.valueOf(blogpost.getId()), ElasticIndexingService.CREATE);
     }
 
     //When
@@ -146,7 +146,7 @@ public class ElasticTest extends AbstractElasticTest {
     addBlogPostConnector();
     blogpostService.initData();
     for (Blogpost blogpost: blogpostService.findAll()) {
-      indexingService.addToIndexQueue(CONNECTOR_TYPE, blogpost.getId(), ElasticIndexingService.CREATE);
+      indexingService.addToIndexQueue(CONNECTOR_TYPE, String.valueOf(blogpost.getId()), ElasticIndexingService.CREATE);
     }
     indexingService.process();
     Thread.sleep(2 * 1000);
