@@ -44,4 +44,27 @@
     <key>org.exoplatform.addons.es.dao.IndexingQueueDAO</key>
     <type>org.exoplatform.addons.es.dao.impl.IndexingQueueDAOImpl</type>
   </component>
+
+  <external-component-plugins>
+    <target-component>org.exoplatform.services.scheduler.JobSchedulerService</target-component>
+    <component-plugin>
+      <name>BulkIndexingJob</name>
+      <set-method>addPeriodJob</set-method>
+      <type>org.exoplatform.services.scheduler</type>
+      <description>Init job for bulk indexing to Elastic search</description>
+      <init-params>
+        <properties-param>
+          <name>job.info</name>
+          <description>details of the execution of the email reminder job</description>
+          <property name="jobName" value="ESBulkIndexer"/>
+          <property name="groupName" value="ElasticSearch"/>
+          <property name="job" value="org.exoplatform.addons.es.job.BulkIndexingJob"/>
+          <property name="repeatCount" value="0"/>
+          <property name="period" value="${exo.es.bulk.job.period:5}"/><!-- default 5 seconds -->
+          <property name="startTime" value="+60000"/><!-- start after 1 minute delay -->
+          <property name="endTime" value=""/>
+        </properties-param>
+      </init-params>
+    </component-plugin>
+  </external-component-plugins>
 </configuration>

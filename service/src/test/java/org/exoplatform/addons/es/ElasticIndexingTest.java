@@ -112,7 +112,7 @@ public class ElasticIndexingTest extends AbstractElasticTest {
     //assertEquals(0, typeDocumentNumber(CONNECTOR_TYPE));
     blogpostService.initData();
     for (Blogpost blogpost: blogpostService.findAll()) {
-      indexingService.addToIndexQueue(CONNECTOR_TYPE, blogpost.getId(), ElasticIndexingService.CREATE);
+      indexingService.addToIndexQueue(CONNECTOR_TYPE, String.valueOf(blogpost.getId()), ElasticIndexingService.CREATE);
     }
 
     //When

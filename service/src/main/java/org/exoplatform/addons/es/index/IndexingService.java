@@ -14,6 +14,15 @@ public abstract class IndexingService {
 
   private static final Log LOG = ExoLogger.getExoLogger(IndexingService.class);
 
+  private static final ThreadLocal<String> CURRENT_TENANT_NAME = new ThreadLocal<>();
+
+  public static void setCurrentTenantName(String tenantName) {
+    CURRENT_TENANT_NAME.set(tenantName);
+  }
+  public static String getCurrentTenantName() {
+    return CURRENT_TENANT_NAME.get();
+  }
+
   Map<String, ElasticIndexingServiceConnector> connectors = new HashMap<String, ElasticIndexingServiceConnector>();
 
   /**
@@ -56,7 +65,7 @@ public abstract class IndexingService {
    *
    * @LevelAPI Experimental
    */
-  public abstract void addToIndexQueue(String connectorName, Long id, String operation);
+  public abstract void addToIndexQueue(String connectorName, String id, String operation);
 
   /**
    *
