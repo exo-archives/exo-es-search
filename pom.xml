@@ -40,6 +40,12 @@
         <version>${org.exoplatform.depmgt.version}</version>
         <type>pom</type>
         <scope>import</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <!-- Import versions from platform project -->
@@ -49,6 +55,12 @@
         <version>${platform.version}</version>
         <type>pom</type>
         <scope>import</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <!-- exo-es-search project -->

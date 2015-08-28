@@ -58,11 +58,21 @@ public class ElasticIndexingService extends IndexingService {
   private static final Integer BATCH_NUMBER = Integer.valueOf((System.getProperty("exo.indexing.batch") != null) ?
       System.getProperty("exo.indexing.batch") : "1000");
 
+  private String urlClient;
+
   private IndexingQueueDAO indexingQueueDAO;
 
   public ElasticIndexingService() {
     PortalContainer container = PortalContainer.getInstance();
     indexingQueueDAO = container.getComponentInstanceOfType(IndexingQueueDAO.class);
+    this.urlClient = ES_CLIENT;
+  }
+
+  //For Test
+  public ElasticIndexingService(String urlClient) {
+    PortalContainer container = PortalContainer.getInstance();
+    indexingQueueDAO = container.getComponentInstanceOfType(IndexingQueueDAO.class);
+    this.urlClient = urlClient;
   }
 
   @Override
@@ -209,7 +219,7 @@ public class ElasticIndexingService extends IndexingService {
 
       //TODO check if index already exist (can been already created by another type of the application)
 
-      HttpPost httpIndexRequest = new HttpPost(ES_CLIENT + "/" + elasticIndexingServiceConnector.getIndex() + "/");
+      HttpPost httpIndexRequest = new HttpPost(urlClient + "/" + elasticIndexingServiceConnector.getIndex() + "/");
       httpIndexRequest.setEntity(
           new StringEntity(getIndexJSON(getIndexingSettings(elasticIndexingServiceConnector)), "UTF-8")
       );
@@ -238,7 +248,7 @@ public class ElasticIndexingService extends IndexingService {
 
       HttpClient client = new DefaultHttpClient();
 
-      HttpPost httpTypeRequest = new HttpPost(ES_CLIENT + "/" + elasticIndexingServiceConnector.getIndex()
+      HttpPost httpTypeRequest = new HttpPost(urlClient + "/" + elasticIndexingServiceConnector.getIndex()
           + "/_mapping/" + elasticIndexingServiceConnector.getType() );
       httpTypeRequest.setEntity(new StringEntity(elasticIndexingServiceConnector.init(), "UTF-8"));
       handleHttpResponse(client.execute(httpTypeRequest));
@@ -269,7 +279,7 @@ public class ElasticIndexingService extends IndexingService {
 
       HttpClient client = new DefaultHttpClient();
 
-      HttpDelete httpDeleteRequest = new HttpDelete(ES_CLIENT + "/" + elasticIndexingServiceConnector.getIndex() + "/"
+      HttpDelete httpDeleteRequest = new HttpDelete(urlClient + "/" + elasticIndexingServiceConnector.getIndex() + "/"
           + elasticIndexingServiceConnector.getType() );
       handleHttpResponse(client.execute(httpDeleteRequest));
 
@@ -296,7 +306,7 @@ public class ElasticIndexingService extends IndexingService {
 
       HttpClient client = new DefaultHttpClient();
 
-      HttpPost httpCUDRequest = new HttpPost(ES_CLIENT + "/_bulk");
+      HttpPost httpCUDRequest = new HttpPost(urlClient + "/_bulk");
       httpCUDRequest.setEntity(new StringEntity(bulkRequest, "UTF-8"));
       handleHttpResponse(client.execute(httpCUDRequest));
 
