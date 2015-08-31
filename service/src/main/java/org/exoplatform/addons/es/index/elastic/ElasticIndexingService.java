@@ -122,82 +122,133 @@ public class ElasticIndexingService extends IndexingService {
   @Override
   public void process() {
 
-    Map<String, List<IndexingQueue>> indexingQueueOperation = new HashMap<>();
+    Map<String, Map<String, List<IndexingQueue>>> indexingQueueSorted = new HashMap<>();
     Date startProcessing = new Date(0L);
 
-    //Get all Indexing Queue and order them per operation
-    for (IndexingQueue indexingQueue: indexingQueueDAO.findAll()) {
-      if (!indexingQueueOperation.containsKey(indexingQueue.getOperation())) {
-        indexingQueueOperation.put(indexingQueue.getOperation(), new ArrayList<IndexingQueue>());
+    List<IndexingQueue> indexingQueues;
+
+    //Loop until the number of data retrieved from indexing queue is less than BATCH_NUMBER (default = 1000)
+    do {
+
+      //Get BATCH_NUMBER (default = 1000) first indexing queue
+      indexingQueues = indexingQueueDAO.findAllFirst(BATCH_NUMBER);
+
+      //Get all Indexing Queue and order them per operation and type in map: <Operation, <Type, List<IndexingQueue>>>
+      for (IndexingQueue indexingQueue: indexingQueues) {
+        //Check if the Indexing Queue map already contains a specific operation
+        if (!indexingQueueSorted.containsKey(indexingQueue.getOperation())) {
+          //If not add a new operation in the map
+          indexingQueueSorted.put(indexingQueue.getOperation(), new HashMap<String, List<IndexingQueue>>());
+        }
+        //Check if the operation map already contains a specific type
+        if (!indexingQueueSorted.get(indexingQueue.getOperation()).containsKey(indexingQueue.getEntityType())) {
+          //If not add a new type for the operation above
+          indexingQueueSorted.get(indexingQueue.getOperation()).put(indexingQueue.getEntityType(), new ArrayList<IndexingQueue>());
+        }
+        //Add the indexing queue in the specific Operation -> Type
+        indexingQueueSorted.get(indexingQueue.getOperation()).get(indexingQueue.getEntityType()).add(indexingQueue);
+        //Get the max timestamp of the indexing queue
+        if (startProcessing.compareTo(indexingQueue.getTimestamp()) < 0) startProcessing = indexingQueue.getTimestamp();
       }
-      indexingQueueOperation.get(indexingQueue.getOperation()).add(indexingQueue);
-      //Get the max timestamp of the indexing queue
-      if (startProcessing.compareTo(indexingQueue.getTimestamp()) < 0) startProcessing = indexingQueue.getTimestamp();
-    }
 
-    // Process all the requests for “init of the ES create mapping” (Operation type = I) in the indexing queue (if any)
-    if (indexingQueueOperation.containsKey(INIT)) {
-      for (IndexingQueue indexingQueue : indexingQueueOperation.get(INIT)) {
-        sendInitRequests(getConnectors().get(indexingQueue.getEntityType()));
+      // Process all the requests for “init of the ES create mapping” (Operation type = I) in the indexing queue (if any)
+      if (indexingQueueSorted.containsKey(INIT)) {
+        for (String type : indexingQueueSorted.get(INIT).keySet()) {
+          sendInitRequests(getConnectors().get(type));
+        }
+        indexingQueueSorted.remove(INIT);
       }
-    }
 
-    // Process all the requests for “remove all documents of type” (Operation type = X) in the indexing queue (if any)
-    // = Delete type in ES
-    if (indexingQueueOperation.containsKey(DELETE_ALL)) {
-      for (IndexingQueue indexingQueue : indexingQueueOperation.get(DELETE_ALL)) {
-        sendDeleteTypeRequest(getConnectors().get(indexingQueue.getEntityType()));
+      // Process all the requests for “remove all documents of type” (Operation type = X) in the indexing queue (if any)
+      // = Delete type in ES
+      if (indexingQueueSorted.containsKey(DELETE_ALL)) {
+        for (String type : indexingQueueSorted.get(DELETE_ALL).keySet()) {
+          if (indexingQueueSorted.get(DELETE_ALL).containsKey(type)) {
+            for (IndexingQueue indexingQueue: indexingQueueSorted.get(DELETE_ALL).get(type)) {
+              //Remove the type (= remove all documents of this type) and recreate it
+              sendDeleteTypeRequest(getConnectors().get(indexingQueue.getEntityType()));
+              sendCreateTypeRequest(getConnectors().get(indexingQueue.getEntityType()));
+              //Remove all useless CUD operation that was plan before this delete all
+              deleteCUDOperationsForTypesBefore(new String[]{CREATE, UPDATE, DELETE}, indexingQueueSorted, indexingQueue.getEntityType(), indexingQueue.getTimestamp());
+            }
+          }
+        }
+        indexingQueueSorted.remove(DELETE_ALL);
       }
-    }
 
-    //Process the indexing requests (Operation type = C or U or D)
-    List<IndexingQueue> CUDIndexingQueues = new ArrayList<>();
-    if (indexingQueueOperation.containsKey(CREATE)) CUDIndexingQueues.addAll(indexingQueueOperation.get(CREATE));
-    if (indexingQueueOperation.containsKey(UPDATE)) CUDIndexingQueues.addAll(indexingQueueOperation.get(UPDATE));
-    if (indexingQueueOperation.containsKey(DELETE)) CUDIndexingQueues.addAll(indexingQueueOperation.get(DELETE));
-
-    if (CUDIndexingQueues.size() > 0) {
-
+      //Initialise bulk request for CUD operations
       String bulkRequest = "";
-      Integer counter = 0;
 
-      for (IndexingQueue indexingQueue : CUDIndexingQueues) {
-
-        //Increment counter for batch processing
-        counter++;
-
-        //Check the operation type
-        if (indexingQueue.getOperation().equals(DELETE)) {
-          bulkRequest += getDeleteRequest(indexingQueue);
-        } else if (indexingQueue.getOperation().equals(CREATE)) {
-          bulkRequest += getCreateRequest(indexingQueue);
-        } else if (indexingQueue.getOperation().equals(UPDATE)) {
-          bulkRequest += getUpdateRequest(indexingQueue);
-        } else {
-          LOG.error(indexingQueue.getOperation() + " is not a valid operation for indexing queue.");
+      //Process Delete document operation
+      if (indexingQueueSorted.containsKey(DELETE)) {
+        for (String deleteOperations : indexingQueueSorted.get(DELETE).keySet()) {
+          for (IndexingQueue deleteIndexQueue : indexingQueueSorted.get(DELETE).get(deleteOperations)) {
+            bulkRequest += getDeleteRequest(deleteIndexQueue);
+            //Remove the object from other create or update operations planned before the timestamp of the delete operation
+            deleteCUDOperationsForTypesBefore(new String[]{CREATE, UPDATE}, indexingQueueSorted, deleteIndexQueue.getEntityType(), deleteIndexQueue.getTimestamp());
+          }
         }
-
-        //Batch processing
-        if (counter > BATCH_NUMBER) {
-          sendCUDRequest(bulkRequest);
-          //Reinitialisation of the counter and the bulk request
-          bulkRequest = "";
-          counter = 0;
-        }
-
+        //Remove the delete operations from the map
+        indexingQueueSorted.remove(DELETE);
       }
 
-      sendCUDRequest(bulkRequest);
-    }
+      //Process Create document operation
+      if (indexingQueueSorted.containsKey(CREATE)) {
+        for (String createOperations : indexingQueueSorted.get(CREATE).keySet()) {
+          for (IndexingQueue createIndexQueue : indexingQueueSorted.get(CREATE).get(createOperations)) {
+            bulkRequest += getCreateRequest(createIndexQueue);
+            //Remove the object from other create or update operations planned before the timestamp of the delete operation
+            deleteCUDOperationsForTypesBefore(new String[]{UPDATE}, indexingQueueSorted, createIndexQueue.getEntityType(), createIndexQueue.getTimestamp());
+          }
+        }
+        //Remove the create operations from the map
+        indexingQueueSorted.remove(CREATE);
+      }
+
+      //Process Update document operation
+      if (indexingQueueSorted.containsKey(UPDATE)) {
+        for (String updateOperations : indexingQueueSorted.get(UPDATE).keySet()) {
+          for (IndexingQueue updateIndexQueue : indexingQueueSorted.get(UPDATE).get(updateOperations)) {
+            bulkRequest += getUpdateRequest(updateIndexQueue);
+            //Remove the indexing queue from the list
+            indexingQueueSorted.get(UPDATE).get(updateOperations).remove(updateIndexQueue);
+          }
+        }
+        //Remove the update operations from the map
+        indexingQueueSorted.remove(UPDATE);
+      }
+
+    if (!bulkRequest.equals("")) sendCUDRequest(bulkRequest);
 
     // Removes the processed IDs from the “indexing queue” table that have timestamp older than the timestamp of
     // start of processing
     indexingQueueDAO.deleteAllBefore(startProcessing);
 
-    // TODO 4: In case of error, the entityID+entityType will be logged in a “error queue” to allow a manual
-    // reprocessing of the indexing operation. However, in a first version of the implementation, the error will only
-    // be logged with ERROR level in the log file of platform.
+  } while (indexingQueues.size() >= BATCH_NUMBER);
 
+  // TODO 4: In case of error, the entityID+entityType will be logged in a “error queue” to allow a manual
+  // reprocessing of the indexing operation. However, in a first version of the implementation, the error will only
+  // be logged with ERROR level in the log file of platform.
+
+}
+
+  private void deleteCUDOperationsForTypesBefore(String[] operations, Map<String, Map<String, List<IndexingQueue>>> indexingQueueSorted, String type, Date timestamp) {
+    for (String operation: operations) {
+      deleteCUDOperationsForTypeByOperationBefore(indexingQueueSorted, type, timestamp, operation);
+    }
+  }
+
+  private void deleteCUDOperationsForTypeByOperationBefore(Map<String, Map<String, List<IndexingQueue>>> indexingQueueSorted, String type, Date timestamp, String operation) {
+    if (indexingQueueSorted.containsKey(operation)) {
+      if (indexingQueueSorted.get(operation).containsKey(type)) {
+        for (IndexingQueue indexingQueue : indexingQueueSorted.get(operation).get(type)) {
+          //If timestamp higher than the timestamp of the CUD indexing queue, the index queue is removed
+          if (timestamp.compareTo(indexingQueue.getTimestamp()) > 0) {
+            indexingQueueSorted.get(operation).get(type).remove(indexingQueue);
+          }
+        }
+      }
+    }
   }
 
   private void sendInitRequests(ElasticIndexingServiceConnector elasticIndexingServiceConnector) {
@@ -455,11 +506,11 @@ public class ElasticIndexingService extends IndexingService {
       LOG.error("Error when trying to send request to ES. The reason is: "
           + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"));
       //System.out.println(("Error when trying to send request to ES. The reason is: "
-          //+ IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8")));
+      //+ IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8")));
     } else {
       LOG.info("Success request to ES: " + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"));
       //System.out.println(("Success request to ES: "
-        //  + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8")));
+      //  + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8")));
     }
   }
 

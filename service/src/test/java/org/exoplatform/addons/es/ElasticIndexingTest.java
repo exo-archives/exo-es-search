@@ -89,22 +89,6 @@ public class ElasticIndexingTest extends AbstractElasticTest {
   }
 
   @Test
-  public void testDeleteAllIndexedDocument() {
-
-    //Given
-    addBlogPostConnector();
-    indexingService.process();
-    assertTrue(typeExists(CONNECTOR_TYPE));
-
-    //When
-    indexingService.addToIndexQueue(CONNECTOR_TYPE, null, ElasticIndexingService.DELETE_ALL);
-    indexingService.process();
-
-    //Then
-    assertFalse(typeExists(CONNECTOR_TYPE));
-  }
-
-  @Test
   public void testIndexingDocument() throws InterruptedException {
 
     //Given
@@ -122,6 +106,30 @@ public class ElasticIndexingTest extends AbstractElasticTest {
     //Then
     assertEquals(blogpostService.findAll().size(), typeDocumentNumber(CONNECTOR_TYPE));
 
+  }
+
+  @Test
+  public void testDeleteAllIndexedDocument() throws InterruptedException {
+
+    //Given
+    addBlogPostConnector();
+    blogpostService.initData();
+    for (Blogpost blogpost: blogpostService.findAll()) {
+      indexingService.addToIndexQueue(CONNECTOR_TYPE, String.valueOf(blogpost.getId()), ElasticIndexingService.CREATE);
+    }
+    indexingService.process();
+    Thread.sleep(2 * 1000);
+    assertTrue(typeExists(CONNECTOR_TYPE));
+    assertEquals(blogpostService.findAll().size(), typeDocumentNumber(CONNECTOR_TYPE));
+
+    //When
+    indexingService.addToIndexQueue(CONNECTOR_TYPE, null, ElasticIndexingService.DELETE_ALL);
+    indexingService.process();
+
+    //Then
+    //Type is existing but it has no document
+    assertTrue(typeExists(CONNECTOR_TYPE));
+    assertEquals(0, typeDocumentNumber(CONNECTOR_TYPE));
   }
 
   private void addBlogPostConnector() {

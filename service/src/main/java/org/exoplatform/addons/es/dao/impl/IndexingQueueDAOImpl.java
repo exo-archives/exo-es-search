@@ -22,6 +22,9 @@ import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.persistence.impl.GenericDAOJPAImpl;
 
 import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.util.Date;
 import java.util.List;
 
@@ -87,9 +90,18 @@ public class IndexingQueueDAOImpl extends GenericDAOJPAImpl<IndexingQueue, Long>
 
   @Override
   @ExoTransactional
-  public Date getCurrentTimestamp() {
-    //TODO return Timestamp from DB :)
-    return new Date();
+  public List<IndexingQueue> findAllFirst(Integer maxResults) {
+
+    CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+    CriteriaQuery<IndexingQueue> query = cb.createQuery(IndexingQueue.class);
+
+    Root<IndexingQueue> entity = query.from(IndexingQueue.class);
+
+    query.select(entity);
+    query.orderBy(cb.asc(entity.get("timestamp")));
+
+    return getEntityManager().createQuery(query).setMaxResults(maxResults).getResultList();
+
   }
 
   @Override

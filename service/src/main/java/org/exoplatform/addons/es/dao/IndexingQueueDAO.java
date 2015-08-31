@@ -38,8 +38,7 @@ public interface IndexingQueueDAO extends GenericDAO<IndexingQueue, Long> {
 
   List<IndexingQueue> findQueueBeforeLastTimeByOperations(Date lastTime, List<String> operations);
 
-  Date getCurrentTimestamp();
-
+  List<IndexingQueue> findAllFirst(Integer maxResults);
 
   void deleteAllBefore(Date lastTime);
 
