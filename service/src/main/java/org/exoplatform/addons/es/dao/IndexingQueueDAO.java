@@ -40,7 +40,8 @@ public interface IndexingQueueDAO extends GenericDAO<IndexingQueue, Long> {
 
   Date getCurrentTimestamp();
 
-  void DeleteAllBefore(Date lastTime);
+
+  void deleteAllBefore(Date lastTime);
 
 }
 

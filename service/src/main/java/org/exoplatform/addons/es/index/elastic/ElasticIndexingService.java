@@ -122,39 +122,46 @@ public class ElasticIndexingService extends IndexingService {
   @Override
   public void process() {
 
-    List<IndexingQueue> indexingQueues;
-    Date startProcessing = indexingQueueDAO.getCurrentTimestamp();
+    Map<String, List<IndexingQueue>> indexingQueueOperation = new HashMap<>();
+    Date startProcessing = new Date(0L);
 
-    // Process all the requests for “init of the ES create mapping” (Operation type = I) in the indexing queue (if any)
-    indexingQueues = indexingQueueDAO.findQueueBeforeLastTimeByOperation(startProcessing, INIT);
-    for (IndexingQueue indexingQueue : indexingQueues) {
-      sendInitRequests(getConnectors().get(indexingQueue.getEntityType()));
+    //Get all Indexing Queue and order them per operation
+    for (IndexingQueue indexingQueue: indexingQueueDAO.findAll()) {
+      if (!indexingQueueOperation.containsKey(indexingQueue.getOperation())) {
+        indexingQueueOperation.put(indexingQueue.getOperation(), new ArrayList<IndexingQueue>());
+      }
+      indexingQueueOperation.get(indexingQueue.getOperation()).add(indexingQueue);
+      //Get the max timestamp of the indexing queue
+      if (startProcessing.compareTo(indexingQueue.getTimestamp()) < 0) startProcessing = indexingQueue.getTimestamp();
     }
 
+    // Process all the requests for “init of the ES create mapping” (Operation type = I) in the indexing queue (if any)
+    if (indexingQueueOperation.containsKey(INIT)) {
+      for (IndexingQueue indexingQueue : indexingQueueOperation.get(INIT)) {
+        sendInitRequests(getConnectors().get(indexingQueue.getEntityType()));
+      }
+    }
 
     // Process all the requests for “remove all documents of type” (Operation type = X) in the indexing queue (if any)
     // = Delete type in ES
-    indexingQueues = indexingQueueDAO.findQueueBeforeLastTimeByOperation(startProcessing, DELETE_ALL);
-    for (IndexingQueue indexingQueue : indexingQueues) {
-      sendDeleteTypeRequest(getConnectors().get(indexingQueue.getEntityType()));
+    if (indexingQueueOperation.containsKey(DELETE_ALL)) {
+      for (IndexingQueue indexingQueue : indexingQueueOperation.get(DELETE_ALL)) {
+        sendDeleteTypeRequest(getConnectors().get(indexingQueue.getEntityType()));
+      }
     }
 
     //Process the indexing requests (Operation type = C or U or D)
+    List<IndexingQueue> CUDIndexingQueues = new ArrayList<>();
+    if (indexingQueueOperation.containsKey(CREATE)) CUDIndexingQueues.addAll(indexingQueueOperation.get(CREATE));
+    if (indexingQueueOperation.containsKey(UPDATE)) CUDIndexingQueues.addAll(indexingQueueOperation.get(UPDATE));
+    if (indexingQueueOperation.containsKey(DELETE)) CUDIndexingQueues.addAll(indexingQueueOperation.get(DELETE));
 
-    List<String> operations = new ArrayList<>();
-    operations.add(CREATE);
-    operations.add(UPDATE);
-    operations.add(DELETE);
-
-    //Get all CREATE, UPDATE and DELETE operations in th indexing queue
-    indexingQueues = indexingQueueDAO.findQueueBeforeLastTimeByOperations(startProcessing, operations);
-
-    if (indexingQueues.size() > 0) {
+    if (CUDIndexingQueues.size() > 0) {
 
       String bulkRequest = "";
       Integer counter = 0;
 
-      for (IndexingQueue indexingQueue : indexingQueues) {
+      for (IndexingQueue indexingQueue : CUDIndexingQueues) {
 
         //Increment counter for batch processing
         counter++;
@@ -183,13 +190,13 @@ public class ElasticIndexingService extends IndexingService {
       sendCUDRequest(bulkRequest);
     }
 
+    // Removes the processed IDs from the “indexing queue” table that have timestamp older than the timestamp of
+    // start of processing
+    indexingQueueDAO.deleteAllBefore(startProcessing);
+
     // TODO 4: In case of error, the entityID+entityType will be logged in a “error queue” to allow a manual
     // reprocessing of the indexing operation. However, in a first version of the implementation, the error will only
     // be logged with ERROR level in the log file of platform.
-
-    // Removes the processed IDs from the “indexing queue” table that have timestamp older than the timestamp of
-    // start of processing
-    indexingQueueDAO.DeleteAllBefore(startProcessing);
 
   }
 
@@ -205,7 +212,7 @@ public class ElasticIndexingService extends IndexingService {
 
   /**
    *
-   * Send request to ES to create a new create
+   * Send request to ES to create a new index
    *
    * @param elasticIndexingServiceConnector
    *
@@ -309,7 +316,6 @@ public class ElasticIndexingService extends IndexingService {
       handleHttpResponse(client.execute(httpCUDRequest));
 
       LOG.info("CUD Bulk Request send to ES: \n" + bulkRequest);
-      System.out.println("CUD Bulk Request send to ES: \n" + bulkRequest);
 
     } catch (ClientProtocolException e) {
       e.printStackTrace();
@@ -446,14 +452,14 @@ public class ElasticIndexingService extends IndexingService {
    */
   private void handleHttpResponse(HttpResponse httpResponse) throws IOException {
     if (httpResponse.getStatusLine().getStatusCode() != 200) {
-      //LOG.error("Error when trying to send request to ES. The reason is: "
-      //    + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"));
-      System.out.println(("Error when trying to send request to ES. The reason is: "
-          + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8")));
+      LOG.error("Error when trying to send request to ES. The reason is: "
+          + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"));
+      //System.out.println(("Error when trying to send request to ES. The reason is: "
+          //+ IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8")));
     } else {
-      //LOG.info("Success request to ES: " + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"));
-      System.out.println(("Success request to ES: "
-          + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8")));
+      LOG.info("Success request to ES: " + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"));
+      //System.out.println(("Success request to ES: "
+        //  + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8")));
     }
   }
 

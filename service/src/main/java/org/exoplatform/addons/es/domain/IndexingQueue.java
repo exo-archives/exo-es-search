@@ -43,7 +43,9 @@ import java.util.Date;
     @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTimeByOperation",
         query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime AND q.operation = :operation"),
     @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTimeByOperations",
-        query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime AND q.operation IN :operations")
+        query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime AND q.operation IN :operations"),
+    @NamedQuery(name = "IndexingQueue.deleteBeforeTimestamp",
+        query = "DELETE FROM IndexingQueue q WHERE q.timestamp <= :lastTime")
 })
 public class IndexingQueue {
 

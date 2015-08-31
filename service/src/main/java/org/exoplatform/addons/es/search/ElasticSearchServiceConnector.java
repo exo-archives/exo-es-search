@@ -123,8 +123,6 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
         "}";
 
     LOG.info("Search Query request to ES : "+esQuery);
-    //TODO REMOVE
-    System.out.println("Search Query request to ES : "+esQuery);
 
     return esQuery;
   }
@@ -155,8 +153,6 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
     }
 
     LOG.info("ES JSON Response: "+jsonResponse);
-    //TODO remove
-    System.out.println("ES JSON Response: "+jsonResponse);
 
     return jsonResponse;
 
@@ -175,7 +171,7 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
       e.printStackTrace();
     }
 
-    //TODO check if response is succesfull
+    //TODO check if response is successful
     JSONObject jsonResult = (JSONObject) json.get("hits");
     JSONArray jsonHits = (JSONArray) jsonResult.get("hits");
 
