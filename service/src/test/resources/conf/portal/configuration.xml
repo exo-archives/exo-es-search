@@ -25,6 +25,8 @@
     xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
     xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
 
+  <!--
+
   <component>
     <type>org.exoplatform.addons.es.blogpost.connector.BlogPostIndexingServiceConnector</type>
   </component>
@@ -49,5 +51,7 @@
       </init-params>
     </component-plugin>
   </external-component-plugins>
+
+  -->
 
 </configuration>

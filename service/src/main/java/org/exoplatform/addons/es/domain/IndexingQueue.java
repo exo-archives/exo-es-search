@@ -114,5 +114,30 @@ public class IndexingQueue {
     return timestamp;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    IndexingQueue that = (IndexingQueue) o;
+
+    if (entityId != null ? !entityId.equals(that.entityId) : that.entityId != null) return false;
+    if (entityType != null ? !entityType.equals(that.entityType) : that.entityType != null) return false;
+    if (id != null ? !id.equals(that.id) : that.id != null) return false;
+    if (operation != null ? !operation.equals(that.operation) : that.operation != null) return false;
+    if (timestamp != null ? !timestamp.equals(that.timestamp) : that.timestamp != null) return false;
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = id != null ? id.hashCode() : 0;
+    result = 31 * result + (entityType != null ? entityType.hashCode() : 0);
+    result = 31 * result + (entityId != null ? entityId.hashCode() : 0);
+    result = 31 * result + (operation != null ? operation.hashCode() : 0);
+    result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
+    return result;
+  }
 }
 

@@ -16,6 +16,8 @@
     <elasticsearch.version>1.7.0</elasticsearch.version>
     <lucene.version>4.10.4</lucene.version>
     <randomizedtesting-runner.version>2.1.14</randomizedtesting-runner.version>
+    <mockito.version>2.0.13-beta</mockito.version>
+    <liquibase.version>3.3.2</liquibase.version>
   </properties>
 
   <dependencyManagement>
@@ -77,6 +79,11 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.1.3</version>
+    </dependency>
 
     <dependency>
       <groupId>mysql</groupId>
@@ -99,7 +106,7 @@
     <dependency>
       <groupId>org.liquibase</groupId>
       <artifactId>liquibase-core</artifactId>
-      <version>3.3.2</version>
+      <version>${liquibase.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -107,6 +114,12 @@
       <artifactId>hamcrest-all</artifactId>
       <scope>test</scope>
       <version>1.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
     </dependency>
 
     <!-- ES Test -->
@@ -133,6 +146,12 @@
       <groupId>org.elasticsearch</groupId>
       <artifactId>elasticsearch</artifactId>
       <version>${elasticsearch.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-expressions</artifactId>
+      <version>${lucene.version}</version>
       <scope>test</scope>
     </dependency>
 

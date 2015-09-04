@@ -1,6 +1,5 @@
 package org.exoplatform.addons.es.index;
 
-import org.exoplatform.addons.es.index.elastic.ElasticIndexingServiceConnector;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -23,23 +22,23 @@ public abstract class IndexingService {
     return CURRENT_TENANT_NAME.get();
   }
 
-  Map<String, ElasticIndexingServiceConnector> connectors = new HashMap<String, ElasticIndexingServiceConnector>();
+  Map<String, IndexingServiceConnector> connectors = new HashMap<String, IndexingServiceConnector>();
 
   /**
    *
    * Add Indexing Connector to the service
    *
-   * @param elasticIndexingServiceConnector the indexing connector to add
+   * @param indexingServiceConnector the indexing connector to add
    *
    * @LevelAPI Experimental
    */
-  public void addConnector (ElasticIndexingServiceConnector elasticIndexingServiceConnector) {
-    if (connectors.containsKey(elasticIndexingServiceConnector.getType())) {
-      LOG.error("Impossible to add connector " + elasticIndexingServiceConnector.getType()
+  public void addConnector (IndexingServiceConnector indexingServiceConnector) {
+    if (connectors.containsKey(indexingServiceConnector.getType())) {
+      LOG.error("Impossible to add connector " + indexingServiceConnector.getType()
           + ". A connector with the same name has already been registered.");
     } else {
-      connectors.put(elasticIndexingServiceConnector.getType(), elasticIndexingServiceConnector);
-      LOG.error("A new Indexing Connector has been added: " + elasticIndexingServiceConnector.getType());
+      connectors.put(indexingServiceConnector.getType(), indexingServiceConnector);
+      LOG.info("A new Indexing Connector has been added: " + indexingServiceConnector.getType());
     }
   }
 
@@ -51,7 +50,7 @@ public abstract class IndexingService {
    *
    * @LevelAPI Experimental
    */
-  public Map<String, ElasticIndexingServiceConnector> getConnectors() {
+  public Map<String, IndexingServiceConnector> getConnectors() {
     return connectors;
   }
 

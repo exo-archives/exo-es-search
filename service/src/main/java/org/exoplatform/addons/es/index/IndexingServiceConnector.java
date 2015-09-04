@@ -5,17 +5,9 @@ import org.exoplatform.addons.es.domain.Document;
 /**
  * Created by TClement on 8/25/15.
  */
-public interface IndexingServiceConnector {
+public abstract class IndexingServiceConnector {
 
-  /**
-   *
-   * Initialise the create
-   *
-   * @return JSON containing create initialisation parameters
-   *
-   * @LevelAPI Experimental
-   */
-  public String init();
+  String type;
 
   /**
    *
@@ -27,7 +19,7 @@ public interface IndexingServiceConnector {
    *
    * @LevelAPI Experimental
    */
-  public Document create(String id);
+  public abstract Document create(String id);
 
   /**
    *
@@ -39,7 +31,7 @@ public interface IndexingServiceConnector {
    *
    * @LevelAPI Experimental
    */
-  public Document update (String id);
+  public abstract Document update(String id);
 
   /**
    *
@@ -53,4 +45,11 @@ public interface IndexingServiceConnector {
    */
   public abstract String delete (String id);
 
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
 }

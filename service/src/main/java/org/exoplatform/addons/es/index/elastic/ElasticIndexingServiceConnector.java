@@ -19,7 +19,6 @@ package org.exoplatform.addons.es.index.elastic;
 import org.exoplatform.addons.es.index.IndexingServiceConnector;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
-import org.json.simple.JSONObject;
 
 /**
  * Created by The eXo Platform SAS
@@ -27,13 +26,12 @@ import org.json.simple.JSONObject;
  * tclement@exoplatform.com
  * 7/22/15
  */
-public abstract class ElasticIndexingServiceConnector implements IndexingServiceConnector {
+public abstract class ElasticIndexingServiceConnector extends IndexingServiceConnector {
 
-  String index;
-  String type;
-  String mapping;
-  Integer shards;
-  Integer replicas;
+  protected String index;
+  protected String mapping;
+  protected Integer shards;
+  protected Integer replicas;
 
   private static final Integer DEFAULT_REPLICAS_NUMBER =
       Integer.valueOf((System.getProperty("indexing.replicasNumber.default") != null) ?
@@ -46,43 +44,10 @@ public abstract class ElasticIndexingServiceConnector implements IndexingService
   public ElasticIndexingServiceConnector(InitParams initParams) {
     PropertiesParam param = initParams.getPropertiesParam("constructor.params");
     this.index = param.getProperty("index");
-    this.type = param.getProperty("type");
+    setType(param.getProperty("type"));
     this.mapping = param.getProperty("mapping");
     this.shards = DEFAULT_SHARDS_NUMBER;
     this.replicas = DEFAULT_REPLICAS_NUMBER;
-  }
-
-  public String init() {
-    if (mapping == null || mapping.isEmpty()) {
-
-      //Return default mapping:
-      /*
-        {
-            "type_name" : {
-                "properties" : {
-                    "permissions" : {"type" : "string", "index" : not_analyzed }
-                }
-            }
-        }
-       */
-
-      JSONObject permissionAttributes = new JSONObject();
-      permissionAttributes.put("type", "string");
-      permissionAttributes.put("index", "not_analyzed");
-
-      JSONObject permission = new JSONObject();
-      permission.put("permissions", permissionAttributes);
-
-      JSONObject mappingProperties = new JSONObject();
-      mappingProperties.put("properties",permission);
-
-      JSONObject mappingJSON = new JSONObject();
-      mappingJSON.put(type, mappingProperties);
-
-      return mappingJSON.toJSONString();
-    }
-    //Else return the map[ping provide by developer
-    return mapping;
   }
 
   public String getIndex() {
@@ -91,14 +56,6 @@ public abstract class ElasticIndexingServiceConnector implements IndexingService
 
   public void setIndex(String index) {
     this.index = index;
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
   }
 
   public String getMapping() {

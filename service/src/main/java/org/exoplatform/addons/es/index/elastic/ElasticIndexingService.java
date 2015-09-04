@@ -16,25 +16,15 @@
 */
 package org.exoplatform.addons.es.index.elastic;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.exoplatform.addons.es.client.ElasticIndexingClient;
+import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
 import org.exoplatform.addons.es.dao.IndexingQueueDAO;
-import org.exoplatform.addons.es.domain.Document;
 import org.exoplatform.addons.es.domain.IndexingQueue;
 import org.exoplatform.addons.es.index.IndexingService;
-import org.exoplatform.container.PortalContainer;
+import org.exoplatform.addons.es.index.IndexingServiceConnector;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.json.simple.JSONObject;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 /**
@@ -45,6 +35,9 @@ import java.util.*;
  */
 public class ElasticIndexingService extends IndexingService {
 
+  private static final Integer BATCH_NUMBER = Integer.valueOf((System.getProperty("exo.indexing.batch") != null) ?
+      System.getProperty("exo.indexing.batch") : "1000");
+
   private static final Log LOG = ExoLogger.getExoLogger(ElasticIndexingService.class);
 
   public static final String INIT = "I";
@@ -53,31 +46,29 @@ public class ElasticIndexingService extends IndexingService {
   public static final String DELETE = "D";
   public static final String DELETE_ALL = "X";
 
-  public static final String ES_CLIENT = (System.getProperty("exo.elasticsearch.client") != null) ?
-      System.getProperty("exo.elasticsearch.client") : "http://127.0.0.1:9200";
-  private static final Integer BATCH_NUMBER = Integer.valueOf((System.getProperty("exo.indexing.batch") != null) ?
-      System.getProperty("exo.indexing.batch") : "1000");
-
-  private String urlClient;
-
   private final IndexingQueueDAO indexingQueueDAO;
 
-  public ElasticIndexingService(IndexingQueueDAO indexingQueueDAO) {
-    this.indexingQueueDAO = indexingQueueDAO;
-  }
+  private final ElasticIndexingClient elasticIndexingClient;
 
-  //For Test
-  public ElasticIndexingService(String urlClient) {
-    PortalContainer container = PortalContainer.getInstance();
-    indexingQueueDAO = container.getComponentInstanceOfType(IndexingQueueDAO.class);
-    this.urlClient = urlClient;
+  private final ElasticContentRequestBuilder elasticContentRequestBuilder;
+
+  public ElasticIndexingService(IndexingQueueDAO indexingQueueDAO, ElasticIndexingClient elasticIndexingClient, ElasticContentRequestBuilder elasticContentRequestBuilder) {
+    this.indexingQueueDAO = indexingQueueDAO;
+    this.elasticIndexingClient = elasticIndexingClient;
+    this.elasticContentRequestBuilder = elasticContentRequestBuilder;
   }
 
   @Override
-  public void addConnector(ElasticIndexingServiceConnector elasticIndexingServiceConnector) {
-    super.addConnector(elasticIndexingServiceConnector);
-    //When a new connector is added, ES create and type need to be created
-    addToIndexQueue(elasticIndexingServiceConnector.getType(), null, INIT);
+  public void addConnector(IndexingServiceConnector IndexingServiceConnector) {
+    if (getConnectors().containsKey(IndexingServiceConnector.getType())) {
+      LOG.error("Impossible to add connector " + IndexingServiceConnector.getType()
+          + ". A connector with the same name has already been registered.");
+    } else {
+      getConnectors().put(IndexingServiceConnector.getType(), IndexingServiceConnector);
+      LOG.info("A new Indexing Connector has been added: " + IndexingServiceConnector.getType());
+      //When a new connector is added, ES create and type need to be created
+      addToIndexQueue(IndexingServiceConnector.getType(), null, INIT);
+    }
   }
 
   @Override
@@ -99,12 +90,10 @@ public class ElasticIndexingService extends IndexingService {
       //All entities of a specific type need to be deleted
       case DELETE_ALL: addDeleteAllOperation(connectorName);
         break;
-      default: LOG.info(operation+" is not an accepted operation for the Index Queue.");
+      default: LOG.warn(operation + " is not an accepted operation for the Index Queue.");
         break;
     }
 
-    //TODO : If a row already exists for this entity in the table, it is updated (using “ON DUPLICATE KEY UPDATE”
-    // SQL statement)
   }
 
   @Override
@@ -166,10 +155,12 @@ public class ElasticIndexingService extends IndexingService {
           if (indexingQueueSorted.get(DELETE_ALL).containsKey(type)) {
             for (IndexingQueue indexingQueue: indexingQueueSorted.get(DELETE_ALL).get(type)) {
               //Remove the type (= remove all documents of this type) and recreate it
-              sendDeleteTypeRequest(getConnectors().get(indexingQueue.getEntityType()));
-              sendCreateTypeRequest(getConnectors().get(indexingQueue.getEntityType()));
+              ElasticIndexingServiceConnector connector = (ElasticIndexingServiceConnector) getConnectors().get(indexingQueue.getEntityType());
+              elasticIndexingClient.sendDeleteTypeRequest(connector.getIndex(), connector.getType());
+              elasticIndexingClient.sendCreateTypeRequest(connector.getIndex(), connector.getType(), elasticContentRequestBuilder.getCreateTypeRequestContent(connector));
               //Remove all useless CUD operation that was plan before this delete all
-              deleteCUDOperationsForTypesBefore(new String[]{CREATE, UPDATE, DELETE}, indexingQueueSorted, indexingQueue.getEntityType(), indexingQueue.getTimestamp());
+              deleteOperationsForTypesBefore(new String[]{CREATE, DELETE}, indexingQueueSorted, indexingQueue);
+              deleteOperationsForTypes(new String[]{UPDATE}, indexingQueueSorted, indexingQueue);
             }
           }
         }
@@ -183,9 +174,10 @@ public class ElasticIndexingService extends IndexingService {
       if (indexingQueueSorted.containsKey(DELETE)) {
         for (String deleteOperations : indexingQueueSorted.get(DELETE).keySet()) {
           for (IndexingQueue deleteIndexQueue : indexingQueueSorted.get(DELETE).get(deleteOperations)) {
-            bulkRequest += getDeleteRequest(deleteIndexQueue);
+            bulkRequest += elasticContentRequestBuilder.getDeleteDocumentRequestContent((ElasticIndexingServiceConnector) getConnectors().get(deleteIndexQueue.getEntityType()), deleteIndexQueue.getEntityId());
             //Remove the object from other create or update operations planned before the timestamp of the delete operation
-            deleteCUDOperationsForTypesBefore(new String[]{CREATE, UPDATE}, indexingQueueSorted, deleteIndexQueue.getEntityType(), deleteIndexQueue.getTimestamp());
+            deleteOperationsByEntityIdForTypesBefore(new String[]{CREATE}, indexingQueueSorted, deleteIndexQueue);
+            deleteOperationsByEntityIdForTypes(new String[]{UPDATE}, indexingQueueSorted, deleteIndexQueue);
           }
         }
         //Remove the delete operations from the map
@@ -196,9 +188,9 @@ public class ElasticIndexingService extends IndexingService {
       if (indexingQueueSorted.containsKey(CREATE)) {
         for (String createOperations : indexingQueueSorted.get(CREATE).keySet()) {
           for (IndexingQueue createIndexQueue : indexingQueueSorted.get(CREATE).get(createOperations)) {
-            bulkRequest += getCreateRequest(createIndexQueue);
-            //Remove the object from other create or update operations planned before the timestamp of the delete operation
-            deleteCUDOperationsForTypesBefore(new String[]{UPDATE}, indexingQueueSorted, createIndexQueue.getEntityType(), createIndexQueue.getTimestamp());
+            bulkRequest += elasticContentRequestBuilder.getCreateDocumentRequestContent((ElasticIndexingServiceConnector) getConnectors().get(createIndexQueue.getEntityType()), createIndexQueue.getEntityId());
+            //Remove the object from other update operations for this entityId
+            deleteOperationsByEntityIdForTypes(new String[]{UPDATE}, indexingQueueSorted, createIndexQueue);
           }
         }
         //Remove the create operations from the map
@@ -209,16 +201,14 @@ public class ElasticIndexingService extends IndexingService {
       if (indexingQueueSorted.containsKey(UPDATE)) {
         for (String updateOperations : indexingQueueSorted.get(UPDATE).keySet()) {
           for (IndexingQueue updateIndexQueue : indexingQueueSorted.get(UPDATE).get(updateOperations)) {
-            bulkRequest += getUpdateRequest(updateIndexQueue);
-            //Remove the indexing queue from the list
-            indexingQueueSorted.get(UPDATE).get(updateOperations).remove(updateIndexQueue);
+            bulkRequest += elasticContentRequestBuilder.getUpdateDocumentRequestContent((ElasticIndexingServiceConnector) getConnectors().get(updateIndexQueue.getEntityType()), updateIndexQueue.getEntityId());
           }
         }
         //Remove the update operations from the map
         indexingQueueSorted.remove(UPDATE);
       }
 
-    if (!bulkRequest.equals("")) sendCUDRequest(bulkRequest);
+    if (!bulkRequest.equals("")) elasticIndexingClient.sendCUDRequest(bulkRequest);
 
     // Removes the processed IDs from the “indexing queue” table that have timestamp older than the timestamp of
     // start of processing
@@ -232,318 +222,80 @@ public class ElasticIndexingService extends IndexingService {
 
 }
 
-  private void deleteCUDOperationsForTypesBefore(String[] operations, Map<String, Map<String, List<IndexingQueue>>> indexingQueueSorted, String type, Date timestamp) {
+  private void deleteOperationsForTypesBefore(String[] operations, Map<String, Map<String, List<IndexingQueue>>> indexingQueueSorted, IndexingQueue indexQueue) {
     for (String operation: operations) {
-      deleteCUDOperationsForTypeByOperationBefore(indexingQueueSorted, type, timestamp, operation);
-    }
-  }
-
-  private void deleteCUDOperationsForTypeByOperationBefore(Map<String, Map<String, List<IndexingQueue>>> indexingQueueSorted, String type, Date timestamp, String operation) {
-    if (indexingQueueSorted.containsKey(operation)) {
-      if (indexingQueueSorted.get(operation).containsKey(type)) {
-        for (IndexingQueue indexingQueue : indexingQueueSorted.get(operation).get(type)) {
-          //If timestamp higher than the timestamp of the CUD indexing queue, the index queue is removed
-          if (timestamp.compareTo(indexingQueue.getTimestamp()) > 0) {
-            indexingQueueSorted.get(operation).get(type).remove(indexingQueue);
+      if (indexingQueueSorted.containsKey(operation)) {
+        if (indexingQueueSorted.get(operation).containsKey(indexQueue.getEntityType())) {
+          for (Iterator<IndexingQueue> iterator = indexingQueueSorted.get(operation).get(indexQueue.getEntityType()).iterator(); iterator.hasNext();) {
+            IndexingQueue indexingQueue = iterator.next();
+            //Check timestamp higher than the timestamp of the CUD indexing queue, the index queue is removed
+            if (indexQueue.getTimestamp().compareTo(indexingQueue.getTimestamp()) > 0) {
+              iterator.remove();
+            }
           }
         }
       }
     }
   }
 
-  private void sendInitRequests(ElasticIndexingServiceConnector elasticIndexingServiceConnector) {
+  private void deleteOperationsForTypes(String[] operations, Map<String, Map<String, List<IndexingQueue>>> indexingQueueSorted, IndexingQueue indexQueue) {
+    for (String operation: operations) {
+      if (indexingQueueSorted.containsKey(operation)) {
+        if (indexingQueueSorted.get(operation).containsKey(indexQueue.getEntityType())) {
+          for (Iterator<IndexingQueue> iterator = indexingQueueSorted.get(operation).get(indexQueue.getEntityType()).iterator(); iterator.hasNext();) {
+            iterator.next();
+            iterator.remove();
+          }
+        }
+      }
+    }
+  }
+
+  private void deleteOperationsByEntityIdForTypesBefore(String[] operations, Map<String, Map<String, List<IndexingQueue>>> indexingQueueSorted, IndexingQueue indexQueue) {
+    for (String operation: operations) {
+      if (indexingQueueSorted.containsKey(operation)) {
+        if (indexingQueueSorted.get(operation).containsKey(indexQueue.getEntityType())) {
+          for (Iterator<IndexingQueue> iterator = indexingQueueSorted.get(operation).get(indexQueue.getEntityType()).iterator(); iterator.hasNext();) {
+            IndexingQueue indexingQueue = iterator.next();
+            //Check timestamp higher than the timestamp of the CUD indexing queue, the index queue is removed
+            if (indexQueue.getTimestamp().compareTo(indexingQueue.getTimestamp()) > 0
+                && indexingQueue.getEntityId().equals(indexQueue.getEntityId())) {
+              iterator.remove();
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private void deleteOperationsByEntityIdForTypes(String[] operations, Map<String, Map<String, List<IndexingQueue>>> indexingQueueSorted, IndexingQueue indexQueue) {
+    for (String operation: operations) {
+      if (indexingQueueSorted.containsKey(operation)) {
+        if (indexingQueueSorted.get(operation).containsKey(indexQueue.getEntityType())) {
+          for (Iterator<IndexingQueue> iterator = indexingQueueSorted.get(operation).get(indexQueue.getEntityType()).iterator(); iterator.hasNext();) {
+            IndexingQueue indexingQueue = iterator.next();
+            if (indexingQueue.getEntityId().equals(indexQueue.getEntityId())) {
+              iterator.remove();
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private void sendInitRequests(IndexingServiceConnector IndexingServiceConnector) {
+
+    ElasticIndexingServiceConnector connector = (ElasticIndexingServiceConnector) IndexingServiceConnector;
 
     //Send request to create create
-    sendCreateIndexRequest(elasticIndexingServiceConnector);
+    elasticIndexingClient.sendCreateIndexRequest(
+        connector.getIndex(), elasticContentRequestBuilder.getCreateIndexRequestContent(connector));
 
     //Send request to create type
-    sendCreateTypeRequest(elasticIndexingServiceConnector);
+    elasticIndexingClient.sendCreateTypeRequest(
+        connector.getIndex(), connector.getType(), elasticContentRequestBuilder.getCreateTypeRequestContent(connector));
 
   }
-
-  /**
-   *
-   * Send request to ES to create a new index
-   *
-   * @param elasticIndexingServiceConnector
-   *
-   */
-  private void sendCreateIndexRequest(ElasticIndexingServiceConnector elasticIndexingServiceConnector) {
-    try {
-
-      HttpClient client = new DefaultHttpClient();
-
-      //TODO check if index already exist (can been already created by another type of the application)
-
-      HttpPost httpIndexRequest = new HttpPost(urlClient + "/" + elasticIndexingServiceConnector.getIndex() + "/");
-      httpIndexRequest.setEntity(
-          new StringEntity(getIndexJSON(getIndexingSettings(elasticIndexingServiceConnector)), "UTF-8")
-      );
-      handleHttpResponse(client.execute(httpIndexRequest));
-
-      LOG.info("New Index created on ES: "+ elasticIndexingServiceConnector.getIndex());
-
-    } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
-    } catch (ClientProtocolException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  /**
-   *
-   * Send request to ES to create a new type
-   *
-   * @param elasticIndexingServiceConnector
-   *
-   */
-  private void sendCreateTypeRequest(ElasticIndexingServiceConnector elasticIndexingServiceConnector) {
-    try {
-
-      HttpClient client = new DefaultHttpClient();
-
-      HttpPost httpTypeRequest = new HttpPost(urlClient + "/" + elasticIndexingServiceConnector.getIndex()
-          + "/_mapping/" + elasticIndexingServiceConnector.getType() );
-      httpTypeRequest.setEntity(new StringEntity(elasticIndexingServiceConnector.init(), "UTF-8"));
-      handleHttpResponse(client.execute(httpTypeRequest));
-
-      LOG.info("New Type created on ES: " + elasticIndexingServiceConnector.getType() + " for Index: "
-          + elasticIndexingServiceConnector.getIndex());
-
-    } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
-    } catch (ClientProtocolException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  /**
-   *
-   * Send request to ES to delete a type
-   * it's the same that deleting all document from a given type
-   *
-   * @param elasticIndexingServiceConnector
-   *
-   *
-   */
-  private void sendDeleteTypeRequest(ElasticIndexingServiceConnector elasticIndexingServiceConnector) {
-    try {
-
-      HttpClient client = new DefaultHttpClient();
-
-      HttpDelete httpDeleteRequest = new HttpDelete(urlClient + "/" + elasticIndexingServiceConnector.getIndex() + "/"
-          + elasticIndexingServiceConnector.getType() );
-      handleHttpResponse(client.execute(httpDeleteRequest));
-
-      LOG.info("Delete request send to ES, type: " + elasticIndexingServiceConnector.getType());
-
-    } catch (ClientProtocolException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  /**
-   *
-   * Send request to ES to perform a C-reate, U-pdate or D-elete operation on a ES document
-   *
-   * @param bulkRequest JSON containing C-reate, U-pdate or D-elete operation
-   *
-   *
-   */
-  private void sendCUDRequest (String bulkRequest) {
-
-    try {
-
-      HttpClient client = new DefaultHttpClient();
-
-      HttpPost httpCUDRequest = new HttpPost(urlClient + "/_bulk");
-      httpCUDRequest.setEntity(new StringEntity(bulkRequest, "UTF-8"));
-      handleHttpResponse(client.execute(httpCUDRequest));
-
-      LOG.info("CUD Bulk Request send to ES: \n" + bulkRequest);
-
-    } catch (ClientProtocolException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  /**
-   *
-   * Get indexing setting from an indexing service connector
-   *
-   * @param elasticIndexingServiceConnector
-   *
-   * @return JSON containing a delete request
-   *
-   */
-  private Map<String, String> getIndexingSettings(ElasticIndexingServiceConnector elasticIndexingServiceConnector) {
-    Map<String, String> indexSettings = new HashMap<>();
-    indexSettings.put("number_of_shards", String.valueOf(elasticIndexingServiceConnector.getShards()));
-    indexSettings.put("number_of_replicas", String.valueOf(elasticIndexingServiceConnector.getReplicas()));
-    return indexSettings;
-  }
-
-  /**
-   *
-   * Get an ES delete request to insert in a bulk request
-   * For instance:
-   * { "delete" : { "_index" : "blog", "_type" : "post", "_id" : "blog_post_1" } }
-   *
-   * @param indexingQueue the indexing queue containing the delete information
-   *
-   * @return JSON containing a delete request
-   *
-   */
-  private String getDeleteRequest(IndexingQueue indexingQueue) {
-
-    JSONObject cudHeaderRequest = createCUDHeaderRequest(indexingQueue);
-
-    JSONObject deleteRequest = new JSONObject();
-    deleteRequest.put("delete", cudHeaderRequest);
-
-    return deleteRequest.toJSONString()+"\n";
-  }
-
-  /**
-   *
-   * Get an ES create document request to insert in a bulk request
-   * For instance:
-   * { "create" : { "_index" : "blog", "_type" : "post", "_id" : "blog_post_1" } }
-   * { "field1" : "value3" }
-   *
-   * @param indexingQueue the indexing queue containing the create information
-   *
-   * @return JSON containing a create document request
-   *
-   */
-  private String getCreateRequest(IndexingQueue indexingQueue) {
-
-    JSONObject ElasticInformation = createCUDHeaderRequest(indexingQueue);
-
-    Document document = getConnectors().get(indexingQueue.getEntityType()).create(indexingQueue.getEntityId());
-
-    JSONObject createRequest = new JSONObject();
-    createRequest.put("create", ElasticInformation);
-
-    String request = createRequest.toJSONString()+"\n"+document.toJSON()+"\n";
-
-    LOG.info("Create request to ES: \n " + request);
-
-    return request;
-  }
-
-  /**
-   *
-   * Get an ES update request to insert in a bulk request
-   * For instance:
-   * { "update" : { "_index" : "blog", "_type" : "post", "_id" : "blog_post_1" } }
-   * { "field1" : "value3" }
-   *
-   * @param indexingQueue the indexing queue containing the update information
-   *
-   * @return JSON containing an update document request
-   *
-   */
-  private String getUpdateRequest(IndexingQueue indexingQueue) {
-
-    JSONObject ElasticInformation = createCUDHeaderRequest(indexingQueue);
-
-    Document document = getConnectors().get(indexingQueue.getEntityType()).create(indexingQueue.getEntityId());
-
-    JSONObject createRequest = new JSONObject();
-    createRequest.put("update", ElasticInformation);
-
-    String request = createRequest.toJSONString()+"\n"+document.toJSON()+"\n";
-
-    LOG.info("Update request to ES: \n " + request);
-
-    return request;
-  }
-
-  /**
-   *
-   * Create an ES request containing information for bulk request
-   * For instance:
-   * { "_index" : "blog", "_type" : "post", "_id" : "blog_post_1" }
-   *
-   * @param indexingQueue the indexing queue containing the create information
-   *
-   * @return JSON containing information for bulk request
-   *
-   */
-  private JSONObject createCUDHeaderRequest(IndexingQueue indexingQueue) {
-
-    ElasticIndexingServiceConnector elasticIndexingServiceConnector =
-        getConnectors().get(indexingQueue.getEntityType());
-
-    JSONObject CUDHeader = new JSONObject();
-    CUDHeader.put("_index", elasticIndexingServiceConnector.getIndex());
-    CUDHeader.put("_type", elasticIndexingServiceConnector.getType());
-    CUDHeader.put("_id", indexingQueue.getId());
-
-    return CUDHeader;
-  }
-
-  /**
-   *
-   * Handle Http response receive from ES
-   * Log an INFO if the return status code is 200
-   * Log an ERROR if the return code is different from 200
-   *
-   * @param httpResponse The Http Response to handle
-   *
-   */
-  private void handleHttpResponse(HttpResponse httpResponse) throws IOException {
-    if (httpResponse.getStatusLine().getStatusCode() != 200) {
-      LOG.error("Error when trying to send request to ES. The reason is: "
-          + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"));
-      //System.out.println(("Error when trying to send request to ES. The reason is: "
-      //+ IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8")));
-    } else {
-      LOG.info("Success request to ES: " + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"));
-      //System.out.println(("Success request to ES: "
-      //  + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8")));
-    }
-  }
-
-  /**
-   *
-   * Transform the indexing setting to JSON format
-   * For instance:
-   * {
-   "settings" :
-   {
-   "number_of_shards" : "5",
-   "number_of_replicas" : "1",
-   "other_setting" : "value of my setting"
-   }
-   }
-   *
-   * @param settings to transform to JSON
-   *
-   * @return Index settings in JSON format
-   *
-   */
-  private String getIndexJSON(Map<String, String> settings) {
-
-    JSONObject indexSettings = new JSONObject();
-    for (String setting: settings.keySet()) {
-      indexSettings.put(setting, settings.get(setting));
-    }
-    JSONObject indexJSON = new JSONObject();
-    indexJSON.put("settings", indexSettings);
-
-    return indexJSON.toJSONString();
-  }
-
 
   private void addInitOperation(String connector) {
     IndexingQueue indexingQueue = initIndexingQueue(getConnectors().get(connector), INIT);
@@ -573,14 +325,12 @@ public class ElasticIndexingService extends IndexingService {
     indexingQueueDAO.create(indexingQueue);
   }
 
-  private IndexingQueue initIndexingQueue (ElasticIndexingServiceConnector elasticIndexingServiceConnector,
+  private IndexingQueue initIndexingQueue (IndexingServiceConnector IndexingServiceConnector,
                                            String operation) {
     IndexingQueue indexingQueue = new IndexingQueue();
-    indexingQueue.setEntityType(elasticIndexingServiceConnector.getType());
+    indexingQueue.setEntityType(IndexingServiceConnector.getType());
     indexingQueue.setOperation(operation);
     return indexingQueue;
   }
-
-
 }
 

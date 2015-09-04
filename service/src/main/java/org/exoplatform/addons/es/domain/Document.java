@@ -38,6 +38,18 @@ public class Document {
   private String[] permissions;
   private Map<String, String> fields;
 
+  public Document() {
+  }
+
+  public Document(String type, String id, String url, Date createdDate, String[] permissions, Map<String, String> fields) {
+    this.type = type;
+    this.id = id;
+    this.url = url;
+    this.createdDate = createdDate;
+    this.permissions = permissions;
+    this.fields = fields;
+  }
+
   public String getType() {
     return type;
   }
@@ -89,13 +101,17 @@ public class Document {
   public String toJSON() {
     String json;
     JSONObject obj = new JSONObject();
-    JSONArray permissionsJSON = new JSONArray();
-    permissionsJSON.addAll(permissions != null ? Arrays.asList(permissions) : Collections.EMPTY_LIST);
-    obj.put("permissions", permissionsJSON);
-    obj.put("url", url);
-    obj.put("createdDate", createdDate.getTime());
-    for(String fieldName: fields.keySet()) {
-      obj.put(fieldName, fields.get(fieldName));
+    if (getPermissions() != null) {
+      JSONArray permissionsJSON = new JSONArray();
+      permissionsJSON.addAll(getPermissions() != null ? Arrays.asList(getPermissions()) : Collections.EMPTY_LIST);
+      obj.put("permissions", permissionsJSON);
+    }
+    if (getUrl() != null) obj.put("url", getUrl());
+    if (getCreatedDate() != null) obj.put("createdDate", getCreatedDate().getTime());
+    if (getFields() != null) {
+      for (String fieldName : getFields().keySet()) {
+        obj.put(fieldName, getFields().get(fieldName));
+      }
     }
     json = obj.toJSONString();
     return json;
