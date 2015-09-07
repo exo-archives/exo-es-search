@@ -27,6 +27,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.exoplatform.commons.api.search.SearchServiceConnector;
 import org.exoplatform.commons.api.search.data.SearchContext;
 import org.exoplatform.commons.api.search.data.SearchResult;
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.log.ExoLogger;
@@ -53,12 +54,13 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
 
   private static final Log LOG = ExoLogger.getLogger(ElasticSearchServiceConnector.class);
 
-  private static final String HOST = (System.getProperty("exo.elasticsearch.host") != null) ?
-      System.getProperty("exo.elasticsearch.host") : "127.0.0.1";
-  private static final String PORT = (System.getProperty("exo.elasticsearch.port") != null) ?
-      System.getProperty("exo.elasticsearch.port") : "9200";
+  private static final String ES_SEARCH_CLIENT_PROPERTY_NAME = "exo.es.search.client";
+  private static final String ES_SEARCH_CLIENT_DEFAULT = "http://127.0.0.1:9200";
 
-  //ES information
+  //ES Information
+  private String urlClient = ES_SEARCH_CLIENT_DEFAULT;
+
+  //ES connector information
   private String index;
   private String type;
   private List<String> searchFields;
@@ -79,6 +81,8 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
     //Indicate in which order element will be displayed
     sortMapping.put("relevancy", "_score");
     sortMapping.put("date", "createdDate");
+    if (StringUtils.isNotBlank(PropertyManager.getProperty(ES_SEARCH_CLIENT_PROPERTY_NAME)))
+      this.urlClient = PropertyManager.getProperty(ES_SEARCH_CLIENT_PROPERTY_NAME);
   }
 
   @Override
@@ -133,7 +137,7 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
 
     try {
       HttpClient client = new DefaultHttpClient();
-      HttpPost request = new HttpPost("http://" + HOST + ":" + PORT + "/" + index + "/"
+      HttpPost request = new HttpPost(urlClient + "/" + index + "/"
           + type + "/_search");
       LOG.info("Search URL request to ES : "+request.getURI());
       StringEntity input = new StringEntity(esQuery);
@@ -152,7 +156,7 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
       e.printStackTrace();
     }
 
-    LOG.info("ES JSON Response: "+jsonResponse);
+    LOG.info("ES JSON Response: " + jsonResponse);
 
     return jsonResponse;
 

@@ -38,19 +38,19 @@ import java.io.IOException;
  */
 public class ElasticIndexingClient {
 
-  private static final String ES_CLIENT_PROPERTY_NAME = "exo.es.client";
-  private static final String ES_CLIENT_DEFAULT = "http://127.0.0.1:9200";
+  private static final String ES_INDEX_CLIENT_PROPERTY_NAME = "exo.es.index.client";
+  private static final String ES_INDEX_CLIENT_DEFAULT = "http://127.0.0.1:9200";
 
   private static final Log LOG = ExoLogger.getExoLogger(ElasticIndexingClient.class);
 
-  private String urlClient = ES_CLIENT_DEFAULT;
+  private String urlClient = ES_INDEX_CLIENT_DEFAULT;
 
   private HttpClient client;
 
   public ElasticIndexingClient() {
     //Get url client from exo global properties
-    if (StringUtils.isNotBlank(PropertyManager.getProperty(ES_CLIENT_PROPERTY_NAME)))
-      this.urlClient = PropertyManager.getProperty(ES_CLIENT_PROPERTY_NAME);
+    if (StringUtils.isNotBlank(PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_NAME)))
+      this.urlClient = PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_NAME);
     this.client = new DefaultHttpClient();
   }
 

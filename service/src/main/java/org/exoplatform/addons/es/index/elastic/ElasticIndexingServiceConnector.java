@@ -16,7 +16,9 @@
 */
 package org.exoplatform.addons.es.index.elastic;
 
+import org.apache.commons.lang.StringUtils;
 import org.exoplatform.addons.es.index.IndexingServiceConnector;
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 
@@ -28,26 +30,35 @@ import org.exoplatform.container.xml.PropertiesParam;
  */
 public abstract class ElasticIndexingServiceConnector extends IndexingServiceConnector {
 
+  private static final Integer REPLICAS_NUMBER_DEFAULT = 1;
+  private static final String REPLICAS_NUMBER_PROPERTY_NAME = "exo.es.indexing.replica.number.default";
+  private static final Integer SHARDS_NUMBER_DEFAULT = 5;
+  private static final String SHARDS_PROPERTY_NAME = "exo.es.indexing.shard.number.default";
+
   protected String index;
   protected String mapping;
-  protected Integer shards;
-  protected Integer replicas;
-
-  private static final Integer DEFAULT_REPLICAS_NUMBER =
-      Integer.valueOf((System.getProperty("indexing.replicasNumber.default") != null) ?
-      System.getProperty("indexing.replicasNumber.default") : "1");
-
-  private static final Integer DEFAULT_SHARDS_NUMBER =
-      Integer.valueOf((System.getProperty("indexing.shardsNumber.default") != null) ?
-      System.getProperty("indexing.shardsNumber.default") : "5");
+  protected Integer shards = SHARDS_NUMBER_DEFAULT;
+  protected Integer replicas = REPLICAS_NUMBER_DEFAULT;
 
   public ElasticIndexingServiceConnector(InitParams initParams) {
     PropertiesParam param = initParams.getPropertiesParam("constructor.params");
     this.index = param.getProperty("index");
     setType(param.getProperty("type"));
     this.mapping = param.getProperty("mapping");
-    this.shards = DEFAULT_SHARDS_NUMBER;
-    this.replicas = DEFAULT_REPLICAS_NUMBER;
+    //Get number of replicas in connector declaration or exo properties
+    if (StringUtils.isNotBlank(param.getProperty("replica.number"))) {
+      this.replicas = Integer.valueOf(param.getProperty("replica.number"));
+    }
+    else if (StringUtils.isNotBlank(PropertyManager.getProperty(REPLICAS_NUMBER_PROPERTY_NAME))) {
+      this.replicas = Integer.valueOf(PropertyManager.getProperty(REPLICAS_NUMBER_PROPERTY_NAME));
+    }
+    //Get number of shards in connector declaration or exo properties
+    if (StringUtils.isNotBlank(param.getProperty("shard.number"))) {
+      this.replicas = Integer.valueOf(param.getProperty("shard.number"));
+    }
+    else if (StringUtils.isNotBlank(PropertyManager.getProperty(SHARDS_PROPERTY_NAME))) {
+      this.shards = Integer.valueOf(PropertyManager.getProperty(SHARDS_PROPERTY_NAME));
+    }
   }
 
   public String getIndex() {

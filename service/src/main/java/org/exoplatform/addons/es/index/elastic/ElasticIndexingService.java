@@ -16,12 +16,14 @@
 */
 package org.exoplatform.addons.es.index.elastic;
 
+import org.apache.commons.lang.StringUtils;
 import org.exoplatform.addons.es.client.ElasticIndexingClient;
 import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
 import org.exoplatform.addons.es.dao.IndexingQueueDAO;
 import org.exoplatform.addons.es.domain.IndexingQueue;
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.addons.es.index.IndexingServiceConnector;
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -35,8 +37,8 @@ import java.util.*;
  */
 public class ElasticIndexingService extends IndexingService {
 
-  private static final Integer BATCH_NUMBER = Integer.valueOf((System.getProperty("exo.indexing.batch") != null) ?
-      System.getProperty("exo.indexing.batch") : "1000");
+  private static final String BATCH_NUMBER_PROPERTY_NAME = "exo.es.indexing.batch.number";
+  private static final Integer BATCH_NUMBER_DEFAULT = 1000;
 
   private static final Log LOG = ExoLogger.getExoLogger(ElasticIndexingService.class);
 
@@ -45,6 +47,8 @@ public class ElasticIndexingService extends IndexingService {
   public static final String UPDATE = "U";
   public static final String DELETE = "D";
   public static final String DELETE_ALL = "X";
+
+  private Integer batchNumber = BATCH_NUMBER_DEFAULT;
 
   private final IndexingQueueDAO indexingQueueDAO;
 
@@ -56,6 +60,8 @@ public class ElasticIndexingService extends IndexingService {
     this.indexingQueueDAO = indexingQueueDAO;
     this.elasticIndexingClient = elasticIndexingClient;
     this.elasticContentRequestBuilder = elasticContentRequestBuilder;
+    if (StringUtils.isNotBlank(PropertyManager.getProperty(BATCH_NUMBER_PROPERTY_NAME)))
+      this.batchNumber = Integer.valueOf(PropertyManager.getProperty(BATCH_NUMBER_PROPERTY_NAME));
   }
 
   @Override
@@ -120,7 +126,7 @@ public class ElasticIndexingService extends IndexingService {
     do {
 
       //Get BATCH_NUMBER (default = 1000) first indexing queue
-      indexingQueues = indexingQueueDAO.findAllFirst(BATCH_NUMBER);
+      indexingQueues = indexingQueueDAO.findAllFirst(batchNumber);
 
       //Get all Indexing Queue and order them per operation and type in map: <Operation, <Type, List<IndexingQueue>>>
       for (IndexingQueue indexingQueue: indexingQueues) {
@@ -214,7 +220,7 @@ public class ElasticIndexingService extends IndexingService {
     // start of processing
     indexingQueueDAO.deleteAllBefore(startProcessing);
 
-  } while (indexingQueues.size() >= BATCH_NUMBER);
+  } while (indexingQueues.size() >= batchNumber);
 
   // TODO 4: In case of error, the entityID+entityType will be logged in a “error queue” to allow a manual
   // reprocessing of the indexing operation. However, in a first version of the implementation, the error will only
