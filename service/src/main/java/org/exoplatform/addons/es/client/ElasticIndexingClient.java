@@ -17,12 +17,14 @@
 package org.exoplatform.addons.es.client;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -36,23 +38,28 @@ import java.io.IOException;
  */
 public class ElasticIndexingClient {
 
-  public static final String ES_CLIENT = (System.getProperty("exo.elasticsearch.client") != null) ?
-      System.getProperty("exo.elasticsearch.client") : "http://127.0.0.1:9200";
+  private static final String ES_CLIENT_PROPERTY_NAME = "exo.es.client";
+  private static final String ES_CLIENT_DEFAULT = "http://127.0.0.1:9200";
 
   private static final Log LOG = ExoLogger.getExoLogger(ElasticIndexingClient.class);
 
-  private String urlClient;
+  private String urlClient = ES_CLIENT_DEFAULT;
 
-  private HttpClient client = new DefaultHttpClient();
+  private HttpClient client;
 
   public ElasticIndexingClient() {
-    this.urlClient = ES_CLIENT;
+    //Get url client from exo global properties
+    if (StringUtils.isNotBlank(PropertyManager.getProperty(ES_CLIENT_PROPERTY_NAME)))
+      this.urlClient = PropertyManager.getProperty(ES_CLIENT_PROPERTY_NAME);
+    this.client = new DefaultHttpClient();
   }
 
-  public ElasticIndexingClient(String urlClient) {
-    this.urlClient = urlClient;
+  //For testing
+  public ElasticIndexingClient(String url) {
+    this.urlClient = url;
+    this.client = new DefaultHttpClient();
   }
-
+  //For testing
   public ElasticIndexingClient(HttpClient client, String url) {
     this.client = client;
     this.urlClient = url;
