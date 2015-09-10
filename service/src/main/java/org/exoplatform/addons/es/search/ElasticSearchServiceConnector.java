@@ -88,7 +88,7 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
   @Override
   public Collection<SearchResult> search(SearchContext context, String query, Collection<String> sites,
                                          int offset, int limit, String sort, String order) {
-
+    //TODO sort as an enum ? or a check that the sort is part of the declared fields (in buildQuery also)
     String esQuery = buildQuery(query, offset, limit, sort, order);
 
     String jsonResponse = sendRequest(esQuery);
@@ -139,7 +139,7 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
       HttpClient client = new DefaultHttpClient();
       HttpPost request = new HttpPost(urlClient + "/" + index + "/"
           + type + "/_search");
-      LOG.info("Search URL request to ES : "+request.getURI());
+      LOG.info("Search URL request to ES : {}", request.getURI());
       StringEntity input = new StringEntity(esQuery);
       request.setEntity(input);
 
@@ -149,14 +149,14 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
       jsonResponse = writer.toString();
 
     } catch (ClientProtocolException e) {
-      e.printStackTrace();
+      e.printStackTrace(); //TODO
     } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
+      e.printStackTrace(); //TODO
     } catch (IOException e) {
-      e.printStackTrace();
+      e.printStackTrace(); //TODO
     }
 
-    LOG.info("ES JSON Response: " + jsonResponse);
+    LOG.debug("ES JSON Response: {}", jsonResponse);
 
     return jsonResponse;
 
@@ -172,7 +172,7 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
     try {
       json = (Map)parser.parse(jsonResponse);
     } catch (ParseException e) {
-      e.printStackTrace();
+      e.printStackTrace(); //TODO
     }
 
     //TODO check if response is successful
@@ -211,7 +211,6 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
   }
 
   private String getPermissionFilter() {
-
     String memberships = "";
     Set<String> membershipSet = getUserMemberships();
     if (membershipSet != null) {
