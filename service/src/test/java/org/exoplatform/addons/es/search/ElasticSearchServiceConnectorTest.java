@@ -1,6 +1,7 @@
 package org.exoplatform.addons.es.search;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -35,8 +36,30 @@ public class ElasticSearchServiceConnectorTest {
     }
 
     //TODO test exception if no identity
-    //TODO test sort null
     //TODO testSortIsAfieldOfTheConnector_search
+
+    @Test
+    public void testSortIsRelevancyByDefault() {
+        //Given
+        setCurrentIdentity();
+        ElasticSearchServiceConnector connector = new MyElasticSearchServiceConnector(getInitParams());
+        //When
+        String query = connector.buildQuery("My Wiki", 0, 20, null, null);
+        //Then
+        assertThat(query, containsString("{ \"_score\" : {\"order\" : \"asc\"}}"));
+    }
+
+    @Test
+    public void testOrderIsAscByDefault() {
+        //Given
+        setCurrentIdentity();
+        ElasticSearchServiceConnector connector = new MyElasticSearchServiceConnector(getInitParams());
+        //When
+        String query = connector.buildQuery("My Wiki", 0, 20, "name", null);
+        //Then
+        assertThat(query, containsString("\"sort\""));
+        assertThat(query, containsString("{\"order\" : \"asc\"}"));
+    }
 
     @Test
     public void testScoresAreTracked() {

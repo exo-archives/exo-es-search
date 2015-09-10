@@ -99,39 +99,43 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
 
   public String buildQuery(String query, int offset, int limit, String sort, String order) {
 
-    String esQuery = "{\n" +
-        "     \"from\" : " + offset + ", \"size\" : " + limit + ",\n" +
-            //Score are always tracked, even with sort
-            //https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-sort.html#_track_scores
-        "     \"track_scores\": true,\n" +
-        "     \"sort\" : [\n" +
-        "       { \"" + sortMapping.get(sort) + "\" : {\"order\" : \"" + order + "\"}}\n" +
-        "     ],\n" +
-        "     \"query\": {\n" +
-        "        \"filtered\" : {\n" +
-        "            \"query\" : {\n" +
-        "                \"query_string\" : {\n" +
-        "                    \"fields\" : [" + getFields() + "],\n" +
-        "                    \"query\" : \"" + query + "\"\n" +
-        "                }\n" +
-        "            },\n" +
-        "            \"filter\" : {\n" +
-        "               \"bool\" : { " +
-        "                  \"should\" : [ " + getPermissionFilter() + " ]\n"+
-        "               }\n"+
-        "            }\n" +
-        "        }\n" +
-        "     },\n" +
-        "     \"highlight\" : {\n" +
-        "       \"fields\" : {\n" +
-        "         \"text\" : {\"fragment_size\" : 150, \"number_of_fragments\" : 3}\n" +
-        "       }\n" +
-        "     }\n" +
-        "}";
+    StringBuilder esQuery = new StringBuilder();
+    esQuery.append("{\n");
+    esQuery.append("     \"from\" : " + offset + ", \"size\" : " + limit + ",\n");
 
-    LOG.info("Search Query request to ES : "+esQuery);
+    //Score are always tracked, even with sort
+    //https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-sort.html#_track_scores
+    esQuery.append("     \"track_scores\": true,\n");
+    esQuery.append("     \"sort\" : [\n");
+    esQuery.append("       { \"" + (StringUtils.isNotBlank(sortMapping.get(sort))?sort:"_score") + "\" : ");
+    esQuery.append(             "{\"order\" : \"" + (StringUtils.isNotBlank(order)?order:"asc") + "\"}}\n");
+    esQuery.append("     ],\n");
 
-    return esQuery;
+    esQuery.append("     \"query\": {\n");
+    esQuery.append("        \"filtered\" : {\n");
+    esQuery.append("            \"query\" : {\n");
+    esQuery.append("                \"query_string\" : {\n");
+    esQuery.append("                    \"fields\" : [" + getFields() + "],\n");
+    esQuery.append("                    \"query\" : \"" + query + "\"\n");
+    esQuery.append("                }\n");
+    esQuery.append("            },\n");
+    esQuery.append("            \"filter\" : {\n");
+    esQuery.append("               \"bool\" : { ");
+    esQuery.append("                  \"should\" : [ " + getPermissionFilter() + " ]\n");
+    esQuery.append("               }\n");
+    esQuery.append("            }\n");
+    esQuery.append("        }\n");
+    esQuery.append("     },\n");
+    esQuery.append("     \"highlight\" : {\n");
+    esQuery.append("       \"fields\" : {\n");
+    esQuery.append("         \"text\" : {\"fragment_size\" : 150, \"number_of_fragments\" : 3}\n");
+    esQuery.append("       }\n");
+    esQuery.append("     }\n");
+    esQuery.append("}");
+
+    LOG.debug("Search Query request to ES : {} ", esQuery);
+
+    return esQuery.toString();
   }
 
   private String sendRequest(String esQuery) {
