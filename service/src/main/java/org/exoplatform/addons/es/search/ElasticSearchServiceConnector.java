@@ -101,6 +101,9 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
 
     String esQuery = "{\n" +
         "     \"from\" : " + offset + ", \"size\" : " + limit + ",\n" +
+            //Score are always tracked, even with sort
+            //https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-sort.html#_track_scores
+        "     \"track_scores\": true,\n" +
         "     \"sort\" : [\n" +
         "       { \"" + sortMapping.get(sort) + "\" : {\"order\" : \"" + order + "\"}}\n" +
         "     ],\n" +
@@ -194,6 +197,7 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
           description,
           img,
           createdDate,
+          //score must not be null as "track_scores" is part of the query
           score.longValue()
       ));
     }

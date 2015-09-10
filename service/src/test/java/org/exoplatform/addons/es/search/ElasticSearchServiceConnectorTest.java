@@ -38,6 +38,17 @@ public class ElasticSearchServiceConnectorTest {
     //TODO test sort null
     //TODO testSortIsAfieldOfTheConnector_search
 
+    @Test
+    public void testScoresAreTracked() {
+        //Given
+        setCurrentIdentity();
+        ElasticSearchServiceConnector connector = new MyElasticSearchServiceConnector(getInitParams());
+        //When
+        String query = connector.buildQuery("My Wiki", 0, 20, "name", "asc");
+        //Then
+        assertThat(query, containsString("\"track_scores\": true"));
+    }
+
     private InitParams getInitParams() {
         InitParams params = new InitParams();
         PropertiesParam constructorParams = new PropertiesParam();
