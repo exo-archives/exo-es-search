@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <artifactId>exo-es-search</artifactId>
+    <groupId>org.exoplatform.addons.es</groupId>
+    <version>1.0.x-SNAPSHOT</version>
+  </parent>
+
+  <groupId>org.exoplatform.addons.es</groupId>
+  <artifactId>exo-es-search-webapp</artifactId>
+  <version>1.0.X-SNAPSHOT</version>
+  <packaging>war</packaging>
+
+  <name>Juzu Application</name>
+
+  <properties>
+    <maven.compiler.target>1.7</maven.compiler.target>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <juzu.version>1.1.x-SNAPSHOT</juzu.version>
+  </properties>
+
+  <dependencies>
+
+    <!-- Application dependencies-->
+    <dependency>
+      <groupId>org.juzu</groupId>
+      <artifactId>juzu-core</artifactId>
+      <version>${juzu.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.juzu</groupId>
+      <artifactId>juzu-plugins-portlet</artifactId>
+      <version>${juzu.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.portlet</groupId>
+      <artifactId>portlet-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+
+    <!-- Dependencies for Guice in a Servlet Container -->
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <version>1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+      <version>3.0</version>
+    </dependency>
+
+    <!-- Junit for testing -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.10</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.juzu</groupId>
+      <artifactId>juzu-depchain-arquillian</artifactId>
+      <version>${juzu.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.juzu</groupId>
+      <artifactId>juzu-depchain-arquillian-tomcat7</artifactId>
+      <version>${juzu.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Liquibase -->
+    <dependency>
+      <groupId>org.liquibase</groupId>
+      <artifactId>liquibase-core</artifactId>
+      <version>3.3.2</version>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <finalName>exo-es-search-webapp</finalName>
+
+    <pluginManagement>
+      <plugins>
+
+        <!--
+          | Test your application with:
+          | >mvn tomcat7:run-war
+          -->
+        <plugin>
+          <groupId>org.apache.tomcat.maven</groupId>
+          <artifactId>tomcat7-maven-plugin</artifactId>
+          <version>2.1</version>
+        </plugin>
+
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <!-- Activate this profile for using Juzu live mode -->
+  <profiles>
+    <profile>
+      <id>live</id>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.tomcat.maven</groupId>
+              <artifactId>tomcat7-maven-plugin</artifactId>
+              <configuration>
+                <systemProperties>
+                  <juzu.run_mode>live</juzu.run_mode>
+                </systemProperties>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
+
+</project>

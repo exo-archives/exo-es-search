@@ -58,7 +58,7 @@ public abstract class AbstractDAOTest {
         .findCorrectDatabaseImplementation(new JdbcConnection(conn));
 
     //Create Table
-    liquibase = new Liquibase("src/main/resources/org/exoplatform/addons/es/db/changelog/db.changelog.xml",
+    liquibase = new Liquibase("../webapp/src/main/resources/db/changelog/exo-search.db.changelog-1.0.0.xml",
         new FileSystemResourceAccessor(), database);
     liquibase.update((String) null);
 
