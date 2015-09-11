@@ -49,8 +49,9 @@ public class ElasticIndexingClient {
 
   public ElasticIndexingClient() {
     //Get url client from exo global properties
-    if (StringUtils.isNotBlank(PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_NAME)))
+    if (StringUtils.isNotBlank(PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_NAME))) {
       this.urlClient = PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_NAME);
+    }
     this.client = new DefaultHttpClient();
   }
 
@@ -66,33 +67,22 @@ public class ElasticIndexingClient {
   }
 
   /**
-   *
    * Send request to ES to create a new index
-   *
    */
   public void sendCreateIndexRequest(String index, String settings) {
-
     sendHttpPostRequest(urlClient + "/" + index + "/", settings);
-
   }
 
   /**
-   *
    * Send request to ES to create a new type
-   *
    */
   public void sendCreateTypeRequest(String index, String type, String mappings) {
-
     sendHttpPostRequest(urlClient + "/" + index + "/_mapping/" + type, mappings);
-
   }
 
   /**
-   *
    * Send request to ES to delete a type
    * it's the same that deleting all document from a given type
-   *
-   *
    */
   public void sendDeleteTypeRequest(String index, String type) {
 
@@ -101,64 +91,52 @@ public class ElasticIndexingClient {
   }
 
   /**
-   *
    * Send request to ES to perform a C-reate, U-pdate or D-elete operation on a ES document
-   *
    * @param bulkRequest JSON containing C-reate, U-pdate or D-elete operation
-   *
-   *
    */
   public void sendCUDRequest (String bulkRequest) {
-
     sendHttpPostRequest(urlClient + "/_bulk", bulkRequest);
-
   }
 
   private void sendHttpPostRequest (String url, String content) {
     try {
-
       HttpPost httpTypeRequest = new HttpPost(url);
       httpTypeRequest.setEntity(new StringEntity(content, "UTF-8"));
       handleHttpResponse(client.execute(httpTypeRequest));
 
-      LOG.debug("Send request to ES:\n Method = POST \nURI =  " + url + " \nContent = " + content);
-
+      LOG.debug("Send request to ES:\n Method = POST \nURI =  {} \nContent = {}", url, content);
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new ElasticClientException(e);
     }
   }
 
   private void sendHttpDeleteRequest (String url) {
-
     try {
-
       HttpDelete httpDeleteRequest = new HttpDelete(url);
       handleHttpResponse(client.execute(httpDeleteRequest));
 
-      LOG.debug("Send request to ES:\n Method = DELETE \nURI =  " + url);
-
+      LOG.debug("Send request to ES:\n Method = DELETE \nURI =  {}", url);
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new ElasticClientException(e);
     }
 
   }
 
   /**
-   *
    * Handle Http response receive from ES
    * Log an INFO if the return status code is 200
    * Log an ERROR if the return code is different from 200
    *
    * @param httpResponse The Http Response to handle
-   *
    */
   private void handleHttpResponse(HttpResponse httpResponse) throws IOException {
     if (httpResponse.getStatusLine().getStatusCode() != 200) {
       //TODO manage error
-      LOG.error("Error when trying to send request to ES. The reason is: "
-          + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"));
+      LOG.error("Error when trying to send request to ES. The reason is: {}",
+              IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"));
     } else {
-      LOG.debug("Success request to ES: " + IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"));
+      LOG.debug("Success request to ES: {}",
+              IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"));
     }
   }
 
