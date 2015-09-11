@@ -67,11 +67,11 @@ public class ElasticIndexingService extends IndexingService {
   @Override
   public void addConnector(IndexingServiceConnector IndexingServiceConnector) {
     if (getConnectors().containsKey(IndexingServiceConnector.getType())) {
-      LOG.error("Impossible to add connector " + IndexingServiceConnector.getType()
-          + ". A connector with the same name has already been registered.");
+      LOG.error("Impossible to add connector {}. A connector with the same name has already been registered.",
+              IndexingServiceConnector.getType());
     } else {
       getConnectors().put(IndexingServiceConnector.getType(), IndexingServiceConnector);
-      LOG.info("A new Indexing Connector has been added: " + IndexingServiceConnector.getType());
+      LOG.info("A new Indexing Connector has been added: {}", IndexingServiceConnector.getType());
       //When a new connector is added, ES create and type need to be created
       addToIndexingQueue(IndexingServiceConnector.getType(), null, INIT);
     }
@@ -95,7 +95,7 @@ public class ElasticIndexingService extends IndexingService {
       //All entities of a specific type need to be deleted
       case DELETE_ALL: addDeleteAllOperation(connectorName);
         break;
-      default: LOG.warn(operation + " is not an accepted operation for the Indexing Queue.");
+      default: LOG.warn("{} is not an accepted operation for the Indexing Queue.", operation);
         break;
     }
   }

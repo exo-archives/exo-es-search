@@ -88,17 +88,13 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
   @Override
   public Collection<SearchResult> search(SearchContext context, String query, Collection<String> sites,
                                          int offset, int limit, String sort, String order) {
-    //TODO sort as an enum ? or a check that the sort is part of the declared fields (in buildQuery also)
     String esQuery = buildQuery(query, offset, limit, sort, order);
-
     String jsonResponse = sendRequest(esQuery);
-
     return buildResult(jsonResponse);
 
   }
 
   public String buildQuery(String query, int offset, int limit, String sort, String order) {
-
     StringBuilder esQuery = new StringBuilder();
     esQuery.append("{\n");
     esQuery.append("     \"from\" : " + offset + ", \"size\" : " + limit + ",\n");
@@ -139,7 +135,6 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
   }
 
   private String sendRequest(String esQuery) {
-
     String jsonResponse = "";
 
     try {

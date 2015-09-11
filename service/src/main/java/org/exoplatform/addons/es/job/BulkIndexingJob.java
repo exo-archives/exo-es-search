@@ -45,6 +45,7 @@ public class BulkIndexingJob extends MultiTenancyJob {
     @Override
     public void run() {
       super.run();
+      LOG.info("Running job BulkIndexingJob");
 
       // TODO: need to implement the cloud-supporting for JPA (EntityManagerService)
 
