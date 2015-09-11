@@ -16,7 +16,7 @@
 */
 package org.exoplatform.addons.es.dao;
 
-import org.exoplatform.addons.es.domain.IndexingQueue;
+import org.exoplatform.addons.es.domain.IndexingOperation;
 import org.exoplatform.addons.es.index.elastic.ElasticIndexingService;
 import org.exoplatform.container.PortalContainer;
 import org.hamcrest.Matchers;
@@ -33,36 +33,36 @@ import java.util.List;
  * tclement@exoplatform.com
  * 8/20/15
  */
-public class IndexingQueueDAOTest extends AbstractDAOTest {
+public class IndexingOperationDAOTest extends AbstractDAOTest {
 
-  private IndexingQueueDAO indexingQueueDAO;
+  private IndexingOperationDAO indexingOperationDAO;
 
   @Before
   public void setUp() {
     PortalContainer container = PortalContainer.getInstance();
-    indexingQueueDAO = container.getComponentInstanceOfType(IndexingQueueDAO.class);
+    indexingOperationDAO = container.getComponentInstanceOfType(IndexingOperationDAO.class);
   }
 
   @After
   public void tearDown() {
-    indexingQueueDAO.deleteAll();
+    indexingOperationDAO.deleteAll();
   }
 
   @Test
   public void testIndexingQueueCreation() {
 
     //Given
-    List<IndexingQueue> indexingQueues = indexingQueueDAO.findAll();
-    Assert.assertEquals(indexingQueues.size(), 0);
-    IndexingQueue indexingQueue = new IndexingQueue();
-    indexingQueue.setEntityType("blog");
-    indexingQueue.setOperation(ElasticIndexingService.INIT);
+    List<IndexingOperation> indexingOperations = indexingOperationDAO.findAll();
+    Assert.assertEquals(indexingOperations.size(), 0);
+    IndexingOperation indexingOperation = new IndexingOperation();
+    indexingOperation.setEntityType("blog");
+    indexingOperation.setOperation(ElasticIndexingService.INIT);
 
     //When
-    indexingQueueDAO.create(indexingQueue);
+    indexingOperationDAO.create(indexingOperation);
 
     //Then
-    Assert.assertEquals(indexingQueueDAO.findAll().size(), 1);
+    Assert.assertEquals(indexingOperationDAO.findAll().size(), 1);
   }
 
   @Test
@@ -70,21 +70,21 @@ public class IndexingQueueDAOTest extends AbstractDAOTest {
 
     //Given
     Long startDate = System.currentTimeMillis();
-    IndexingQueue indexingQueue = new IndexingQueue();
-    indexingQueue.setEntityType("blog");
-    indexingQueue.setOperation(ElasticIndexingService.INIT);
+    IndexingOperation indexingOperation = new IndexingOperation();
+    indexingOperation.setEntityType("blog");
+    indexingOperation.setOperation(ElasticIndexingService.INIT);
 
     //When
-    indexingQueueDAO.create(indexingQueue);
+    indexingOperationDAO.create(indexingOperation);
 
     //Then
-    indexingQueue = indexingQueueDAO.find(indexingQueue.getId());
+    indexingOperation = indexingOperationDAO.find(indexingOperation.getId());
     Assert.assertThat(
         startDate,
-        Matchers.lessThanOrEqualTo(indexingQueue.getTimestamp().getTime()));
+        Matchers.lessThanOrEqualTo(indexingOperation.getTimestamp().getTime()));
     Assert.assertThat(
         System.currentTimeMillis(),
-        Matchers.greaterThanOrEqualTo(indexingQueue.getTimestamp().getTime()));
+        Matchers.greaterThanOrEqualTo(indexingOperation.getTimestamp().getTime()));
   }
 
 }

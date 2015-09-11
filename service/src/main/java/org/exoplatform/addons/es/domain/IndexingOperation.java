@@ -34,43 +34,43 @@ import java.util.Date;
  * 7/22/15
  */
 @Entity
-@Table(name = "ES_INDEX_QUEUE")
+@Table(name = "ES_INDEXING_QUEUE")
 @NamedQueries({
-    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueFromLastTime",
-        query = "SELECT q FROM IndexingQueue q WHERE q.timestamp >= :lastTime"),
-    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTime",
-        query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime GROUP BY q.operation"),
-    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTimeByOperation",
-        query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime AND q.operation = :operation"),
-    @NamedQuery(name = "IndexingQueue.findAllIndexingQueueBeforeLastTimeByOperations",
-        query = "SELECT q FROM IndexingQueue q WHERE q.timestamp <= :lastTime AND q.operation IN :operations"),
-    @NamedQuery(name = "IndexingQueue.deleteBeforeTimestamp",
-        query = "DELETE FROM IndexingQueue q WHERE q.timestamp <= :lastTime")
+    @NamedQuery(name = "IndexingOperation.findAllIndexingOperationsFromLastTime",
+        query = "SELECT q FROM IndexingOperation q WHERE q.timestamp >= :lastTime"),
+    @NamedQuery(name = "IndexingOperation.findAllIndexingOperationsBeforeLastTime",
+        query = "SELECT q FROM IndexingOperation q WHERE q.timestamp <= :lastTime GROUP BY q.operation"),
+    @NamedQuery(name = "IndexingOperation.findAllIndexingOperationsBeforeLastTimeByOperation",
+        query = "SELECT q FROM IndexingOperation q WHERE q.timestamp <= :lastTime AND q.operation = :operation"),
+    @NamedQuery(name = "IndexingOperation.findAllIndexingOperationsBeforeLastTimeByOperations",
+        query = "SELECT q FROM IndexingOperation q WHERE q.timestamp <= :lastTime AND q.operation IN :operations"),
+    @NamedQuery(name = "IndexingOperation.deleteBeforeTimestamp",
+        query = "DELETE FROM IndexingOperation q WHERE q.timestamp <= :lastTime")
 })
-public class IndexingQueue {
+public class IndexingOperation {
 
   @Id
   @GeneratedValue
-  @Column(name = "QUEUE_ID")
-  Long id;
+  @Column(name = "OPERATION_ID")
+  private Long id;
 
   @Column(name = "ENTITY_TYPE")
-  String entityType;
+  private String entityType;
 
   @Column(name = "ENTITY_ID")
-  String entityId;
+  private String entityId;
 
   @Column(name = "OPERATION_TYPE")
-  String operation;
+  private String operation;
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "OPERATION_TIMESTAMP", insertable = false, updatable = false)
-  Date timestamp;
+  private Date timestamp;
 
-  public IndexingQueue() {
+  public IndexingOperation() {
   }
 
-  public IndexingQueue(Long id, String entityId, String entityType, String operation, Date timestamp) {
+  public IndexingOperation(Long id, String entityId, String entityType, String operation, Date timestamp) {
     this.id = id;
     this.entityId = entityId;
     this.entityType = entityType;
@@ -119,7 +119,7 @@ public class IndexingQueue {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    IndexingQueue that = (IndexingQueue) o;
+    IndexingOperation that = (IndexingOperation) o;
 
     if (entityId != null ? !entityId.equals(that.entityId) : that.entityId != null) return false;
     if (entityType != null ? !entityType.equals(that.entityType) : that.entityType != null) return false;

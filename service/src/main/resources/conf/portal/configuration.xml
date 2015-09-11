@@ -49,8 +49,8 @@
   </component>
 
   <component>
-    <key>org.exoplatform.addons.es.dao.IndexingQueueDAO</key>
-    <type>org.exoplatform.addons.es.dao.impl.IndexingQueueDAOImpl</type>
+    <key>org.exoplatform.addons.es.dao.IndexingOperationDAO</key>
+    <type>org.exoplatform.addons.es.dao.impl.IndexingOperationDAOImpl</type>
   </component>
 
   <external-component-plugins>

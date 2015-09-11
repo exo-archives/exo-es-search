@@ -64,7 +64,7 @@ public abstract class IndexingService {
    *
    * @LevelAPI Experimental
    */
-  public abstract void addToIndexQueue(String connectorName, String id, String operation);
+  public abstract void addToIndexingQueue(String connectorName, String id, String operation);
 
   /**
    *
@@ -81,6 +81,6 @@ public abstract class IndexingService {
    * @LevelAPI Experimental
    *
    */
-  public abstract void clearIndexQueue();
+  public abstract void clearIndexingQueue();
 
 }

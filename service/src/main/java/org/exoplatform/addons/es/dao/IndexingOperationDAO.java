@@ -16,7 +16,7 @@
 */
 package org.exoplatform.addons.es.dao;
 
-import org.exoplatform.addons.es.domain.IndexingQueue;
+import org.exoplatform.addons.es.domain.IndexingOperation;
 import org.exoplatform.commons.api.persistence.GenericDAO;
 
 import java.util.Date;
@@ -28,17 +28,17 @@ import java.util.List;
  * tclement@exoplatform.com
  * 7/29/15
  */
-public interface IndexingQueueDAO extends GenericDAO<IndexingQueue, Long> {
+public interface IndexingOperationDAO extends GenericDAO<IndexingOperation, Long> {
 
-  List<IndexingQueue> findQueueFromLastTime(Date lastTime);
+  List<IndexingOperation> findOperationsFromLastTime(Date lastTime);
 
-  List<IndexingQueue> findQueueBeforeLastTime(Date lastTime);
+  List<IndexingOperation> findOperationsBeforeLastTime(Date lastTime);
 
-  List<IndexingQueue> findQueueBeforeLastTimeByOperation(Date lastTime, String operation);
+  List<IndexingOperation> findOperationsBeforeLastTimeByOperation(Date lastTime, String operation);
 
-  List<IndexingQueue> findQueueBeforeLastTimeByOperations(Date lastTime, List<String> operations);
+  List<IndexingOperation> findOperationsBeforeLastTimeByOperations(Date lastTime, List<String> operations);
 
-  List<IndexingQueue> findAllFirst(Integer maxResults);
+  List<IndexingOperation> findAllFirst(Integer maxResults);
 
   void deleteAllBefore(Date lastTime);
 
