@@ -50,7 +50,7 @@ import java.util.*;
  * tclement@exoplatform.com
  * 7/30/15
  */
-public abstract class ElasticSearchServiceConnector extends SearchServiceConnector {
+public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
   private static final Log LOG = ExoLogger.getLogger(ElasticSearchServiceConnector.class);
 
@@ -68,7 +68,7 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
   //SearchResult information
   private String img;
   private String titleElasticFieldName = "title";
-  private String descElasticFieldName = "description";
+  private String detailElasticFieldName = "description";
 
   private Map<String, String> sortMapping = new HashMap<String, String>();
 
@@ -77,12 +77,29 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
     PropertiesParam param = initParams.getPropertiesParam("constructor.params");
     this.index = param.getProperty("index");
     this.type = param.getProperty("type");
-    this.searchFields = new ArrayList<>(Arrays.asList(param.getProperty("fields").split(",")));
+    this.detailElasticFieldName = param.getProperty("detailField");
+    this.titleElasticFieldName = param.getProperty("titleField");
+    this.searchFields = new ArrayList<>(Arrays.asList(param.getProperty("searchFields").split(",")));
     //Indicate in which order element will be displayed
     sortMapping.put("relevancy", "_score");
     sortMapping.put("date", "createdDate");
     if (StringUtils.isNotBlank(PropertyManager.getProperty(ES_SEARCH_CLIENT_PROPERTY_NAME)))
       this.urlClient = PropertyManager.getProperty(ES_SEARCH_CLIENT_PROPERTY_NAME);
+  }
+
+  //For test
+  public ElasticSearchServiceConnector(InitParams initParams, String url) {
+    super(initParams);
+    PropertiesParam param = initParams.getPropertiesParam("constructor.params");
+    this.index = param.getProperty("index");
+    this.type = param.getProperty("type");
+    this.detailElasticFieldName = param.getProperty("detailField");
+    this.titleElasticFieldName = param.getProperty("titleField");
+    this.searchFields = new ArrayList<>(Arrays.asList(param.getProperty("searchFields").split(",")));
+    //Indicate in which order element will be displayed
+    sortMapping.put("relevancy", "_score");
+    sortMapping.put("date", "createdDate");
+    this.urlClient = url;
   }
 
   @Override
@@ -106,7 +123,6 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
     esQuery.append("       { \"" + (StringUtils.isNotBlank(sortMapping.get(sort))?sort:"_score") + "\" : ");
     esQuery.append(             "{\"order\" : \"" + (StringUtils.isNotBlank(order)?order:"asc") + "\"}}\n");
     esQuery.append("     ],\n");
-
     esQuery.append("     \"query\": {\n");
     esQuery.append("        \"filtered\" : {\n");
     esQuery.append("            \"query\" : {\n");
@@ -123,8 +139,10 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
     esQuery.append("        }\n");
     esQuery.append("     },\n");
     esQuery.append("     \"highlight\" : {\n");
+    esQuery.append("       \"pre_tags\" : [\"<strong>\"],\n");
+    esQuery.append("       \"post_tags\" : [\"</strong>\"],\n");
     esQuery.append("       \"fields\" : {\n");
-    esQuery.append("         \"text\" : {\"fragment_size\" : 150, \"number_of_fragments\" : 3}\n");
+    esQuery.append("         \"*\" : {\"fragment_size\" : 150, \"number_of_fragments\" : 3}\n");
     esQuery.append("       }\n");
     esQuery.append("     }\n");
     esQuery.append("}");
@@ -184,15 +202,29 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
     for(Object jsonHit : jsonHits) {
       JSONObject hitSource = (JSONObject) ((JSONObject) jsonHit).get("_source");
       String title = (String) hitSource.get(titleElasticFieldName);
-      String description = (String) hitSource.get(descElasticFieldName);
+      String description = (String) hitSource.get(detailElasticFieldName);
       String url = (String) hitSource.get("url");
       Long createdDate = (Long) hitSource.get("createdDate");
+      if (createdDate == null) createdDate = new Date().getTime();
       Double score = (Double) ((JSONObject) jsonHit).get("_score");
+      //Get the excerpt
+      JSONObject hitHighlight = (JSONObject) ((JSONObject) jsonHit).get("highlight");
+      Iterator<?> keys = hitHighlight.keySet().iterator();
+      StringBuilder excerpt = new StringBuilder();
+      while( keys.hasNext() ) {
+        String key = (String)keys.next();
+        JSONArray highlights = (JSONArray) hitHighlight.get(key);
+        for (int i =0; i < highlights.size(); ++i) {
+          excerpt.append("... "+highlights.get(i));
+        }
+      }
+
+      LOG.debug("Excerpt extract from ES response : "+excerpt.toString());
 
       results.add(new SearchResult(
           url,
           title,
-          description,
+          excerpt.toString(),
           description,
           img,
           createdDate,
@@ -285,12 +317,12 @@ public abstract class ElasticSearchServiceConnector extends SearchServiceConnect
     this.img = img;
   }
 
-  public String getDescElasticFieldName() {
-    return descElasticFieldName;
+  public String getDetailElasticFieldName() {
+    return detailElasticFieldName;
   }
 
-  public void setDescElasticFieldName(String descElasticFieldName) {
-    this.descElasticFieldName = descElasticFieldName;
+  public void setDetailElasticFieldName(String detailElasticFieldName) {
+    this.detailElasticFieldName = detailElasticFieldName;
   }
 
   public String getTitleElasticFieldName() {

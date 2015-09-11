@@ -16,99 +16,90 @@
 */
 package org.exoplatform.addons.es.integration;
 
-/*
-
-WARNING:
-THIS TEST CAN WORK ONLY WHEN YOU START A LOCAL ES ON YOUR MACHINE FIRST.
-IT"S  ALL TESTS ARE COMMENTED. IF YOU WANT TO TEST IT START LOCAL ES AND UNCOMMENT THE TEST.
-TO FIX IT WE NEED TO BE ABLE TO START AN EMBEDDED ES
-
- */
-
+import org.exoplatform.addons.es.search.ElasticSearchServiceConnector;
+import org.exoplatform.commons.api.search.data.SearchResult;
+import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.container.xml.PropertiesParam;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
  * Author : Thibault Clement
  * tclement@exoplatform.com
- * 8/20/15
+ * 9/11/15
  */
-public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
+public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
 
-  @Test
-  public void testCreateNewIndex() {
+  ElasticSearchServiceConnector elasticSearchServiceConnector;
 
-    //Given
-    assertFalse(indexExists("blog"));
-
-    //When
-    elasticIndexingClient.sendCreateIndexRequest("blog", "");
-
-    //Then
-    assertTrue(indexExists("blog"));
-
+  @Before
+  public void initServices() {
+    elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorParams(),"http://"+cluster().httpAddresses()[0].getHostName()+":"+cluster().httpAddresses()[0].getPort());
   }
 
   @Test
-  public void testCreateNewType() {
-
-    //Given
-    assertFalse(typeExists("post"));
-    elasticIndexingClient.sendCreateIndexRequest("blog", "");
-
-    //When
-    elasticIndexingClient.sendCreateTypeRequest("blog", "post", "{\"post\" : {}}");
-
-    //Then
-    assertTrue(typeExists("post"));
-
-  }
-
-  @Test
-  public void testIndexingDocument() throws InterruptedException {
+  public void testSearchingDocument() throws InterruptedException {
 
     //Given
     assertEquals(0,elasticDocumentNumber());
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" } }\n" +
-        "{ \"field1\" : \"value1\" }\n" +
+        "{ \"field1\" : \"value1\", \"permissions\" : \"null\" }\n" +
         "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"2\" } }\n" +
         "{ \"field1\" : \"value2\" }\n" +
         "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"3\" } }\n" +
         "{ \"field1\" : \"value3\" }\n";
-
-    //When
     elasticIndexingClient.sendCUDRequest(bulkRequest);
     //Elasticsearch has near real-time search: document changes are not visible to search immediately,
     // but will become visible within 1 second
     Thread.sleep(2 * 1000);
 
+    //When
+    List<SearchResult> searchResults = new ArrayList<>(elasticSearchServiceConnector.search(null, "value1", null, 0, 10, null, null));
+
     //Then
-    assertEquals(3,elasticDocumentNumber());
+    assertEquals(1, searchResults.size());
 
   }
 
   @Test
-  public void testDeleteAllIndexedDocument() throws InterruptedException {
+  public void testExcerpt() throws InterruptedException {
 
     //Given
+    assertEquals(0,elasticDocumentNumber());
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" } }\n" +
-        "{ \"field1\" : \"value1\" }\n" +
+        "{ \"field1\" : \"value1\", \"permissions\" : \"null\" }\n" +
         "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"2\" } }\n" +
         "{ \"field1\" : \"value2\" }\n" +
         "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"3\" } }\n" +
         "{ \"field1\" : \"value3\" }\n";
     elasticIndexingClient.sendCUDRequest(bulkRequest);
+    //Elasticsearch has near real-time search: document changes are not visible to search immediately,
+    // but will become visible within 1 second
     Thread.sleep(2 * 1000);
-    //assertTrue(typeExists("type1"));
-    assertEquals(3, typeDocumentNumber("type1"));
 
     //When
-    elasticIndexingClient.sendDeleteTypeRequest("test", "type1");
-    Thread.sleep(2 * 1000);
+    List<SearchResult> searchResults = new ArrayList<>(elasticSearchServiceConnector.search(null, "value1", null, 0, 10, null, null));
 
     //Then
-    //Type is existing but it has no document
-    assertFalse(typeExists("type1"));
+    assertEquals("... <strong>value1</strong>", searchResults.get(0).getExcerpt());
+
+  }
+
+  private InitParams getInitConnectorParams() {
+    InitParams params = new InitParams();
+    PropertiesParam constructorParams = new PropertiesParam();
+    constructorParams.setName("constructor.params");
+    constructorParams.setProperty("searchType", "test");
+    constructorParams.setProperty("displayName", "test");
+    constructorParams.setProperty("index", "test");
+    constructorParams.setProperty("type", "type1");
+    constructorParams.setProperty("searchFields", "field1");
+    params.addParam(constructorParams);
+    return params;
   }
 
 }

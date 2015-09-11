@@ -1,20 +1,17 @@
 package org.exoplatform.addons.es.search;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
-import java.util.Arrays;
-
-import org.json.simple.parser.ParseException;
-import org.junit.Test;
-
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.MembershipEntry;
+import org.json.simple.parser.ParseException;
+import org.junit.Test;
+
+import java.util.Arrays;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertThat;
 
 /**
  * Created by The eXo Platform SAS
@@ -80,7 +77,7 @@ public class ElasticSearchServiceConnectorTest {
         constructorParams.setProperty("displayName", "wiki");
         constructorParams.setProperty("index", "wiki");
         constructorParams.setProperty("type", "wiki");
-        constructorParams.setProperty("fields", "name");
+        constructorParams.setProperty("searchFields", "name");
         params.addParam(constructorParams);
         return params;
     }
