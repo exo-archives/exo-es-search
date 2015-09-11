@@ -58,7 +58,7 @@
     <component-plugin>
       <name>BulkIndexingJob</name>
       <set-method>addPeriodJob</set-method>
-      <type>org.exoplatform.services.scheduler</type>
+      <type>org.exoplatform.services.scheduler.PeriodJob</type>
       <description>Init job for bulk indexing to Elastic search</description>
       <init-params>
         <properties-param>
