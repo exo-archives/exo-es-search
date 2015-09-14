@@ -37,13 +37,10 @@ public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   public void testCreateNewIndex() {
-
     //Given
     assertFalse(indexExists("blog"));
-
     //When
     elasticIndexingClient.sendCreateIndexRequest("blog", "");
-
     //Then
     assertTrue(indexExists("blog"));
 
@@ -51,14 +48,11 @@ public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   public void testCreateNewType() {
-
     //Given
     assertFalse(typeExists("post"));
     elasticIndexingClient.sendCreateIndexRequest("blog", "");
-
     //When
     elasticIndexingClient.sendCreateTypeRequest("blog", "post", "{\"post\" : {}}");
-
     //Then
     assertTrue(typeExists("post"));
 
@@ -66,7 +60,6 @@ public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   public void testIndexingDocument() {
-
     //Given
     assertEquals(0,elasticDocumentNumber());
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" } }\n" +
@@ -88,8 +81,7 @@ public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
   }
 
   @Test
-  public void testDeleteAllIndexedDocument() {
-
+  public void testDeleteType() {
     //Given
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" } }\n" +
         "{ \"field1\" : \"value1\" }\n" +
@@ -107,9 +99,7 @@ public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
     admin().indices().prepareRefresh().execute().actionGet();
 
     //Then
-    //Type is existing but it has no document
-    assertTrue(typeExists("type1"));
-    assertEquals(0, typeDocumentNumber("type1"));
+    assertFalse(typeExists("type1"));
   }
 
 }

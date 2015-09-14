@@ -66,7 +66,7 @@ public class ElasticContentRequestBuilder {
    * {
        "type_name" : {
          "properties" : {
-          "permissions" : {"type" : "string", "index" : not_analyzed }
+          "permissions" : {"type" : "string", "index" : "not_analyzed" }
          }
        }
      }
@@ -76,6 +76,7 @@ public class ElasticContentRequestBuilder {
    */
   public String getCreateTypeRequestContent(ElasticIndexingServiceConnector connector) {
 
+    //If no mapping provided, send the default one
     if (connector.getMapping() == null || connector.getMapping().isEmpty()) {
 
       JSONObject permissionAttributes = new JSONObject();
