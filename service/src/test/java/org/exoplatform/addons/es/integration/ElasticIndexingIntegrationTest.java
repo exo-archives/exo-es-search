@@ -88,7 +88,7 @@ public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
   }
 
   @Test
-  public void testDeleteAllIndexedDocument() throws InterruptedException {
+  public void testDeleteType() throws InterruptedException {
 
     //Given
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" } }\n" +
@@ -107,9 +107,7 @@ public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
     admin().indices().prepareRefresh().execute().actionGet();
 
     //Then
-    //Type is existing but it has no document
-    assertTrue(typeExists("type1"));
-    assertEquals(0, typeDocumentNumber("type1"));
+    assertFalse(typeExists("type1"));
   }
 
 }
