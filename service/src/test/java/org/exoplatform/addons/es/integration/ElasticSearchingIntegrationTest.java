@@ -17,8 +17,10 @@
 package org.exoplatform.addons.es.integration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,6 +29,9 @@ import org.exoplatform.addons.es.search.ElasticSearchServiceConnector;
 import org.exoplatform.commons.api.search.data.SearchResult;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
+import org.exoplatform.services.security.ConversationState;
+import org.exoplatform.services.security.Identity;
+import org.exoplatform.services.security.MembershipEntry;
 
 /**
  * Created by The eXo Platform SAS Author : Thibault Clement
@@ -38,22 +43,31 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
 
   @Before
   public void initServices() {
+    Identity identity = new Identity("BCH");
+    identity.setMemberships(Arrays.asList(new MembershipEntry("Admin")));
+    ConversationState.setCurrent(new ConversationState(identity));
+
     String url = "http://" + cluster().httpAddresses()[0].getHostName() + ":" + cluster().httpAddresses()[0].getPort();
     ElasticSearchingClient client = new ElasticSearchingClient(url);
     elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorParams(), client);
   }
 
   @Test
-  public void testSearchingDocument() throws InterruptedException {
+  public void testSearchingDocument() {
 
     // Given
     assertEquals(0, elasticDocumentNumber());
+
+    String mapping = "{ \"properties\" : " + "   {\"permissions\" : "
+        + "       {\"type\" : \"string\", \"index\" : \"not_analyzed\"}" + "   }" + "}";
+    CreateIndexRequestBuilder cirb = admin().indices().prepareCreate("test").addMapping("type1", mapping);
+    cirb.execute().actionGet();
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" } }\n"
-        + "{ \"field1\" : \"value1\", \"permissions\" : \"null\" }\n"
+        + "{ \"field1\" : \"value1\", \"permissions\" : [\"BCH\"] }\n"
         + "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"2\" } }\n"
-        + "{ \"field1\" : \"value2\" }\n"
+        + "{ \"field1\" : \"value2\", \"permissions\" : [\"BCH\"] }\n"
         + "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"3\" } }\n"
-        + "{ \"field1\" : \"value3\" }\n";
+        + "{ \"field1\" : \"value3\", \"permissions\" : [\"BCH\"] }\n";
     elasticIndexingClient.sendCUDRequest(bulkRequest);
     // Elasticsearch has near real-time search: document changes are not visible
     // to search immediately,
@@ -79,12 +93,16 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
 
     // Given
     assertEquals(0, elasticDocumentNumber());
+    String mapping = "{ \"properties\" : " + "   {\"permissions\" : "
+        + "       {\"type\" : \"string\", \"index\" : \"not_analyzed\"}" + "   }" + "}";
+    CreateIndexRequestBuilder cirb = admin().indices().prepareCreate("test").addMapping("type1", mapping);
+    cirb.execute().actionGet();
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" } }\n"
-        + "{ \"field1\" : \"value1\", \"permissions\" : \"null\" }\n"
+        + "{ \"field1\" : \"value1\", \"permissions\" : [\"BCH\"] }\n"
         + "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"2\" } }\n"
-        + "{ \"field1\" : \"value2\" }\n"
+        + "{ \"field1\" : \"value2\", \"permissions\" : [\"BCH\"] }\n"
         + "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"3\" } }\n"
-        + "{ \"field1\" : \"value3\" }\n";
+        + "{ \"field1\" : \"value3\", \"permissions\" : [\"BCH\"] }\n";
     elasticIndexingClient.sendCUDRequest(bulkRequest);
     // Elasticsearch has near real-time search: document changes are not visible
     // to search immediately,
