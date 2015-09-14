@@ -16,6 +16,8 @@
 */
 package org.exoplatform.addons.es.domain;
 
+import org.exoplatform.commons.api.persistence.ExoEntity;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -34,6 +36,7 @@ import java.util.Date;
  * 7/22/15
  */
 @Entity
+@ExoEntity
 @Table(name = "ES_INDEXING_QUEUE")
 @NamedQueries({
     @NamedQuery(name = "IndexingOperation.findAllIndexingOperationsFromLastTime",
