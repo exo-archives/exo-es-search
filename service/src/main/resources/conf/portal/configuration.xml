@@ -62,7 +62,7 @@
           <property name="groupName" value="ElasticSearch"/>
           <property name="job" value="org.exoplatform.addons.es.job.BulkIndexingJob"/>
           <property name="repeatCount" value="0"/>
-          <property name="period" value="${exo.es.bulk.job.period:5}"/><!-- default 5 seconds -->
+          <property name="period" value="${exo.es.bulk.job.period:5000}"/><!-- default 5 seconds -->
           <property name="startTime" value="+60000"/><!-- start after 1 minute delay -->
           <property name="endTime" value=""/>
         </properties-param>
