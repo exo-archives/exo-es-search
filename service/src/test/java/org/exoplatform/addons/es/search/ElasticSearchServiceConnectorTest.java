@@ -2,6 +2,7 @@ package org.exoplatform.addons.es.search;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 
@@ -33,8 +34,6 @@ public class ElasticSearchServiceConnectorTest {
         assertThat(query, containsString("{\"term\" : { \"permissions\" : \"BCH\" }}"));
         assertThat(query, containsString("{\"terms\" : { \"permissions\" : [\".*:Admin\" ]}}"));
     }
-
-    //TODO testSortIsAfieldOfTheConnector_search
 
     @Test
     public void testSortIsRelevancyByDefault() {
@@ -70,15 +69,15 @@ public class ElasticSearchServiceConnectorTest {
         assertThat(query, containsString("\"track_scores\": true"));
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void testSearchWithoutIdentity() {
         //Given
         ConversationState.setCurrent(null);
         ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
         //When
-        String query = connector.buildQuery("My Wiki", 0, 20, null, null);
+        connector.buildQuery("My Wiki", 0, 20, null, null);
         //Then
-        assertThat(query, containsString("\"track_scores\": true"));
+        fail("IllegalStateException 'No identity found' expected");
     }
 
     private InitParams getInitParams() {

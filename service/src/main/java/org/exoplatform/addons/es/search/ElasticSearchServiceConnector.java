@@ -199,35 +199,46 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
   public String getCurrentUser() {
     ConversationState conversationState = ConversationState.getCurrent();
-    if (conversationState != null) {
-      return ConversationState.getCurrent().getIdentity().getUserId();
+    if (conversationState == null) {
+      throw new IllegalStateException("No Identity found: ConversationState.getCurrent() is null");
     }
-    return null;
+    if (ConversationState.getCurrent().getIdentity()==null) {
+      throw new IllegalStateException("No Identity found: ConversationState.getCurrent().getIdentity() is null");
+    }
+    return ConversationState.getCurrent().getIdentity().getUserId();
   }
 
   private Set<String> getUserMemberships() {
-
     ConversationState conversationState = ConversationState.getCurrent();
-
-    if (conversationState != null) {
-      Set<String> entries = new HashSet<String>();
-      for (MembershipEntry entry : ConversationState.getCurrent().getIdentity().getMemberships()) {
-        //If it's a wildcard membership, add a point to transform it to regexp
-        if (entry.getMembershipType().equals(MembershipEntry.ANY_TYPE)) {
-          entries.add(entry.toString().replace("*", ".*"));
-        }
-        //If it's not a wildcard membership
-        else {
-          //Add the membership
-          entries.add(entry.toString());
-          //Also add a wildcard membership (not as a regexp) in order to match to wildcard permission
-          //Ex: membership dev:/pub must match permission dev:/pub and permission *:/pub
-          entries.add("*:"+entry.getGroup());
-        }
-      }
-      return entries;
+    if (conversationState == null) {
+      throw new IllegalStateException("No Identity found: ConversationState.getCurrent() is null");
     }
-    return null;
+    if (ConversationState.getCurrent().getIdentity()==null) {
+      throw new IllegalStateException("No Identity found: ConversationState.getCurrent().getIdentity() is null");
+    }
+    if (ConversationState.getCurrent().getIdentity()==null) {
+      //This case is not supported
+      //The doc says "Any anonymous user automatically becomes a member of the group guests.group when they enter the public pages."
+      //http://docs.exoplatform.com/PLF42/sect-Reference_Guide-Portal_Default_Permission_Configuration.html
+      throw new IllegalStateException("No Membership found: ConversationState.getCurrent().getIdentity().getMemberships() is null");
+    }
+
+    Set<String> entries = new HashSet<String>();
+    for (MembershipEntry entry : ConversationState.getCurrent().getIdentity().getMemberships()) {
+      //If it's a wildcard membership, add a point to transform it to regexp
+      if (entry.getMembershipType().equals(MembershipEntry.ANY_TYPE)) {
+        entries.add(entry.toString().replace("*", ".*"));
+      }
+      //If it's not a wildcard membership
+      else {
+        //Add the membership
+        entries.add(entry.toString());
+        //Also add a wildcard membership (not as a regexp) in order to match to wildcard permission
+        //Ex: membership dev:/pub must match permission dev:/pub and permission *:/pub
+        entries.add("*:"+entry.getGroup());
+      }
+    }
+    return entries;
   }
 
   public String getIndex() {
