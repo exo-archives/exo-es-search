@@ -1,5 +1,6 @@
 package org.exoplatform.addons.es.search;
 
+import org.exoplatform.addons.es.client.ElasticSearchingClient;
 import org.exoplatform.container.xml.InitParams;
 
 /**
@@ -10,6 +11,6 @@ import org.exoplatform.container.xml.InitParams;
  */
 public class MyElasticSearchServiceConnector extends ElasticSearchServiceConnector {
     public MyElasticSearchServiceConnector(InitParams initParams) {
-        super(initParams);
+        super(initParams, new ElasticSearchingClient());
     }
 }

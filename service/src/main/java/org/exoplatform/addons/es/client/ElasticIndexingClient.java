@@ -55,12 +55,12 @@ public class ElasticIndexingClient {
     this.client = new DefaultHttpClient();
   }
 
-  //For testing
+  //For testing TODO remove ?
   public ElasticIndexingClient(String url) {
     this.urlClient = url;
     this.client = new DefaultHttpClient();
   }
-  //For testing
+  //For testing TODO remove ?
   public ElasticIndexingClient(HttpClient client, String url) {
     this.client = client;
     this.urlClient = url;
