@@ -80,7 +80,7 @@ public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
     elasticIndexingClient.sendCUDRequest(bulkRequest);
     //Elasticsearch has near real-time search: document changes are not visible to search immediately,
     // but will become visible within 1 second
-    Thread.sleep(2 * 1000);
+    admin().indices().prepareRefresh().execute().actionGet();
 
     //Then
     assertEquals(3,elasticDocumentNumber());
@@ -98,17 +98,18 @@ public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
         "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"3\" } }\n" +
         "{ \"field1\" : \"value3\" }\n";
     elasticIndexingClient.sendCUDRequest(bulkRequest);
-    Thread.sleep(2 * 1000);
-    //assertTrue(typeExists("type1"));
+    admin().indices().prepareRefresh().execute().actionGet();
+    assertTrue(typeExists("type1"));
     assertEquals(3, typeDocumentNumber("type1"));
 
     //When
     elasticIndexingClient.sendDeleteTypeRequest("test", "type1");
-    Thread.sleep(2 * 1000);
+    admin().indices().prepareRefresh().execute().actionGet();
 
     //Then
     //Type is existing but it has no document
-    assertFalse(typeExists("type1"));
+    assertTrue(typeExists("type1"));
+    assertEquals(0, typeDocumentNumber("type1"));
   }
 
 }

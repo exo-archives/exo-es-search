@@ -55,7 +55,7 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
     elasticIndexingClient.sendCUDRequest(bulkRequest);
     //Elasticsearch has near real-time search: document changes are not visible to search immediately,
     // but will become visible within 1 second
-    Thread.sleep(2 * 1000);
+    admin().indices().prepareRefresh().execute().actionGet();
 
     //When
     List<SearchResult> searchResults = new ArrayList<>(elasticSearchServiceConnector.search(null, "value1", null, 0, 10, null, null));
@@ -79,7 +79,7 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
     elasticIndexingClient.sendCUDRequest(bulkRequest);
     //Elasticsearch has near real-time search: document changes are not visible to search immediately,
     // but will become visible within 1 second
-    Thread.sleep(2 * 1000);
+    admin().indices().prepareRefresh().execute().actionGet();
 
     //When
     List<SearchResult> searchResults = new ArrayList<>(elasticSearchServiceConnector.search(null, "value1", null, 0, 10, null, null));
