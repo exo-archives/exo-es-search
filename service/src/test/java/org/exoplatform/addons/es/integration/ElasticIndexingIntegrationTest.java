@@ -65,7 +65,7 @@ public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
   }
 
   @Test
-  public void testIndexingDocument() throws InterruptedException {
+  public void testIndexingDocument() {
 
     //Given
     assertEquals(0,elasticDocumentNumber());
@@ -88,7 +88,7 @@ public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
   }
 
   @Test
-  public void testDeleteAllIndexedDocument() throws InterruptedException {
+  public void testDeleteAllIndexedDocument() {
 
     //Given
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" } }\n" +

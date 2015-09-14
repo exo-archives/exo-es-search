@@ -85,9 +85,7 @@ public class ElasticIndexingClient {
    * it's the same that deleting all document from a given type
    */
   public void sendDeleteTypeRequest(String index, String type) {
-
     sendHttpDeleteRequest(urlClient + "/" + index + "/" + type);
-
   }
 
   /**

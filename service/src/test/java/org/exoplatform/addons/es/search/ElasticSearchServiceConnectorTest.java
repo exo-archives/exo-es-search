@@ -1,17 +1,19 @@
 package org.exoplatform.addons.es.search;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertThat;
+
+import java.util.Arrays;
+
+import org.json.simple.parser.ParseException;
+import org.junit.Test;
+
+import org.exoplatform.addons.es.client.ElasticSearchingClient;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.MembershipEntry;
-import org.json.simple.parser.ParseException;
-import org.junit.Test;
-
-import java.util.Arrays;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
 
 /**
  * Created by The eXo Platform SAS
@@ -24,7 +26,7 @@ public class ElasticSearchServiceConnectorTest {
     public void testMembership() throws ParseException {
         //Given
         setCurrentIdentity();
-        ElasticSearchServiceConnector connector = new MyElasticSearchServiceConnector(getInitParams());
+        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
         //When
         String query = connector.buildQuery("My Wiki", 0, 20, "name", "asc");
         //Then
@@ -32,14 +34,13 @@ public class ElasticSearchServiceConnectorTest {
         assertThat(query, containsString("{\"terms\" : { \"permissions\" : [\".*:Admin\" ]}}"));
     }
 
-    //TODO test exception if no identity
     //TODO testSortIsAfieldOfTheConnector_search
 
     @Test
     public void testSortIsRelevancyByDefault() {
         //Given
         setCurrentIdentity();
-        ElasticSearchServiceConnector connector = new MyElasticSearchServiceConnector(getInitParams());
+        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
         //When
         String query = connector.buildQuery("My Wiki", 0, 20, null, null);
         //Then
@@ -50,7 +51,7 @@ public class ElasticSearchServiceConnectorTest {
     public void testOrderIsAscByDefault() {
         //Given
         setCurrentIdentity();
-        ElasticSearchServiceConnector connector = new MyElasticSearchServiceConnector(getInitParams());
+        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
         //When
         String query = connector.buildQuery("My Wiki", 0, 20, "name", null);
         //Then
@@ -62,9 +63,20 @@ public class ElasticSearchServiceConnectorTest {
     public void testScoresAreTracked() {
         //Given
         setCurrentIdentity();
-        ElasticSearchServiceConnector connector = new MyElasticSearchServiceConnector(getInitParams());
+        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
         //When
         String query = connector.buildQuery("My Wiki", 0, 20, "name", "asc");
+        //Then
+        assertThat(query, containsString("\"track_scores\": true"));
+    }
+
+    @Test
+    public void testSearchWithoutIdentity() {
+        //Given
+        ConversationState.setCurrent(null);
+        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
+        //When
+        String query = connector.buildQuery("My Wiki", 0, 20, null, null);
         //Then
         assertThat(query, containsString("\"track_scores\": true"));
     }
