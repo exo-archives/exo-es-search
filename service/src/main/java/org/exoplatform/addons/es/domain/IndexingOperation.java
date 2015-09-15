@@ -16,18 +16,11 @@
 */
 package org.exoplatform.addons.es.domain;
 
-import org.exoplatform.commons.api.persistence.ExoEntity;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import java.util.Date;
+
+import javax.persistence.*;
+
+import org.exoplatform.commons.api.persistence.ExoEntity;
 
 /**
  * Created by The eXo Platform SAS
@@ -73,11 +66,11 @@ public class IndexingOperation {
   public IndexingOperation() {
   }
 
-  public IndexingOperation(Long id, String entityId, String entityType, String operation, Date timestamp) {
+  public IndexingOperation(Long id, String entityId, String entityType, OperationType operation, Date timestamp) {
     this.id = id;
     this.entityId = entityId;
     this.entityType = entityType;
-    this.operation = operation;
+    this.setOperation(operation);
     this.timestamp = timestamp;
   }
 
@@ -105,12 +98,12 @@ public class IndexingOperation {
     this.entityType = entityType;
   }
 
-  public String getOperation() {
-    return operation;
+  public OperationType getOperation() {
+    return this.operation==null?null:OperationType.getById(this.operation);
   }
 
-  public void setOperation(String operation) {
-    this.operation = operation;
+  public void setOperation(OperationType operation) {
+    this.operation = operation==null?null:operation.getOperationId();
   }
 
   public Date getTimestamp() {
