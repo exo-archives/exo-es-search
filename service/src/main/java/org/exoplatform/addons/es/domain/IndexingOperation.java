@@ -41,7 +41,9 @@ import org.exoplatform.commons.api.persistence.ExoEntity;
     @NamedQuery(name = "IndexingOperation.findAllIndexingOperationsBeforeLastTimeByOperations",
         query = "SELECT q FROM IndexingOperation q WHERE q.timestamp <= :lastTime AND q.operation IN :operations"),
     @NamedQuery(name = "IndexingOperation.deleteBeforeTimestamp",
-        query = "DELETE FROM IndexingOperation q WHERE q.timestamp <= :lastTime")
+        query = "DELETE FROM IndexingOperation q WHERE q.timestamp <= :lastTime"),
+    @NamedQuery(name = "IndexingOperation.findAllFirst",
+        query = "SELECT q FROM IndexingOperation q ORDER BY q.timestamp")
 })
 public class IndexingOperation {
 

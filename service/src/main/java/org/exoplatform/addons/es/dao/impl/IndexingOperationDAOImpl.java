@@ -86,17 +86,10 @@ public class IndexingOperationDAOImpl extends GenericDAOJPAImpl<IndexingOperatio
 
   @Override
   public List<IndexingOperation> findAllFirst(Integer maxResults) {
-
-    CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-    CriteriaQuery<IndexingOperation> query = cb.createQuery(IndexingOperation.class);
-
-    Root<IndexingOperation> entity = query.from(IndexingOperation.class);
-
-    query.select(entity);
-    query.orderBy(cb.asc(entity.get("timestamp")));
-
-    return getEntityManager().createQuery(query).setMaxResults(maxResults).getResultList();
-
+      return getEntityManager()
+              .createNamedQuery("IndexingOperation.findAllFirst", IndexingOperation.class)
+              .setMaxResults(maxResults)
+              .getResultList();
   }
 
   @Override
