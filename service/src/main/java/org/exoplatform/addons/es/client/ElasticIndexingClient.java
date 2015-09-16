@@ -29,6 +29,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by The eXo Platform SAS
@@ -128,14 +129,16 @@ public class ElasticIndexingClient {
    * @param httpResponse The Http Response to handle
    */
   private void handleHttpResponse(HttpResponse httpResponse) throws IOException {
+    InputStream is = httpResponse.getEntity().getContent();
     if (httpResponse.getStatusLine().getStatusCode() != 200) {
       //TODO manage error
       LOG.error("Error when trying to send request to ES. The reason is: {}",
-              IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"));
+              IOUtils.toString(is, "UTF-8"));
     } else {
       LOG.debug("Success request to ES: {}",
-              IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"));
+              IOUtils.toString(is, "UTF-8"));
     }
+    is.close();
   }
 
 
