@@ -16,18 +16,9 @@
 */
 package org.exoplatform.addons.es.index.elastic;
 
-import org.exoplatform.addons.es.client.ElasticIndexingClient;
-import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
-import org.exoplatform.addons.es.dao.IndexingOperationDAO;
-import org.exoplatform.addons.es.domain.Document;
-import org.exoplatform.addons.es.domain.IndexingOperation;
-import org.exoplatform.addons.es.domain.OperationType;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.mockito.runners.MockitoJUnitRunner;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -35,9 +26,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.*;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
+import org.exoplatform.addons.es.client.ElasticIndexingClient;
+import org.exoplatform.addons.es.dao.IndexingOperationDAO;
+import org.exoplatform.addons.es.domain.Document;
+import org.exoplatform.addons.es.domain.IndexingOperation;
+import org.exoplatform.addons.es.domain.OperationType;
 
 /**
  * Created by The eXo Platform SAS
@@ -50,23 +51,22 @@ public class ElasticIndexingServiceTest {
 
   //Naming Convention Used: methodUnderTest_conditionEncounter_resultExpected
 
-  ElasticIndexingService elasticIndexingService;
+  private ElasticIndexingService elasticIndexingService;
 
   @Mock
-  IndexingOperationDAO indexingOperationDAO;
+  private IndexingOperationDAO indexingOperationDAO;
   
   @Mock
-  ElasticIndexingClient elasticIndexingClient;
+  private ElasticIndexingClient elasticIndexingClient;
 
   @Mock
-  ElasticIndexingServiceConnector elasticIndexingServiceConnector;
+  private ElasticIndexingServiceConnector elasticIndexingServiceConnector;
 
   @Mock
-  ElasticContentRequestBuilder elasticContentRequestBuilder;
+  private ElasticContentRequestBuilder elasticContentRequestBuilder;
 
   @Captor
-  ArgumentCaptor<String> stringCaptor;
-
+  private ArgumentCaptor<String> stringCaptor;
 
   @Before
   public void initMocks() {
@@ -93,60 +93,44 @@ public class ElasticIndexingServiceTest {
 
   @Test
   public void addConnector_ifNewConnector_connectorAdded() {
-
     //Given
     assertEquals(0, elasticIndexingService.getConnectors().size());
-
     //When
     elasticIndexingService.addConnector(elasticIndexingServiceConnector);
-
     //Then
     assertEquals(1, elasticIndexingService.getConnectors().size());
-
   }
 
   @Test
   public void addConnector_ifConnectorAlreadyExist_connectorNotAdded() {
-
     //Given
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
     assertEquals(1, elasticIndexingService.getConnectors().size());
-
     //When
     elasticIndexingService.addConnector(elasticIndexingServiceConnector);
-
     //Then
     assertEquals(1, elasticIndexingService.getConnectors().size());
-
   }
 
   @Test
   public void addConnectRor_ifNewConnector_initIndexingQueueCreated() {
-
     //Given
     IndexingOperation indexingOperation = new IndexingOperation(null,null,"post", OperationType.INIT,null);
-
     //When
     elasticIndexingService.addConnector(elasticIndexingServiceConnector);
-
     //Then
     verify(indexingOperationDAO, times(1)).create(indexingOperation);
-
   }
 
   @Test
   public void addConnector_ifConnectorAlreadyExist_initIndexingQueueNotCreated() {
-
     //Given
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
     IndexingOperation indexingOperation = new IndexingOperation(null,null,"post",OperationType.INIT,null);
-
     //When
     elasticIndexingService.addConnector(elasticIndexingServiceConnector);
-
     //Then
     verify(indexingOperationDAO, times(0)).create(indexingOperation);
-
   }
 
   /*
@@ -155,88 +139,65 @@ public class ElasticIndexingServiceTest {
 
   @Test
   public void addToIndexQueue_ifInitOperation_initIndexingQueueCreated() {
-
     //Given
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
     IndexingOperation indexingOperation = new IndexingOperation(null,null,"post",OperationType.INIT,null);
-
     //When
     elasticIndexingService.addToIndexingQueue("post", null, OperationType.INIT);
-
     //Then
     verify(indexingOperationDAO, times(1)).create(indexingOperation);
   }
 
   @Test
   public void addToIndexQueue_ifDeleteAllOperation_deleteAllIndexingQueueCreated() {
-
     //Given
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
     IndexingOperation indexingOperation = new IndexingOperation(null,null,"post",OperationType.DELETE_ALL,null);
-
     //When
     elasticIndexingService.addToIndexingQueue("post", null, OperationType.DELETE_ALL);
-
     //Then
     verify(indexingOperationDAO, times(1)).create(indexingOperation);
-
   }
 
   @Test
   public void addToIndexQueue_ifDeleteOperation_deleteIndexingQueueCreated() {
-
     //Given
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
     IndexingOperation indexingOperation = new IndexingOperation(null,"1","post",OperationType.DELETE,null);
-
     //When
     elasticIndexingService.addToIndexingQueue("post", "1", OperationType.DELETE);
-
     //Then
     verify(indexingOperationDAO, times(1)).create(indexingOperation);
-
   }
 
   @Test
   public void addToIndexQueue_ifUpdateOperation_updateIndexingQueueCreated() {
-
     //Given
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
     IndexingOperation indexingOperation = new IndexingOperation(null,"1","post",OperationType.UPDATE,null);
-
     //When
     elasticIndexingService.addToIndexingQueue("post", "1", OperationType.UPDATE);
-
     //Then
     verify(indexingOperationDAO, times(1)).create(indexingOperation);
-
   }
 
   @Test
   public void addToIndexQueue_ifCreateOperation_createIndexingQueueCreated() {
-
     //Given
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
     IndexingOperation indexingOperation = new IndexingOperation(null,"1","post",OperationType.CREATE,null);
-
     //When
     elasticIndexingService.addToIndexingQueue("post", "1", OperationType.CREATE);
-
     //Then
     verify(indexingOperationDAO, times(1)).create(indexingOperation);
-
   }
 
   @Test
   public void addToIndexQueue_ifNoEntityId_CUDIndexingQueueNotCreated() {
     //TODO not implemented yet
-
     //Given
-
     //When
-
     //Then
-
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -250,16 +211,11 @@ public class ElasticIndexingServiceTest {
 
   @Test
   public void addToIndexQueue_ifNoConnectorExist_triggerException() {
-
     //TODO implement specific exception
-
     //Given
-
     //When
     //elasticIndexingService.addToIndexingQueue("post", null, ElasticIndexingService.CREATE);
-
     //Then
-
   }
 
   /*
@@ -271,7 +227,6 @@ public class ElasticIndexingServiceTest {
 
   @Test
   public void process_ifAllOperationsInQueue_requestShouldBeSentInAnExpectedOrder() throws ParseException {
-
     //Given
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
@@ -314,12 +269,10 @@ public class ElasticIndexingServiceTest {
     orderClient.verify(elasticIndexingClient).sendCUDRequest(anyString());
     //Then no more interaction with client
     verifyNoMoreInteractions(elasticIndexingClient);
-
   }
 
   @Test
   public void process_ifAllOperationsInQueue_requestShouldBeCreatedInAnExpectedOrder() throws ParseException {
-
     //Given
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
@@ -359,14 +312,12 @@ public class ElasticIndexingServiceTest {
     orderRequestBuilder.verify(elasticContentRequestBuilder).getUpdateDocumentRequestContent(elasticIndexingServiceConnector, "3");
     //Then no more interaction with builder
     verifyNoMoreInteractions(elasticContentRequestBuilder);
-
   }
 
   //test the result of operation processing on the operation still in queue
 
   @Test
   public void process_ifDeleteAllOperation_allOldestCreateUpdateDeleteOperationsWithSameTypeStillInQueueShouldBeCanceled() throws ParseException {
-
     //Given
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
@@ -395,13 +346,11 @@ public class ElasticIndexingServiceTest {
         elasticContentRequestBuilder.getCreateTypeRequestContent(elasticIndexingServiceConnector));
     //No CUD request
     verifyNoMoreInteractions(elasticIndexingClient);
-
   }
 
 
   @Test
   public void process_ifDeleteOperation_allOldestCreateOperationsWithSameEntityIdStillInQueueShouldBeCanceled() throws ParseException {
-
     //Given
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
@@ -429,12 +378,10 @@ public class ElasticIndexingServiceTest {
     //Only one CUD request should be send
     order.verify(elasticIndexingClient, times(1)).sendCUDRequest(anyString());
     verifyNoMoreInteractions(elasticIndexingClient);
-
   }
 
   @Test
   public void process_ifCreateOperation_allOldestAndNewestUpdateOperationsWithSameEntityIdStillInQueueShouldBeCanceled() throws ParseException {
-
     //Given
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
@@ -461,12 +408,10 @@ public class ElasticIndexingServiceTest {
     //Only one CUD request should be send
     order.verify(elasticIndexingClient, times(1)).sendCUDRequest(anyString());
     verifyNoMoreInteractions(elasticIndexingClient);
-
   }
 
   @Test
   public void process_ifDeleteAllOperation_allNewestCreateDeleteOperationsStillInQueueShouldBeProcessed() throws ParseException {
-
     //Given
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
@@ -499,12 +444,10 @@ public class ElasticIndexingServiceTest {
     //Only one CUD request should be send
     orderClient.verify(elasticIndexingClient, times(1)).sendCUDRequest(anyString());
     verifyNoMoreInteractions(elasticIndexingClient);
-
   }
 
   @Test
   public void process_ifDeleteOperation_allNewestCreateOperationsStillInQueueShouldBeProcessed() throws ParseException {
-
     //Given
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
@@ -530,12 +473,10 @@ public class ElasticIndexingServiceTest {
     //Only one CUD request should be send
     verify(elasticIndexingClient, times(1)).sendCUDRequest(anyString());
     verifyNoMoreInteractions(elasticIndexingClient);
-
   }
 
   @Test
   public void process_ifDeleteAllOperation_allNewestUpdateOperationsWithSameEntityTypeIdStillInQueueShouldBeCanceled() throws ParseException {
-
     //Given
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
@@ -558,16 +499,14 @@ public class ElasticIndexingServiceTest {
     orderClient.verify(elasticIndexingClient).sendDeleteTypeRequest(elasticIndexingServiceConnector.getIndex(),
         elasticIndexingServiceConnector.getType());
     orderClient.verify(elasticIndexingClient).sendCreateTypeRequest(elasticIndexingServiceConnector.getIndex(),
-        elasticIndexingServiceConnector.getType(),
-        elasticContentRequestBuilder.getCreateTypeRequestContent(elasticIndexingServiceConnector));
+            elasticIndexingServiceConnector.getType(),
+            elasticContentRequestBuilder.getCreateTypeRequestContent(elasticIndexingServiceConnector));
     //No CUD operation
     verifyNoMoreInteractions(elasticIndexingClient);
-
   }
 
   @Test
   public void process_ifDeleteOperation_allNewestUpdateOperationsWithSameEntityIdStillInQueueShouldBeCanceled() throws ParseException {
-
     //Given
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
@@ -591,6 +530,16 @@ public class ElasticIndexingServiceTest {
     //Only one CUD request should be send
     verify(elasticIndexingClient, times(1)).sendCUDRequest(anyString());
     verifyNoMoreInteractions(elasticIndexingClient);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void addCreateOperation_noConnector_exceptionRaised() {
+    //Given
+    assertThat(elasticIndexingService.getConnectors().size(), is(0));
+    //When
+    elasticIndexingService.addToIndexingQueue("wiki", "1", OperationType.CREATE);
+    //Then
+    fail("Expected IllegalStateException -> no connector");
   }
 
 }

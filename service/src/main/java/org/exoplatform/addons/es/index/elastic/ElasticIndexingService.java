@@ -77,6 +77,9 @@ public class ElasticIndexingService extends IndexingService {
     if (operation==null) {
       throw new IllegalArgumentException("Operation cannot be null");
     }
+    if (!getConnectors().containsKey(connectorName)) {
+      throw new IllegalStateException("Connector ["+connectorName+"] has not been registered.");
+    }
     switch (operation) {
       //A new type of document need to be initialise
       case INIT: addInitOperation(connectorName);
