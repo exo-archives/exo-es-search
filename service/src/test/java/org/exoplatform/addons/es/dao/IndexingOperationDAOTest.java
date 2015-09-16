@@ -16,16 +16,17 @@
 */
 package org.exoplatform.addons.es.dao;
 
-import org.exoplatform.addons.es.domain.IndexingOperation;
-import org.exoplatform.addons.es.index.elastic.ElasticIndexingService;
-import org.exoplatform.container.PortalContainer;
+import java.util.List;
+
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
+import org.exoplatform.addons.es.domain.IndexingOperation;
+import org.exoplatform.addons.es.domain.OperationType;
+import org.exoplatform.container.PortalContainer;
 
 /**
  * Created by The eXo Platform SAS
@@ -56,7 +57,7 @@ public class IndexingOperationDAOTest extends AbstractDAOTest {
     Assert.assertEquals(indexingOperations.size(), 0);
     IndexingOperation indexingOperation = new IndexingOperation();
     indexingOperation.setEntityType("blog");
-    indexingOperation.setOperation(ElasticIndexingService.INIT);
+    indexingOperation.setOperation(OperationType.INIT);
 
     //When
     indexingOperationDAO.create(indexingOperation);
@@ -72,7 +73,7 @@ public class IndexingOperationDAOTest extends AbstractDAOTest {
     Long startDate = System.currentTimeMillis();
     IndexingOperation indexingOperation = new IndexingOperation();
     indexingOperation.setEntityType("blog");
-    indexingOperation.setOperation(ElasticIndexingService.INIT);
+    indexingOperation.setOperation(OperationType.INIT);
 
     //When
     indexingOperationDAO.create(indexingOperation);

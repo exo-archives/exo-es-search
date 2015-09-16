@@ -1,5 +1,6 @@
 package org.exoplatform.addons.es.index;
 
+import org.exoplatform.addons.es.domain.OperationType;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -57,7 +58,7 @@ public abstract class IndexingService {
    * @param operation operation to the create {create, update, delete, init}
    * @LevelAPI Experimental
    */
-  public abstract void addToIndexingQueue(String connectorName, String id, String operation);
+  public abstract void addToIndexingQueue(String connectorName, String id, OperationType operation);
 
   /**
    * Index all document in the indexing queue
