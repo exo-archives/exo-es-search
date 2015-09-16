@@ -1,6 +1,7 @@
 package org.exoplatform.addons.es.index;
 
 import org.exoplatform.addons.es.domain.Document;
+import org.exoplatform.container.component.BaseComponentPlugin;
 
 /**
  * Created by The eXo Platform SAS
@@ -8,7 +9,7 @@ import org.exoplatform.addons.es.domain.Document;
  * tclement@exoplatform.com
  * 7/22/15
  */
-public abstract class IndexingServiceConnector {
+public abstract class IndexingServiceConnector extends BaseComponentPlugin {
 
   private String type;
 
