@@ -13,4 +13,8 @@ public class ElasticClientException extends RuntimeException {
     public ElasticClientException(Throwable cause) {
         super(cause);
     }
+
+    public ElasticClientException(String message) {
+        super(message);
+    }
 }

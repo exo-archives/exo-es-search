@@ -48,7 +48,6 @@ public class IndexingOperationDAOImpl extends GenericDAOJPAImpl<IndexingOperatio
   }
 
   @Override
-  @ExoTransactional
   public List<IndexingOperation> findOperationsFromLastTime(Date lastTime) {
     return getEntityManager()
             .createNamedQuery("IndexingOperation.findAllIndexingOperationsFromLastTime", IndexingOperation.class)
@@ -57,7 +56,6 @@ public class IndexingOperationDAOImpl extends GenericDAOJPAImpl<IndexingOperatio
   }
 
   @Override
-  @ExoTransactional
   public List<IndexingOperation> findOperationsBeforeLastTime(Date lastTime) {
     //TODO TEST
     return getEntityManager()
@@ -67,7 +65,6 @@ public class IndexingOperationDAOImpl extends GenericDAOJPAImpl<IndexingOperatio
   }
 
   @Override
-  @ExoTransactional
   public List<IndexingOperation> findOperationsBeforeLastTimeByOperation(Date lastTime, String operation) {
     //TODO TEST
     return getEntityManager()
@@ -78,7 +75,6 @@ public class IndexingOperationDAOImpl extends GenericDAOJPAImpl<IndexingOperatio
   }
 
   @Override
-  @ExoTransactional
   public List<IndexingOperation> findOperationsBeforeLastTimeByOperations(Date lastTime, List<String> operations) {
     //TODO TEST
     return getEntityManager()
@@ -89,7 +85,6 @@ public class IndexingOperationDAOImpl extends GenericDAOJPAImpl<IndexingOperatio
   }
 
   @Override
-  @ExoTransactional
   public List<IndexingOperation> findAllFirst(Integer maxResults) {
       return getEntityManager()
               .createNamedQuery("IndexingOperation.findAllFirst", IndexingOperation.class)
