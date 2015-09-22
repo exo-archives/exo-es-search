@@ -31,7 +31,7 @@ public class ElasticSearchServiceConnectorTest {
         String query = connector.buildQuery("My Wiki", 0, 20, "name", "asc");
         //Then
         assertThat(query, containsString("{\"term\" : { \"permissions\" : \"BCH\" }}"));
-        assertThat(query, containsString("{\"terms\" : { \"permissions\" : [\".*:Admin\" ]}}"));
+        assertThat(query, containsString("{\"regexp\" : { \"permissions\" : \".*:Admin\" }}"));
     }
 
     @Test

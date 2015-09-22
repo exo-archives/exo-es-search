@@ -19,13 +19,11 @@
 
 package org.exoplatform.addons.es.domain;
 
+import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author <a href="mailto:tuyennt@exoplatform.com">Tuyen Nguyen The</a>.
@@ -115,5 +113,16 @@ public class Document {
     }
     json = obj.toJSONString();
     return json;
+  }
+
+  public Document addField(String key, String value) {
+    if (StringUtils.isBlank(key)) {
+      throw new IllegalArgumentException("Key is null");
+    }
+    if (this.fields==null) {
+      this.fields = new HashMap<>();
+    }
+    this.fields.put(key, value);
+    return this;
   }
 }

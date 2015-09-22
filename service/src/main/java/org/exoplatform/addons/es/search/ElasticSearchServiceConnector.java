@@ -183,14 +183,11 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
   }
 
   private String getPermissionFilter() {
-    String memberships = "";
     Set<String> membershipSet = getUserMemberships();
-    if (membershipSet != null) {
-      for (String membership : membershipSet) {
-        memberships += "\"" + membership + "\"";
-      }
+    if ((membershipSet != null) && (membershipSet.size()>0)) {
+      String memberships = StringUtils.join(membershipSet.toArray(new String[membershipSet.size()]), "|");
       return "{\"term\" : { \"permissions\" : \"" + getCurrentUser() + "\" }}," +
-          "{\"terms\" : { \"permissions\" : [" + memberships + " ]}}";
+          "{\"regexp\" : { \"permissions\" : \"" + memberships + "\" }}";
     }
     else {
       return "{\"term\" : { \"permissions\" : \"" + getCurrentUser() + "\" }}";
