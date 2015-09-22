@@ -42,7 +42,6 @@ import java.sql.SQLException;
  * 8/20/15
  */
 public abstract class AbstractDAOTest {
-
   private static Connection conn;
   private static Liquibase liquibase;
 
@@ -58,7 +57,7 @@ public abstract class AbstractDAOTest {
         .findCorrectDatabaseImplementation(new JdbcConnection(conn));
 
     //Create Table
-    liquibase = new Liquibase("../webapp/src/main/resources/db/changelog/exo-search.db.changelog-1.0.0.xml",
+    liquibase = new Liquibase("./src/main/resources/db/changelog/exo-search.db.changelog-1.0.0.xml",
         new FileSystemResourceAccessor(), database);
     liquibase.update((String) null);
 

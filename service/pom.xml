@@ -188,7 +188,7 @@
           <referenceUsername>sa</referenceUsername>
           <referencePassword></referencePassword>
           <!-- db.changelog file -->
-          <changeLogFile>src/main/resources/org/exoplatform/addons/es/db/changelog/db.changelog.xml</changeLogFile>
+          <changeLogFile>src/main/resources/db/changelog/exo-search.db.changelog-1.0.0.xml</changeLogFile>
         </configuration>
       </plugin>
     </plugins>

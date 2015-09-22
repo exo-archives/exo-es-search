@@ -1,27 +1,13 @@
 package org.exoplatform.addons.es.search;
 
-import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.*;
-
+import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.FileSystemResourceAccessor;
-
 import org.elasticsearch.common.lang3.StringUtils;
-import org.junit.*;
-
-import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
-
 import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
 import org.exoplatform.addons.es.client.ElasticIndexingClient;
 import org.exoplatform.addons.es.client.ElasticSearchingClient;
@@ -40,6 +26,20 @@ import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.MembershipEntry;
+import org.junit.*;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by The eXo Platform SAS
@@ -64,7 +64,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
         Database database = DatabaseFactory.getInstance()
                 .findCorrectDatabaseImplementation(new JdbcConnection(conn));
         //Create Table
-        liquibase = new Liquibase("../webapp/src/main/resources/db/changelog/exo-search.db.changelog-1.0.0.xml",
+        liquibase = new Liquibase("./src/main/resources/db/changelog/exo-search.db.changelog-1.0.0.xml",
                 new FileSystemResourceAccessor(), database);
         liquibase.update((String) null);
     }
