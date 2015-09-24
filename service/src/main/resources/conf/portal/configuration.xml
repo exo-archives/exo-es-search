@@ -31,6 +31,10 @@
   </component>
 
   <component>
+    <type>org.exoplatform.addons.es.client.ElasticSearchingClient</type>
+  </component>
+
+  <component>
     <type>org.exoplatform.addons.es.client.ElasticIndexingClient</type>
   </component>
 
