@@ -194,7 +194,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     }
   }
 
-  public String getCurrentUser() {
+  private String getCurrentUser() {
     ConversationState conversationState = ConversationState.getCurrent();
     if (conversationState == null) {
       throw new IllegalStateException("No Identity found: ConversationState.getCurrent() is null");
@@ -213,7 +213,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     if (ConversationState.getCurrent().getIdentity()==null) {
       throw new IllegalStateException("No Identity found: ConversationState.getCurrent().getIdentity() is null");
     }
-    if (ConversationState.getCurrent().getIdentity()==null) {
+    if (ConversationState.getCurrent().getIdentity().getMemberships()==null) {
       //This case is not supported
       //The doc says "Any anonymous user automatically becomes a member of the group guests.group when they enter the public pages."
       //http://docs.exoplatform.com/PLF42/sect-Reference_Guide-Portal_Default_Permission_Configuration.html
