@@ -45,6 +45,28 @@ public class ElasticSearchServiceConnectorTest {
         assertThat(query, containsString("{ \"_score\" : {\"order\" : \"asc\"}}"));
     }
 
+  @Test
+  public void testSortRelevancyIsEqual_score() {
+    //Given
+    setCurrentIdentity();
+    ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
+    //When
+    String query = connector.buildQuery("My Wiki", 0, 20, "relevancy", null);
+    //Then
+    assertThat(query, containsString("{ \"_score\" : {\"order\" : \"asc\"}}"));
+  }
+
+  @Test
+  public void testDateRelevancyIsEqualCreatedDate() {
+    //Given
+    setCurrentIdentity();
+    ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
+    //When
+    String query = connector.buildQuery("My Wiki", 0, 20, "date", null);
+    //Then
+    assertThat(query, containsString("{ \"createdDate\" : {\"order\" : \"asc\"}}"));
+  }
+
     @Test
     public void testOrderIsAscByDefault() {
         //Given

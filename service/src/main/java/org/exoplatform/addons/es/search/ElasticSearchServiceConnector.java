@@ -16,14 +16,7 @@
 */
 package org.exoplatform.addons.es.search;
 
-import java.util.*;
-
 import org.apache.commons.lang.StringUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 import org.exoplatform.addons.es.client.ElasticSearchingClient;
 import org.exoplatform.commons.api.search.SearchServiceConnector;
 import org.exoplatform.commons.api.search.data.SearchContext;
@@ -34,6 +27,12 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.MembershipEntry;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import java.util.*;
 
 /**
  * Created by The eXo Platform SAS
@@ -87,7 +86,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     //https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-sort.html#_track_scores
     esQuery.append("     \"track_scores\": true,\n");
     esQuery.append("     \"sort\" : [\n");
-    esQuery.append("       { \"" + (StringUtils.isNotBlank(sortMapping.get(sort))?sort:"_score") + "\" : ");
+    esQuery.append("       { \"" + (StringUtils.isNotBlank(sortMapping.get(sort))?sortMapping.get(sort):"_score") + "\" : ");
     esQuery.append(             "{\"order\" : \"" + (StringUtils.isNotBlank(order)?order:"asc") + "\"}}\n");
     esQuery.append("     ],\n");
     esQuery.append("     \"query\": {\n");
@@ -120,6 +119,9 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
   }
 
   private Collection<SearchResult> buildResult(String jsonResponse) {
+
+    LOG.debug("Search Query response from ES : {} ", jsonResponse);
+
     Collection<SearchResult> results = new ArrayList<SearchResult>();
     JSONParser parser = new JSONParser();
 
