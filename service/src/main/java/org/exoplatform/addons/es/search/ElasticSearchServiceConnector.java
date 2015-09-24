@@ -47,7 +47,6 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
   //ES connector information
   private String index;
-  private String type;
   private List<String> searchFields;
 
   //SearchResult information
@@ -55,14 +54,13 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
   private String titleElasticFieldName = "title";
   private String detailElasticFieldName = "description";
 
-  private Map<String, String> sortMapping = new HashMap<String, String>();
+  private Map<String, String> sortMapping = new HashMap<>();
 
   public ElasticSearchServiceConnector(InitParams initParams, ElasticSearchingClient client) {
     super(initParams);
     this.client = client;
     PropertiesParam param = initParams.getPropertiesParam("constructor.params");
     this.index = param.getProperty("index");
-    this.type = param.getProperty("type");
     this.detailElasticFieldName = param.getProperty("detailField");
     this.titleElasticFieldName = param.getProperty("titleField");
     this.searchFields = new ArrayList<>(Arrays.asList(param.getProperty("searchFields").split(",")));
@@ -75,7 +73,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
   public Collection<SearchResult> search(SearchContext context, String query, Collection<String> sites,
                                          int offset, int limit, String sort, String order) {
     String esQuery = buildQuery(query, offset, limit, sort, order);
-    String jsonResponse = this.client.sendRequest(esQuery, this.index, this.type);
+    String jsonResponse = this.client.sendRequest(esQuery, this.index, this.getSearchType());
     return buildResult(jsonResponse);
 
   }
@@ -152,7 +150,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
         String key = (String)keys.next();
         JSONArray highlights = (JSONArray) hitHighlight.get(key);
         for (int i =0; i < highlights.size(); ++i) {
-          excerpt.append("... "+highlights.get(i));
+          excerpt.append("... ").append(highlights.get(i));
         }
       }
 
@@ -220,7 +218,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
       throw new IllegalStateException("No Membership found: ConversationState.getCurrent().getIdentity().getMemberships() is null");
     }
 
-    Set<String> entries = new HashSet<String>();
+    Set<String> entries = new HashSet<>();
     for (MembershipEntry entry : ConversationState.getCurrent().getIdentity().getMemberships()) {
       //If it's a wildcard membership, add a point to transform it to regexp
       if (entry.getMembershipType().equals(MembershipEntry.ANY_TYPE)) {
@@ -244,14 +242,6 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
   public void setIndex(String index) {
     this.index = index;
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
   }
 
   public String getImg() {

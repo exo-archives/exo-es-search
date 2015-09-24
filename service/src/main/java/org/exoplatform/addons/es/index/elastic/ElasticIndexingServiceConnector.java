@@ -92,5 +92,10 @@ public abstract class ElasticIndexingServiceConnector extends IndexingServiceCon
   public void setReplicas(Integer replicas) {
     this.replicas = replicas;
   }
+
+  @Override
+  public String delete(String id) {
+    return id;
+  }
 }
 

@@ -126,10 +126,9 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
     InitParams params = new InitParams();
     PropertiesParam constructorParams = new PropertiesParam();
     constructorParams.setName("constructor.params");
-    constructorParams.setProperty("searchType", "test");
+    constructorParams.setProperty("searchType", "type1");
     constructorParams.setProperty("displayName", "test");
     constructorParams.setProperty("index", "test");
-    constructorParams.setProperty("type", "type1");
     constructorParams.setProperty("searchFields", "field1");
     params.addParam(constructorParams);
     return params;
