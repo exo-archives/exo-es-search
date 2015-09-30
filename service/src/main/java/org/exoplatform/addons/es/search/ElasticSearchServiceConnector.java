@@ -65,7 +65,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     this.searchFields = new ArrayList<>(Arrays.asList(param.getProperty("searchFields").split(",")));
     //Indicate in which order element will be displayed
     sortMapping.put("relevancy", "_score");
-    sortMapping.put("date", "createdDate");
+    sortMapping.put("date", "lastUpdatedDate");
   }
 
   @Override
@@ -141,8 +141,8 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
       String title = (String) hitSource.get(titleElasticFieldName);
       String description = (String) hitSource.get(detailElasticFieldName);
       String url = (String) hitSource.get("url");
-      Long createdDate = (Long) hitSource.get("createdDate");
-      if (createdDate == null) createdDate = new Date().getTime();
+      Long lastUpdatedDate = (Long) hitSource.get("lastUpdatedDate");
+      if (lastUpdatedDate == null) lastUpdatedDate = new Date().getTime();
       Double score = (Double) ((JSONObject) jsonHit).get("_score");
       //Get the excerpt
       JSONObject hitHighlight = (JSONObject) ((JSONObject) jsonHit).get("highlight");
@@ -164,7 +164,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
           excerpt.toString(),
           description,
           img,
-          createdDate,
+          lastUpdatedDate,
           //score must not be null as "track_scores" is part of the query
           score.longValue()
       ));

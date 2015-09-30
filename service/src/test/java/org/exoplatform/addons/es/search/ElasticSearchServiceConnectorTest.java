@@ -57,14 +57,14 @@ public class ElasticSearchServiceConnectorTest {
   }
 
   @Test
-  public void testDateRelevancyIsEqualCreatedDate() {
+  public void testDateRelevancyIsEqualLastUpdatedDate() {
     //Given
     setCurrentIdentity();
     ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
     //When
     String query = connector.buildQuery("My Wiki", 0, 20, "date", null);
     //Then
-    assertThat(query, containsString("{ \"createdDate\" : {\"order\" : \"asc\"}}"));
+    assertThat(query, containsString("{ \"lastUpdatedDate\" : {\"order\" : \"asc\"}}"));
   }
 
     @Test

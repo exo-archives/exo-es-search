@@ -105,7 +105,7 @@ public class ElasticContentRequestBuilderTest {
             "{\"author\":\"Michael Jordan\",\"quote\":\"I've missed more than 9000 shots in my career. " +
             "I've lost almost 300 games. 26 times, I've been trusted to take the game winning shot and missed. " +
             "I've failed over and over and over again in my life. And that is why I succeed.\"" +
-            ",\"permissions\":[\"vizir\",\"goleador\"],\"createdDate\":601146000000,\"url\":\"MyUrlBaby\"}\n",
+            ",\"permissions\":[\"vizir\",\"goleador\"],\"lastUpdatedDate\":601146000000,\"url\":\"MyUrlBaby\"}\n",
         elasticContentRequestBuilder.getCreateDocumentRequestContent(elasticIndexingServiceConnector, "1"));
         */
   }
@@ -123,7 +123,7 @@ public class ElasticContentRequestBuilderTest {
             "{\"author\":\"Michael Jordan\",\"quote\":\"I've missed more than 9000 shots in my career. " +
             "I've lost almost 300 games. 26 times, I've been trusted to take the game winning shot and missed. " +
             "I've failed over and over and over again in my life. And that is why I succeed.\"" +
-            ",\"permissions\":[\"vizir\",\"goleador\"],\"createdDate\":601146000000,\"url\":\"MyUrlBaby\"}\n",
+            ",\"permissions\":[\"vizir\",\"goleador\"],\"lastUpdatedDate\":601146000000,\"url\":\"MyUrlBaby\"}\n",
         elasticContentRequestBuilder.getUpdateDocumentRequestContent(elasticIndexingServiceConnector, "1"));
         */
 
@@ -140,7 +140,7 @@ public class ElasticContentRequestBuilderTest {
 
   private void initDocumentMock() throws ParseException {
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-    when(document.getCreatedDate()).thenReturn(sdf.parse("19/01/1989"));
+    when(document.getLastUpdatedDate()).thenReturn(sdf.parse("19/01/1989"));
     when(document.getId()).thenReturn("1");
     when(document.getUrl()).thenReturn("MyUrlBaby");
     when(document.getPermissions()).thenReturn(new String[]{"vizir","goleador"});

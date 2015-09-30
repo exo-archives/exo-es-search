@@ -32,18 +32,18 @@ public class Document {
   private String type;
   private String id;
   private String url;
-  private Date createdDate;
+  private Date lastUpdatedDate;
   private String[] permissions;
   private Map<String, String> fields;
 
   public Document() {
   }
 
-  public Document(String type, String id, String url, Date createdDate, String[] permissions, Map<String, String> fields) {
+  public Document(String type, String id, String url, Date lastUpdatedDate, String[] permissions, Map<String, String> fields) {
     this.type = type;
     this.id = id;
     this.url = url;
-    this.createdDate = createdDate;
+    this.lastUpdatedDate = lastUpdatedDate;
     this.permissions = permissions;
     this.fields = fields;
   }
@@ -72,12 +72,12 @@ public class Document {
     this.url = url;
   }
 
-  public Date getCreatedDate() {
-    return createdDate;
+  public Date getLastUpdatedDate() {
+    return lastUpdatedDate;
   }
 
-  public void setCreatedDate(Date createdDate) {
-    this.createdDate = createdDate;
+  public void setLastUpdatedDate(Date lastUpdatedDate) {
+    this.lastUpdatedDate = lastUpdatedDate;
   }
 
   public String[] getPermissions() {
@@ -105,7 +105,7 @@ public class Document {
       obj.put("permissions", permissionsJSON);
     }
     if (getUrl() != null) obj.put("url", getUrl());
-    if (getCreatedDate() != null) obj.put("createdDate", getCreatedDate().getTime());
+    if (getLastUpdatedDate() != null) obj.put("lastUpdatedDate", getLastUpdatedDate().getTime());
     if (getFields() != null) {
       for (String fieldName : getFields().keySet()) {
         obj.put(fieldName, getFields().get(fieldName));
