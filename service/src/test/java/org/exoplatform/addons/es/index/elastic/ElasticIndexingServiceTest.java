@@ -16,16 +16,12 @@
 */
 package org.exoplatform.addons.es.index.elastic;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
+import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
+import org.exoplatform.addons.es.client.ElasticIndexingClient;
+import org.exoplatform.addons.es.dao.IndexingOperationDAO;
+import org.exoplatform.addons.es.domain.Document;
+import org.exoplatform.addons.es.domain.IndexingOperation;
+import org.exoplatform.addons.es.domain.OperationType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,12 +29,15 @@ import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
-import org.exoplatform.addons.es.client.ElasticIndexingClient;
-import org.exoplatform.addons.es.dao.IndexingOperationDAO;
-import org.exoplatform.addons.es.domain.Document;
-import org.exoplatform.addons.es.domain.IndexingOperation;
-import org.exoplatform.addons.es.domain.OperationType;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by The eXo Platform SAS
@@ -85,6 +84,7 @@ public class ElasticIndexingServiceTest {
   @After
   public void clean() {
     elasticIndexingService.getConnectors().clear();
+    elasticIndexingService.clearIndexingQueue();
   }
 
   /*
@@ -540,6 +540,32 @@ public class ElasticIndexingServiceTest {
     elasticIndexingService.addToIndexingQueue("wiki", "1", OperationType.CREATE);
     //Then
     fail("Expected IllegalStateException -> no connector");
+  }
+
+  @Test
+  public void process_ifBulkRequestReachedSizeLimit_requestIsSend() throws ParseException {
+    //Given
+    elasticIndexingService.setRequestSizeLimit(1);
+    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+    elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
+    IndexingOperation create1 = new IndexingOperation(1l,"1","post",OperationType.CREATE,sdf.parse("21/01/1989"));
+    IndexingOperation create2 = new IndexingOperation(2l,"2","post",OperationType.CREATE,sdf.parse("21/01/1989"));
+    List<IndexingOperation> indexingOperations = new ArrayList<>();
+    indexingOperations.add(create1);
+    indexingOperations.add(create2);
+    Document document1 = new Document("post", "1", null, sdf.parse("19/01/1989"), null, null);
+    Document document2 = new Document("post", "2", null, sdf.parse("19/01/1989"), null, null);
+    when(indexingOperationDAO.findAllFirst(anyInt())).thenReturn(indexingOperations);
+    when(elasticIndexingServiceConnector.create("1")).thenReturn(document1);
+    when(elasticIndexingServiceConnector.create("2")).thenReturn(document2);
+
+    //When
+    elasticIndexingService.process();
+
+    //Then
+    //Two CUD request should be send because the first create request will reached the limit size (= 1 byte)
+    verify(elasticIndexingClient, times(2)).sendCUDRequest(anyString());
+    verifyNoMoreInteractions(elasticIndexingClient);
   }
 
 }

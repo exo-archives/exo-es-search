@@ -42,9 +42,13 @@ public class ElasticIndexingService extends IndexingService {
   private static final String BATCH_NUMBER_PROPERTY_NAME = "exo.es.indexing.batch.number";
   private static final Integer BATCH_NUMBER_DEFAULT = 1000;
 
+  private static final String REQUEST_SIZE_LIMIT_PROPERTY_NAME = "exo.es.indexing.request.size.limit";
+  private static final Integer REQUEST_SIZE_LIMIT_DEFAULT = 10485760; //in bytes, default = 10MB
+
   private static final Log LOG = ExoLogger.getExoLogger(ElasticIndexingService.class);
 
   private Integer batchNumber = BATCH_NUMBER_DEFAULT;
+  private Integer requestSizeLimit = REQUEST_SIZE_LIMIT_DEFAULT;
 
   private final IndexingOperationDAO indexingOperationDAO;
 
@@ -58,6 +62,9 @@ public class ElasticIndexingService extends IndexingService {
     this.elasticContentRequestBuilder = elasticContentRequestBuilder;
     if (StringUtils.isNotBlank(PropertyManager.getProperty(BATCH_NUMBER_PROPERTY_NAME))) {
       this.batchNumber = Integer.valueOf(PropertyManager.getProperty(BATCH_NUMBER_PROPERTY_NAME));
+    }
+    if (StringUtils.isNotBlank(PropertyManager.getProperty(REQUEST_SIZE_LIMIT_PROPERTY_NAME))) {
+      this.requestSizeLimit = Integer.valueOf(PropertyManager.getProperty(REQUEST_SIZE_LIMIT_PROPERTY_NAME));
     }
   }
 
@@ -132,6 +139,7 @@ public class ElasticIndexingService extends IndexingService {
 
   @ExoTransactional
   private int processBulk() {
+    //Map<OperationType={Create,Delete,...}, Map<String=EntityType, List<IndexingOperation>>> indexingQueueSorted
     Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted = new HashMap<>();
     List<IndexingOperation> indexingOperations;
     Date startProcessing = new Date(0L);
@@ -161,8 +169,8 @@ public class ElasticIndexingService extends IndexingService {
 
     // Process all the requests for “init of the ES create mapping” (Operation type = I) in the indexing queue (if any)
     if (indexingQueueSorted.containsKey(OperationType.INIT)) {
-      for (String type : indexingQueueSorted.get(OperationType.INIT).keySet()) {
-        sendInitRequests(getConnectors().get(type));
+      for (String entityType : indexingQueueSorted.get(OperationType.INIT).keySet()) {
+        sendInitRequests(getConnectors().get(entityType));
       }
       indexingQueueSorted.remove(OperationType.INIT);
     }
@@ -170,9 +178,9 @@ public class ElasticIndexingService extends IndexingService {
     // Process all the requests for “remove all documents of type” (Operation type = X) in the indexing queue (if any)
     // = Delete type in ES
     if (indexingQueueSorted.containsKey(OperationType.DELETE_ALL)) {
-      for (String type : indexingQueueSorted.get(OperationType.DELETE_ALL).keySet()) {
-        if (indexingQueueSorted.get(OperationType.DELETE_ALL).containsKey(type)) {
-          for (IndexingOperation indexingOperation : indexingQueueSorted.get(OperationType.DELETE_ALL).get(type)) {
+      for (String entityType : indexingQueueSorted.get(OperationType.DELETE_ALL).keySet()) {
+        if (indexingQueueSorted.get(OperationType.DELETE_ALL).containsKey(entityType)) {
+          for (IndexingOperation indexingOperation : indexingQueueSorted.get(OperationType.DELETE_ALL).get(entityType)) {
             //Remove the type (= remove all documents of this type) and recreate it
             ElasticIndexingServiceConnector connector = (ElasticIndexingServiceConnector) getConnectors().get(indexingOperation.getEntityType());
             elasticIndexingClient.sendDeleteTypeRequest(connector.getIndex(), connector.getType());
@@ -191,8 +199,8 @@ public class ElasticIndexingService extends IndexingService {
 
     //Process Delete document operation
     if (indexingQueueSorted.containsKey(OperationType.DELETE)) {
-      for (String deleteOperations : indexingQueueSorted.get(OperationType.DELETE).keySet()) {
-        for (IndexingOperation deleteIndexQueue : indexingQueueSorted.get(OperationType.DELETE).get(deleteOperations)) {
+      for (String entityType : indexingQueueSorted.get(OperationType.DELETE).keySet()) {
+        for (IndexingOperation deleteIndexQueue : indexingQueueSorted.get(OperationType.DELETE).get(entityType)) {
           bulkRequest += elasticContentRequestBuilder.getDeleteDocumentRequestContent((ElasticIndexingServiceConnector) getConnectors().get(deleteIndexQueue.getEntityType()), deleteIndexQueue.getEntityId());
           //Remove the object from other create or update operations planned before the timestamp of the delete operation
           deleteOperationsByEntityIdForTypesBefore(new OperationType[]{OperationType.CREATE}, indexingQueueSorted, deleteIndexQueue);
@@ -205,11 +213,13 @@ public class ElasticIndexingService extends IndexingService {
 
     //Process Create document operation
     if (indexingQueueSorted.containsKey(OperationType.CREATE)) {
-      for (String createOperations : indexingQueueSorted.get(OperationType.CREATE).keySet()) {
-        for (IndexingOperation createIndexQueue : indexingQueueSorted.get(OperationType.CREATE).get(createOperations)) {
+      for (String entityType : indexingQueueSorted.get(OperationType.CREATE).keySet()) {
+        for (IndexingOperation createIndexQueue : indexingQueueSorted.get(OperationType.CREATE).get(entityType)) {
           bulkRequest += elasticContentRequestBuilder.getCreateDocumentRequestContent((ElasticIndexingServiceConnector) getConnectors().get(createIndexQueue.getEntityType()), createIndexQueue.getEntityId());
           //Remove the object from other update operations for this entityId
           deleteOperationsByEntityIdForTypes(new OperationType[]{OperationType.UPDATE}, indexingQueueSorted, createIndexQueue);
+          //Check if the bulk request limit size is already reached
+          bulkRequest = checkBulkRequestSizeReachedLimitation(bulkRequest);
         }
       }
       //Remove the create operations from the map
@@ -218,16 +228,18 @@ public class ElasticIndexingService extends IndexingService {
 
     //Process Update document operation
     if (indexingQueueSorted.containsKey(OperationType.UPDATE)) {
-      for (String updateOperations : indexingQueueSorted.get(OperationType.UPDATE).keySet()) {
-        for (IndexingOperation updateIndexQueue : indexingQueueSorted.get(OperationType.UPDATE).get(updateOperations)) {
+      for (String entityType : indexingQueueSorted.get(OperationType.UPDATE).keySet()) {
+        for (IndexingOperation updateIndexQueue : indexingQueueSorted.get(OperationType.UPDATE).get(entityType)) {
           bulkRequest += elasticContentRequestBuilder.getUpdateDocumentRequestContent((ElasticIndexingServiceConnector) getConnectors().get(updateIndexQueue.getEntityType()), updateIndexQueue.getEntityId());
+          //Check if the bulk request limit size is already reached
+          bulkRequest = checkBulkRequestSizeReachedLimitation(bulkRequest);
         }
       }
       //Remove the update operations from the map
       indexingQueueSorted.remove(OperationType.UPDATE);
     }
 
-    if (!bulkRequest.equals("")) {
+    if (StringUtils.isNotBlank(bulkRequest)) {
       elasticIndexingClient.sendCUDRequest(bulkRequest);
     }
 
@@ -344,6 +356,39 @@ public class ElasticIndexingService extends IndexingService {
     indexingOperation.setEntityType(IndexingServiceConnector.getType());
     indexingOperation.setOperation(operation);
     return indexingOperation;
+  }
+
+  /**
+   * If the bulk request already reached a size limitation, the bulk request need to be sent immediately
+   *
+   * @param bulkRequest to analyze
+   * @return
+   */
+  private String checkBulkRequestSizeReachedLimitation(String bulkRequest) {
+    if (bulkRequest.getBytes().length >= requestSizeLimit) {
+      elasticIndexingClient.sendCUDRequest(bulkRequest);
+      //return an empty bulk request
+      return "";
+    }
+    else {
+      return bulkRequest;
+    }
+  }
+
+  public Integer getBatchNumber() {
+    return batchNumber;
+  }
+
+  public void setBatchNumber(Integer batchNumber) {
+    this.batchNumber = batchNumber;
+  }
+
+  public Integer getRequestSizeLimit() {
+    return requestSizeLimit;
+  }
+
+  public void setRequestSizeLimit(Integer requestSizeLimit) {
+    this.requestSizeLimit = requestSizeLimit;
   }
 }
 
