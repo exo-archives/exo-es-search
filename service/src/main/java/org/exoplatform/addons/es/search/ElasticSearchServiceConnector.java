@@ -51,7 +51,6 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
   //SearchResult information
   private String img;
   private String titleElasticFieldName = "title";
-  private String detailElasticFieldName = "description";
 
   private Map<String, String> sortMapping = new HashMap<>();
 
@@ -60,7 +59,6 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     this.client = client;
     PropertiesParam param = initParams.getPropertiesParam("constructor.params");
     this.index = param.getProperty("index");
-    this.detailElasticFieldName = param.getProperty("detailField");
     this.titleElasticFieldName = param.getProperty("titleField");
     this.searchFields = new ArrayList<>(Arrays.asList(param.getProperty("searchFields").split(",")));
     //Indicate in which order element will be displayed
@@ -139,7 +137,6 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     for(Object jsonHit : jsonHits) {
       JSONObject hitSource = (JSONObject) ((JSONObject) jsonHit).get("_source");
       String title = (String) hitSource.get(titleElasticFieldName);
-      String description = (String) hitSource.get(detailElasticFieldName);
       String url = (String) hitSource.get("url");
       Long lastUpdatedDate = (Long) hitSource.get("lastUpdatedDate");
       if (lastUpdatedDate == null) lastUpdatedDate = new Date().getTime();
@@ -162,7 +159,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
           url,
           title,
           excerpt.toString(),
-          description,
+          null,
           img,
           lastUpdatedDate,
           //score must not be null as "track_scores" is part of the query
@@ -252,14 +249,6 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
   public void setImg(String img) {
     this.img = img;
-  }
-
-  public String getDetailElasticFieldName() {
-    return detailElasticFieldName;
-  }
-
-  public void setDetailElasticFieldName(String detailElasticFieldName) {
-    this.detailElasticFieldName = detailElasticFieldName;
   }
 
   public String getTitleElasticFieldName() {
