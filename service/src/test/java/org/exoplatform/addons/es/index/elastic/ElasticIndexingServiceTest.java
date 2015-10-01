@@ -134,60 +134,60 @@ public class ElasticIndexingServiceTest {
   }
 
   /*
-  addToIndexingQueue(String connectorName, String id, String operation)
+  indexing Method
    */
 
   @Test
-  public void addToIndexQueue_ifInitOperation_initIndexingQueueCreated() {
+  public void init_ifInitOperation_initIndexingQueueCreated() {
     //Given
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
     IndexingOperation indexingOperation = new IndexingOperation(null,null,"post",OperationType.INIT,null);
     //When
-    elasticIndexingService.addToIndexingQueue("post", null, OperationType.INIT);
+    elasticIndexingService.init("post");
     //Then
     verify(indexingOperationDAO, times(1)).create(indexingOperation);
   }
 
   @Test
-  public void addToIndexQueue_ifDeleteAllOperation_deleteAllIndexingQueueCreated() {
+  public void unindexAll_ifDeleteAllOperation_deleteAllIndexingQueueCreated() {
     //Given
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
     IndexingOperation indexingOperation = new IndexingOperation(null,null,"post",OperationType.DELETE_ALL,null);
     //When
-    elasticIndexingService.addToIndexingQueue("post", null, OperationType.DELETE_ALL);
+    elasticIndexingService.unindexAll("post");
     //Then
     verify(indexingOperationDAO, times(1)).create(indexingOperation);
   }
 
   @Test
-  public void addToIndexQueue_ifDeleteOperation_deleteIndexingQueueCreated() {
+  public void unindex_ifDeleteOperation_deleteIndexingQueueCreated() {
     //Given
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
     IndexingOperation indexingOperation = new IndexingOperation(null,"1","post",OperationType.DELETE,null);
     //When
-    elasticIndexingService.addToIndexingQueue("post", "1", OperationType.DELETE);
+    elasticIndexingService.unindex("post", "1");
     //Then
     verify(indexingOperationDAO, times(1)).create(indexingOperation);
   }
 
   @Test
-  public void addToIndexQueue_ifUpdateOperation_updateIndexingQueueCreated() {
+  public void reindex_ifUpdateOperation_updateIndexingQueueCreated() {
     //Given
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
     IndexingOperation indexingOperation = new IndexingOperation(null,"1","post",OperationType.UPDATE,null);
     //When
-    elasticIndexingService.addToIndexingQueue("post", "1", OperationType.UPDATE);
+    elasticIndexingService.reindex("post", "1");
     //Then
     verify(indexingOperationDAO, times(1)).create(indexingOperation);
   }
 
   @Test
-  public void addToIndexQueue_ifCreateOperation_createIndexingQueueCreated() {
+  public void index_ifCreateOperation_createIndexingQueueCreated() {
     //Given
     elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
     IndexingOperation indexingOperation = new IndexingOperation(null,"1","post",OperationType.CREATE,null);
     //When
-    elasticIndexingService.addToIndexingQueue("post", "1", OperationType.CREATE);
+    elasticIndexingService.index("post", "1");
     //Then
     verify(indexingOperationDAO, times(1)).create(indexingOperation);
   }
@@ -537,7 +537,7 @@ public class ElasticIndexingServiceTest {
     //Given
     assertThat(elasticIndexingService.getConnectors().size(), is(0));
     //When
-    elasticIndexingService.addToIndexingQueue("wiki", "1", OperationType.CREATE);
+    elasticIndexingService.index("wiki", "1");
     //Then
     fail("Expected IllegalStateException -> no connector");
   }

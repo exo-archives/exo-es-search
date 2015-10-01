@@ -52,13 +52,61 @@ public abstract class IndexingService {
   }
 
   /**
+   * Add a init operation to the indexing queue to init the index
+   * @param connectorName Name of the connector
+   * @LevelAPI Experimental
+   */
+  public void init(String connectorName) {
+    addToIndexingQueue(connectorName, null, OperationType.INIT);
+  }
+
+  /**
+   * Add a create operation to the indexing queue
+   * @param connectorName Name of the connector
+   * @param id id of the document
+   * @LevelAPI Experimental
+   */
+  public void index(String connectorName, String id) {
+    addToIndexingQueue(connectorName, id, OperationType.CREATE);
+  }
+
+  /**
+   * Add a update operation to the indexing queue
+   * @param connectorName Name of the connector
+   * @param id id of the document
+   * @LevelAPI Experimental
+   */
+  public void reindex(String connectorName, String id) {
+    addToIndexingQueue(connectorName, id, OperationType.UPDATE);
+  }
+
+  /**
+   * Add a delete operation to the indexing queue
+   * @param connectorName Name of the connector
+   * @param id id of the document
+   * @LevelAPI Experimental
+   */
+  public void unindex(String connectorName, String id) {
+    addToIndexingQueue(connectorName, id, OperationType.DELETE);
+  }
+
+  /**
+   * Add a delete all type operation to the indexing queue
+   * @param connectorName Name of the connector
+   * @LevelAPI Experimental
+   */
+  public void unindexAll(String connectorName) {
+    addToIndexingQueue(connectorName, null, OperationType.DELETE_ALL);
+  }
+
+  /**
    * Add a new document to the create queue
    * @param connectorName Name of the connector
    * @param id id of the document
    * @param operation operation to the create {create, update, delete, init}
    * @LevelAPI Experimental
    */
-  public abstract void addToIndexingQueue(String connectorName, String id, OperationType operation);
+  protected abstract void addToIndexingQueue(String connectorName, String id, OperationType operation);
 
   /**
    * Index all document in the indexing queue
