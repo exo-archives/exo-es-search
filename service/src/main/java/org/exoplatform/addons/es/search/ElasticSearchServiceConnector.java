@@ -87,6 +87,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     esQuery.append("       { \"" + (StringUtils.isNotBlank(sortMapping.get(sort))?sortMapping.get(sort):"_score") + "\" : ");
     esQuery.append(             "{\"order\" : \"" + (StringUtils.isNotBlank(order)?order:"asc") + "\"}}\n");
     esQuery.append("     ],\n");
+    esQuery.append("     \"_source\": [\"" + getTitleElasticFieldName() + "\"],");
     esQuery.append("     \"query\": {\n");
     esQuery.append("        \"filtered\" : {\n");
     esQuery.append("            \"query\" : {\n");
