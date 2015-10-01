@@ -69,15 +69,20 @@ public class ElasticIndexingService extends IndexingService {
   }
 
   @Override
-  public void addConnector(IndexingServiceConnector IndexingServiceConnector) {
-    if (getConnectors().containsKey(IndexingServiceConnector.getType())) {
+  public void addConnector(IndexingServiceConnector indexingServiceConnector) {
+    addConnector(indexingServiceConnector, false);
+  }
+
+  @Override
+  public void addConnector(IndexingServiceConnector indexingServiceConnector, Boolean override) {
+    if (getConnectors().containsKey(indexingServiceConnector.getType()) && override.equals(false)) {
       LOG.error("Impossible to add connector {}. A connector with the same name has already been registered.",
-              IndexingServiceConnector.getType());
+          indexingServiceConnector.getType());
     } else {
-      getConnectors().put(IndexingServiceConnector.getType(), IndexingServiceConnector);
-      LOG.info("A new Indexing Connector has been added: {}", IndexingServiceConnector.getType());
-      //When a new connector is added, ES create and type need to be created
-      addToIndexingQueue(IndexingServiceConnector.getType(), null, OperationType.INIT);
+      getConnectors().put(indexingServiceConnector.getType(), indexingServiceConnector);
+      LOG.info("An Indexing Connector has been added: {}", indexingServiceConnector.getType());
+      //When a new connector is added, ES index and type need to be created
+      addToIndexingQueue(indexingServiceConnector.getType(), null, OperationType.INIT);
     }
   }
 

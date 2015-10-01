@@ -33,12 +33,22 @@ public abstract class IndexingService {
    * @LevelAPI Experimental
    */
   public void addConnector (IndexingServiceConnector indexingServiceConnector) {
-    if (connectors.containsKey(indexingServiceConnector.getType())) {
+    addConnector(indexingServiceConnector, false);
+  }
+
+  /**
+   * Add Indexing Connector to the service
+   * @param indexingServiceConnector the indexing connector to add
+   * @param override equal true if we can override an existing connector, false otherwise
+   * @LevelAPI Experimental
+   */
+  public void addConnector (IndexingServiceConnector indexingServiceConnector, Boolean override) {
+    if (connectors.containsKey(indexingServiceConnector.getType()) && override.equals(false)) {
       LOG.error("Impossible to add connector {}. A connector with the same name has already been registered.",
-              indexingServiceConnector.getType());
+          indexingServiceConnector.getType());
     } else {
       connectors.put(indexingServiceConnector.getType(), indexingServiceConnector);
-      LOG.info("A new Indexing Connector has been added: {}", indexingServiceConnector.getType());
+      LOG.info("An Indexing Connector has been added: {}", indexingServiceConnector.getType());
     }
   }
 
