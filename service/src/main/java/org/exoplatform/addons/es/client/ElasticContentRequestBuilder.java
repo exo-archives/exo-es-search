@@ -150,8 +150,9 @@ public class ElasticContentRequestBuilder {
   /**
    *
    * Get an ES update document content to insert in a bulk request
+   * We use the create api to reindex the full document (and not partially)
    * For instance:
-   * { "update" : { "_index" : "blog", "_type" : "post", "_id" : "blog_post_1" } }
+   * { "create" : { "_index" : "blog", "_type" : "post", "_id" : "blog_post_1" } }
    * { "field1" : "value3" }
    *
    * @return JSON containing an update document request
@@ -164,7 +165,7 @@ public class ElasticContentRequestBuilder {
     Document document = connector.update(id);
 
     JSONObject updateRequest = new JSONObject();
-    updateRequest.put("update", ElasticInformation);
+    updateRequest.put("index", ElasticInformation);
 
     String request = updateRequest.toJSONString()+"\n"+document.toJSON()+"\n";
 
