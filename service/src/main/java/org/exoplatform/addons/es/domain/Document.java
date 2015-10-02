@@ -19,6 +19,7 @@
 
 package org.exoplatform.addons.es.domain;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -123,6 +124,17 @@ public class Document {
       this.fields = new HashMap<>();
     }
     this.fields.put(key, value);
+    return this;
+  }
+
+  public Document addField(String key, byte[] value) {
+    if (StringUtils.isBlank(key)) {
+      throw new IllegalArgumentException("Key is null");
+    }
+    if (this.fields==null) {
+      this.fields = new HashMap<>();
+    }
+    this.fields.put(key, new String(Base64.encodeBase64(value)));
     return this;
   }
 }
