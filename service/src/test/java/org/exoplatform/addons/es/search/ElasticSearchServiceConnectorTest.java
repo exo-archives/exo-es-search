@@ -28,10 +28,10 @@ public class ElasticSearchServiceConnectorTest {
         setCurrentIdentity();
         ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
         //When
-        String query = connector.buildQuery("My Wiki", 0, 20, "name", "asc");
+        String query = connector.buildQuery("My Wiki", null, 0, 20, "name", "asc");
         //Then
-        assertThat(query, containsString("{\"term\" : { \"permissions\" : \"BCH\" }}"));
-        assertThat(query, containsString("{\"regexp\" : { \"permissions\" : \".*:Admin\" }}"));
+        assertThat(query, containsString("\"term\" : { \"permissions\" : \"BCH\" }"));
+        assertThat(query, containsString("\"regexp\" : { \"permissions\" : \".*:Admin\" }"));
     }
 
     @Test
@@ -40,7 +40,7 @@ public class ElasticSearchServiceConnectorTest {
         setCurrentIdentity();
         ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
         //When
-        String query = connector.buildQuery("My Wiki", 0, 20, null, null);
+        String query = connector.buildQuery("My Wiki", null, 0, 20, null, null);
         //Then
         assertThat(query, containsString("{ \"_score\" : {\"order\" : \"asc\"}}"));
     }
@@ -51,7 +51,7 @@ public class ElasticSearchServiceConnectorTest {
     setCurrentIdentity();
     ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
     //When
-    String query = connector.buildQuery("My Wiki", 0, 20, "relevancy", null);
+    String query = connector.buildQuery("My Wiki", null, 0, 20, "relevancy", null);
     //Then
     assertThat(query, containsString("{ \"_score\" : {\"order\" : \"asc\"}}"));
   }
@@ -62,7 +62,7 @@ public class ElasticSearchServiceConnectorTest {
     setCurrentIdentity();
     ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
     //When
-    String query = connector.buildQuery("My Wiki", 0, 20, "date", null);
+    String query = connector.buildQuery("My Wiki", null, 0, 20, "date", null);
     //Then
     assertThat(query, containsString("{ \"lastUpdatedDate\" : {\"order\" : \"asc\"}}"));
   }
@@ -73,7 +73,7 @@ public class ElasticSearchServiceConnectorTest {
         setCurrentIdentity();
         ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
         //When
-        String query = connector.buildQuery("My Wiki", 0, 20, "name", null);
+        String query = connector.buildQuery("My Wiki", null, 0, 20, "name", null);
         //Then
         assertThat(query, containsString("\"sort\""));
         assertThat(query, containsString("{\"order\" : \"asc\"}"));
@@ -85,7 +85,7 @@ public class ElasticSearchServiceConnectorTest {
         setCurrentIdentity();
         ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
         //When
-        String query = connector.buildQuery("My Wiki", 0, 20, "name", "asc");
+        String query = connector.buildQuery("My Wiki", null, 0, 20, "name", "asc");
         //Then
         assertThat(query, containsString("\"track_scores\": true"));
     }
@@ -96,7 +96,7 @@ public class ElasticSearchServiceConnectorTest {
         ConversationState.setCurrent(null);
         ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
         //When
-        connector.buildQuery("My Wiki", 0, 20, null, null);
+        connector.buildQuery("My Wiki", null, 0, 20, null, null);
         //Then
         fail("IllegalStateException 'No identity found' expected");
     }

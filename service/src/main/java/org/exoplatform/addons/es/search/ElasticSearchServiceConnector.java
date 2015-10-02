@@ -69,13 +69,13 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
   @Override
   public Collection<SearchResult> search(SearchContext context, String query, Collection<String> sites,
                                          int offset, int limit, String sort, String order) {
-    String esQuery = buildQuery(query, offset, limit, sort, order);
+    String esQuery = buildQuery(query, sites, offset, limit, sort, order);
     String jsonResponse = this.client.sendRequest(esQuery, this.index, this.getSearchType());
     return buildResult(jsonResponse);
 
   }
 
-  public String buildQuery(String query, int offset, int limit, String sort, String order) {
+  public String buildQuery(String query, Collection<String> sites, int offset, int limit, String sort, String order) {
     StringBuilder esQuery = new StringBuilder();
     esQuery.append("{\n");
     esQuery.append("     \"from\" : " + offset + ", \"size\" : " + limit + ",\n");
@@ -97,10 +97,25 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     esQuery.append("                }\n");
     esQuery.append("            },\n");
     esQuery.append("            \"filter\" : {\n");
-    esQuery.append("               \"bool\" : { ");
-    esQuery.append("                  \"should\" : [ " + getPermissionFilter() + " ]\n");
-    esQuery.append("               }\n");
-    esQuery.append("            }\n");
+    esQuery.append("              \"bool\" : {\n");
+    esQuery.append("                \"must\" : [\n");
+    esQuery.append("                  {\n");
+    esQuery.append("                   \"bool\" : {\n");
+    esQuery.append("                     \"should\" : [\n");
+    esQuery.append("                      " + getPermissionFilter() + "\n");
+    esQuery.append("                      ]\n");
+    esQuery.append("                    }\n");
+    esQuery.append("                  },\n");
+    esQuery.append("                  {\n");
+    esQuery.append("                   \"bool\" : {\n");
+    esQuery.append("                     \"should\" : [\n");
+    esQuery.append("                      " + getSitesFilter(sites) + "\n");
+    esQuery.append("                       ]\n");
+    esQuery.append("                    }\n");
+    esQuery.append("                  }\n");
+    esQuery.append("                ]\n");
+    esQuery.append("              }\n");
+    esQuery.append("            }");
     esQuery.append("        }\n");
     esQuery.append("     },\n");
     esQuery.append("     \"highlight\" : {\n");
@@ -184,11 +199,40 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     Set<String> membershipSet = getUserMemberships();
     if ((membershipSet != null) && (membershipSet.size()>0)) {
       String memberships = StringUtils.join(membershipSet.toArray(new String[membershipSet.size()]), "|");
-      return "{\"term\" : { \"permissions\" : \"" + getCurrentUser() + "\" }}," +
-          "{\"regexp\" : { \"permissions\" : \"" + memberships + "\" }}";
+      return "{\n" +
+          "  \"term\" : { \"permissions\" : \"" + getCurrentUser() + "\" }\n" +
+          "},\n" +
+          "{\n" +
+          "  \"regexp\" : { \"permissions\" : \"" + memberships + "\" }\n" +
+          "}";
     }
     else {
-      return "{\"term\" : { \"permissions\" : \"" + getCurrentUser() + "\" }}";
+      return "{\n" +
+          "  \"term\" : { \"permissions\" : \"" + getCurrentUser() + "\" }\n" +
+          "}";
+    }
+  }
+
+  private String getSitesFilter(Collection<String> sitesCollection) {
+    if ((sitesCollection != null) && (sitesCollection.size()>0)) {
+      String sites = StringUtils.join(sitesCollection.toArray(new String[sitesCollection.size()]), "|");
+      return "{\n" +
+          "  \"not\": {\n" +
+          "    \"exists\" : { \"field\" : \"sites\" }\n" +
+          "  }\n" +
+          "},\n" +
+          "{\n" +
+          "  \"regexp\" : { \n" +
+          "    \"sites\" : \"" + sites + "\"\n" +
+          "  }\n" +
+          "}";
+    }
+    else {
+      return "{\n" +
+          "  \"not\": {\n" +
+          "    \"exists\" : { \"field\" : \"sites\" }\n" +
+          "  }\n" +
+          "}";
     }
   }
 

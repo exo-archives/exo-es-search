@@ -66,7 +66,8 @@ public class ElasticContentRequestBuilder {
    * {
        "type_name" : {
          "properties" : {
-          "permissions" : {"type" : "string", "index" : "not_analyzed" }
+          "permissions" : {"type" : "string", "index" : "not_analyzed" },
+          "sites" : {"type" : "string", "index" : "not_analyzed" }
          }
        }
      }
@@ -79,15 +80,16 @@ public class ElasticContentRequestBuilder {
     //If no mapping provided, send the default one
     if (connector.getMapping() == null || connector.getMapping().isEmpty()) {
 
-      JSONObject permissionAttributes = new JSONObject();
-      permissionAttributes.put("type", "string");
-      permissionAttributes.put("index", "not_analyzed");
+      JSONObject notAnalyzedField = new JSONObject();
+      notAnalyzedField.put("type", "string");
+      notAnalyzedField.put("index", "not_analyzed");
 
-      JSONObject permission = new JSONObject();
-      permission.put("permissions", permissionAttributes);
+      JSONObject properties = new JSONObject();
+      properties.put("permissions", notAnalyzedField);
+      properties.put("sites", notAnalyzedField);
 
       JSONObject mappingProperties = new JSONObject();
-      mappingProperties.put("properties",permission);
+      mappingProperties.put("properties",properties);
 
       JSONObject mappingJSON = new JSONObject();
       mappingJSON.put(connector.getType(), mappingProperties);
