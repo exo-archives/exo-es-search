@@ -93,6 +93,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
         when(wikiConnector.getIndex()).thenReturn("wiki");
         when(wikiConnector.getShards()).thenReturn(1);
         when(wikiConnector.getReplicas()).thenReturn(1);
+      when(wikiConnector.getMapping()).thenCallRealMethod();
         //IndexService
         dao = new IndexingOperationDAOImpl();
         ElasticIndexingClient client = new ElasticIndexingClient(url);

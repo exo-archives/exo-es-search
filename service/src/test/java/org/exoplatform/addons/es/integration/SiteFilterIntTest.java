@@ -104,6 +104,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
     when(testConnector.getIndex()).thenReturn("test");
     when(testConnector.getShards()).thenReturn(1);
     when(testConnector.getReplicas()).thenReturn(1);
+    when(testConnector.getMapping()).thenCallRealMethod();
     //IndexService
     dao = new IndexingOperationDAOImpl();
     ElasticIndexingClient client = new ElasticIndexingClient(url);

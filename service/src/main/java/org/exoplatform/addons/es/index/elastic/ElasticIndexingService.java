@@ -189,7 +189,7 @@ public class ElasticIndexingService extends IndexingService {
             //Remove the type (= remove all documents of this type) and recreate it
             ElasticIndexingServiceConnector connector = (ElasticIndexingServiceConnector) getConnectors().get(indexingOperation.getEntityType());
             elasticIndexingClient.sendDeleteTypeRequest(connector.getIndex(), connector.getType());
-            elasticIndexingClient.sendCreateTypeRequest(connector.getIndex(), connector.getType(), elasticContentRequestBuilder.getCreateTypeRequestContent(connector));
+            elasticIndexingClient.sendCreateTypeRequest(connector.getIndex(), connector.getType(), connector.getMapping());
             //Remove all useless CUD operation that was plan before this delete all
             deleteOperationsForTypesBefore(new OperationType[]{OperationType.CREATE, OperationType.DELETE}, indexingQueueSorted, indexingOperation);
             deleteOperationsForTypes(new OperationType[]{OperationType.UPDATE}, indexingQueueSorted, indexingOperation);
@@ -318,13 +318,13 @@ public class ElasticIndexingService extends IndexingService {
   private void sendInitRequests(IndexingServiceConnector IndexingServiceConnector) {
     ElasticIndexingServiceConnector connector = (ElasticIndexingServiceConnector) IndexingServiceConnector;
 
-    //Send request to create create
+    //Send request to create index
     elasticIndexingClient.sendCreateIndexRequest(
         connector.getIndex(), elasticContentRequestBuilder.getCreateIndexRequestContent(connector));
 
     //Send request to create type
     elasticIndexingClient.sendCreateTypeRequest(
-        connector.getIndex(), connector.getType(), elasticContentRequestBuilder.getCreateTypeRequestContent(connector));
+        connector.getIndex(), connector.getType(), connector.getMapping());
   }
 
   private void addInitOperation(String connector) {

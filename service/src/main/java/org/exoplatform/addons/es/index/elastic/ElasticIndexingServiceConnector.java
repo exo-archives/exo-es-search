@@ -21,6 +21,7 @@ import org.exoplatform.addons.es.index.IndexingServiceConnector;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
+import org.json.simple.JSONObject;
 
 /**
  * Created by The eXo Platform SAS
@@ -36,7 +37,6 @@ public abstract class ElasticIndexingServiceConnector extends IndexingServiceCon
   private static final String SHARDS_PROPERTY_NAME = "exo.es.indexing.shard.number.default";
 
   protected String index;
-  protected String mapping;
   protected Integer shards = SHARDS_NUMBER_DEFAULT;
   protected Integer replicas = REPLICAS_NUMBER_DEFAULT;
 
@@ -44,7 +44,6 @@ public abstract class ElasticIndexingServiceConnector extends IndexingServiceCon
     PropertiesParam param = initParams.getPropertiesParam("constructor.params");
     this.index = param.getProperty("index");
     setType(param.getProperty("type"));
-    this.mapping = param.getProperty("mapping");
     //Get number of replicas in connector declaration or exo properties
     if (StringUtils.isNotBlank(param.getProperty("replica.number"))) {
       this.replicas = Integer.valueOf(param.getProperty("replica.number"));
@@ -61,20 +60,48 @@ public abstract class ElasticIndexingServiceConnector extends IndexingServiceCon
     }
   }
 
+  /**
+   *
+   * Default mapping rules for ES type
+   * {
+     "type_name" : {
+       "properties" : {
+         "permissions" : {"type" : "string", "index" : "not_analyzed" },
+         "sites" : {"type" : "string", "index" : "not_analyzed" }
+       }
+     }
+   }
+   *
+   * This method must be overridden by your specific connector if you want to define special mapping
+   *
+   * @return JSON containing a mapping to create new type
+   *
+   */
+  public String getMapping() {
+
+      JSONObject notAnalyzedField = new JSONObject();
+      notAnalyzedField.put("type", "string");
+      notAnalyzedField.put("index", "not_analyzed");
+
+      JSONObject properties = new JSONObject();
+      properties.put("permissions", notAnalyzedField);
+      properties.put("sites", notAnalyzedField);
+
+      JSONObject mappingProperties = new JSONObject();
+      mappingProperties.put("properties",properties);
+
+      JSONObject mappingJSON = new JSONObject();
+      mappingJSON.put(getType(), mappingProperties);
+
+      return mappingJSON.toJSONString();
+  }
+
   public String getIndex() {
     return index;
   }
 
   public void setIndex(String index) {
     this.index = index;
-  }
-
-  public String getMapping() {
-    return mapping;
-  }
-
-  public void setMapping(String mapping) {
-    this.mapping = mapping;
   }
 
   public Integer getShards() {

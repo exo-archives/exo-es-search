@@ -61,47 +61,6 @@ public class ElasticContentRequestBuilder {
 
   /**
    *
-   * Get an ES create type request content
-   * For instance:
-   * {
-       "type_name" : {
-         "properties" : {
-          "permissions" : {"type" : "string", "index" : "not_analyzed" },
-          "sites" : {"type" : "string", "index" : "not_analyzed" }
-         }
-       }
-     }
-   *
-   * @return JSON containing a create type request content
-   *
-   */
-  public String getCreateTypeRequestContent(ElasticIndexingServiceConnector connector) {
-
-    //If no mapping provided, send the default one
-    if (connector.getMapping() == null || connector.getMapping().isEmpty()) {
-
-      JSONObject notAnalyzedField = new JSONObject();
-      notAnalyzedField.put("type", "string");
-      notAnalyzedField.put("index", "not_analyzed");
-
-      JSONObject properties = new JSONObject();
-      properties.put("permissions", notAnalyzedField);
-      properties.put("sites", notAnalyzedField);
-
-      JSONObject mappingProperties = new JSONObject();
-      mappingProperties.put("properties",properties);
-
-      JSONObject mappingJSON = new JSONObject();
-      mappingJSON.put(connector.getType(), mappingProperties);
-
-      return mappingJSON.toJSONString();
-    }
-    //Else return the mapping provide by developer
-    return connector.getMapping();
-  }
-
-  /**
-   *
    * Get an ES delete document content to insert in a bulk request
    * For instance:
    * { "delete" : { "_index" : "blog", "_type" : "post", "_id" : "blog_post_1" } }

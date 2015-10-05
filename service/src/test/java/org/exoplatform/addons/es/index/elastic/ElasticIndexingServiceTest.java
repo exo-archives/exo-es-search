@@ -54,7 +54,7 @@ public class ElasticIndexingServiceTest {
 
   @Mock
   private IndexingOperationDAO indexingOperationDAO;
-  
+
   @Mock
   private ElasticIndexingClient elasticIndexingClient;
 
@@ -258,13 +258,13 @@ public class ElasticIndexingServiceTest {
         elasticContentRequestBuilder.getCreateIndexRequestContent(elasticIndexingServiceConnector));
     orderClient.verify(elasticIndexingClient).sendCreateTypeRequest(elasticIndexingServiceConnector.getIndex(),
         elasticIndexingServiceConnector.getType(),
-        elasticContentRequestBuilder.getCreateTypeRequestContent(elasticIndexingServiceConnector));
+        elasticIndexingServiceConnector.getMapping());
     //Then Operation X
     orderClient.verify(elasticIndexingClient).sendDeleteTypeRequest(elasticIndexingServiceConnector.getIndex(),
         elasticIndexingServiceConnector.getType());
     orderClient.verify(elasticIndexingClient).sendCreateTypeRequest(elasticIndexingServiceConnector.getIndex(),
         elasticIndexingServiceConnector.getType(),
-        elasticContentRequestBuilder.getCreateTypeRequestContent(elasticIndexingServiceConnector));
+        elasticIndexingServiceConnector.getMapping());
     //Then Operation D, C and U
     orderClient.verify(elasticIndexingClient).sendCUDRequest(anyString());
     //Then no more interaction with client
@@ -304,8 +304,6 @@ public class ElasticIndexingServiceTest {
     InOrder orderRequestBuilder = inOrder(elasticContentRequestBuilder);
     //Operation I
     orderRequestBuilder.verify(elasticContentRequestBuilder).getCreateIndexRequestContent(elasticIndexingServiceConnector);
-    //+ X (so getCreateTypeRequestContent is call two times)
-    orderRequestBuilder.verify(elasticContentRequestBuilder, times(2)).getCreateTypeRequestContent(elasticIndexingServiceConnector);
     //Then Operation D, C and U
     orderRequestBuilder.verify(elasticContentRequestBuilder).getDeleteDocumentRequestContent(any(ElasticIndexingServiceConnector.class), anyString());
     orderRequestBuilder.verify(elasticContentRequestBuilder).getCreateDocumentRequestContent(elasticIndexingServiceConnector, "2");
@@ -343,7 +341,7 @@ public class ElasticIndexingServiceTest {
         elasticIndexingServiceConnector.getType());
     orderClient.verify(elasticIndexingClient).sendCreateTypeRequest(elasticIndexingServiceConnector.getIndex(),
         elasticIndexingServiceConnector.getType(),
-        elasticContentRequestBuilder.getCreateTypeRequestContent(elasticIndexingServiceConnector));
+        elasticIndexingServiceConnector.getMapping());
     //No CUD request
     verifyNoMoreInteractions(elasticIndexingClient);
   }
@@ -437,7 +435,7 @@ public class ElasticIndexingServiceTest {
         elasticIndexingServiceConnector.getType());
     orderClient.verify(elasticIndexingClient).sendCreateTypeRequest(elasticIndexingServiceConnector.getIndex(),
         elasticIndexingServiceConnector.getType(),
-        elasticContentRequestBuilder.getCreateTypeRequestContent(elasticIndexingServiceConnector));
+        elasticIndexingServiceConnector.getMapping());
     //Create and Delete requests should be build
     verify(elasticContentRequestBuilder, times(1)).getCreateDocumentRequestContent(elasticIndexingServiceConnector, "1");
     verify(elasticContentRequestBuilder, times(1)).getDeleteDocumentRequestContent(elasticIndexingServiceConnector, "1");
@@ -499,8 +497,8 @@ public class ElasticIndexingServiceTest {
     orderClient.verify(elasticIndexingClient).sendDeleteTypeRequest(elasticIndexingServiceConnector.getIndex(),
         elasticIndexingServiceConnector.getType());
     orderClient.verify(elasticIndexingClient).sendCreateTypeRequest(elasticIndexingServiceConnector.getIndex(),
-            elasticIndexingServiceConnector.getType(),
-            elasticContentRequestBuilder.getCreateTypeRequestContent(elasticIndexingServiceConnector));
+        elasticIndexingServiceConnector.getType(),
+        elasticIndexingServiceConnector.getMapping());
     //No CUD operation
     verifyNoMoreInteractions(elasticIndexingClient);
   }
