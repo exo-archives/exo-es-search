@@ -17,21 +17,21 @@
 package org.exoplatform.addons.es;
 
 import juzu.Path;
-import juzu.View;
 import juzu.Response;
-import juzu.template.Template;
+import juzu.View;
 
 import javax.inject.Inject;
 import java.io.IOException;
 
-public class Controller {
+public class IndexingManagementApplication {
 
   @Inject
-  @Path("index.gtmpl")
-  Template index;
+  @Path("indexingManagement.gtmpl")
+  org.exoplatform.addons.es.templates.indexingManagement indexingManagement;
 
   @View
   public Response.Content index() throws IOException {
-    return index.ok();
+    return indexingManagement.ok();
   }
+
 }

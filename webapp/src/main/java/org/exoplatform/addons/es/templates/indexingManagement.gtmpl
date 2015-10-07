@@ -1,0 +1,76 @@
+<div ng-app="indexingManagementApp" class="indexing-service-management">
+<h3>Indexing Service Management Application</h3>
+    <!-- Connector List -->
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12">
+            <div ng-controller="ConnectorListCtrl" class="panel panel-default">
+                <!-- Default panel contents -->
+                <div class="panel-heading">Indexing Connector Management</div>
+                <div class="panel-body">
+                    <p>List of all Indexing connectors currently register to the Indexing Service.
+                    You can can take some action such as disable/enable a connector or run a full reindexing.</p>
+                </div>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Index</th>
+                        <th>State</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="connector in connectors">
+                        <th scope="row">{{connector.type}}</th>
+                        <td>{{connector.description}}</td>
+                        <td>{{connector.index}}</td>
+                        <td>
+                            <div class="connector-switch">
+                                <input ng-click="disableIndexConnector(connector.type)" id="{{connector.type}}" type="checkbox">
+                                <label for="{{connector.type}}" class="label-primary"></label>
+                            </div>
+                        </td>
+                        <td>
+                            <button type="button"
+                                    ng-click="reindexConnector(connector.type)"
+                                    class="btn-connector-reindex btn btn-primary btn-xs">
+                                Reindex
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indexing Error List -->
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12">
+            <div class="panel panel-default">
+                <!-- Default panel contents -->
+                <div class="panel-heading">Error Indexing Management</div>
+                <div class="panel-body">
+                    <p>List of all indexing error.</p>
+                </div>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Index</th>
+                        <th>Id</th>
+                        <th>Action</th>
+                        <th>Error</th>
+                        <th>Timestamp</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>

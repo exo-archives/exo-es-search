@@ -24,15 +24,32 @@
 
   <dependencies>
 
-    <!-- Application dependencies-->
+    <!-- exo-es-search project -->
+    <dependency>
+      <groupId>org.exoplatform.addons.es</groupId>
+      <artifactId>exo-es-search-service</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Juzu -->
     <dependency>
       <groupId>org.juzu</groupId>
       <artifactId>juzu-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.juzu</groupId>
+      <artifactId>juzu-plugins-validation</artifactId>
       <version>${juzu.version}</version>
     </dependency>
     <dependency>
       <groupId>org.juzu</groupId>
-      <artifactId>juzu-plugins-portlet</artifactId>
+      <artifactId>juzu-plugins-less4j</artifactId>
+      <version>${juzu.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.juzu</groupId>
+      <artifactId>juzu-plugins-webjars</artifactId>
       <version>${juzu.version}</version>
     </dependency>
     <dependency>
@@ -40,18 +57,66 @@
       <artifactId>portlet-api</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.juzu</groupId>
+      <artifactId>juzu-plugins-portlet</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
+    <!--less4j 1.4.0 is not compatible with antlr 3.5-->
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr-runtime</artifactId>
+      <version>${org.antlr.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <!--need for juzu-plugins-validation-->
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+      <version>1.1.0.Final</version>
+    </dependency>
 
-    <!-- Dependencies for Guice in a Servlet Container -->
+    <!-- WebJars libraries -->
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>jquery</artifactId>
+      <version>1.10.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>bootstrap</artifactId>
+      <version>3.3.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>angularjs</artifactId>
+      <version>1.4.6</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.exoplatform.commons</groupId>
+      <artifactId>commons-juzu</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Groovy is shipped with GateIn -->
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-all</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Dependencies for Guice in GateIn portal -->
     <dependency>
       <groupId>javax.inject</groupId>
       <artifactId>javax.inject</artifactId>
-      <version>1</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
-      <version>3.0</version>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Junit for testing -->
@@ -79,6 +144,7 @@
       <groupId>org.liquibase</groupId>
       <artifactId>liquibase-core</artifactId>
       <version>3.3.2</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
@@ -88,41 +154,8 @@
 
     <pluginManagement>
       <plugins>
-
-        <!--
-          | Test your application with:
-          | >mvn tomcat7:run-war
-          -->
-        <plugin>
-          <groupId>org.apache.tomcat.maven</groupId>
-          <artifactId>tomcat7-maven-plugin</artifactId>
-          <version>2.1</version>
-        </plugin>
-
       </plugins>
     </pluginManagement>
   </build>
-
-  <!-- Activate this profile for using Juzu live mode -->
-  <profiles>
-    <profile>
-      <id>live</id>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.tomcat.maven</groupId>
-              <artifactId>tomcat7-maven-plugin</artifactId>
-              <configuration>
-                <systemProperties>
-                  <juzu.run_mode>live</juzu.run_mode>
-                </systemProperties>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
-    </profile>
-  </profiles>
 
 </project>
