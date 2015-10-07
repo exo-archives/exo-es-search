@@ -101,6 +101,26 @@ public abstract class IndexingService {
   }
 
   /**
+   * Add a index all operation to the indexing queue
+   * @param connectorName Name of the connector
+   * @LevelAPI Experimental
+   */
+  public void indexAll(String connectorName) {
+    //TODO add an index operation for all entities ids in queue
+    LOG.info("Index All request for connector "+connectorName);
+  }
+
+  /**
+   * Add a reindex all operation to the indexing queue
+   * @param connectorName Name of the connector
+   * @LevelAPI Experimental
+   */
+  public void reindexAll(String connectorName) {
+    //TODO add a delete all operation to queue + add an index operation for all entities ids in queue
+    LOG.info("Index All request for connector "+connectorName);
+  }
+
+  /**
    * Add a delete all type operation to the indexing queue
    * @param connectorName Name of the connector
    * @LevelAPI Experimental
