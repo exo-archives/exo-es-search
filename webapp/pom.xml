@@ -1,36 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <artifactId>exo-es-search</artifactId>
     <groupId>org.exoplatform.addons.es</groupId>
     <version>1.0.x-SNAPSHOT</version>
   </parent>
-
-  <groupId>org.exoplatform.addons.es</groupId>
   <artifactId>exo-es-search-webapp</artifactId>
-  <version>1.0.X-SNAPSHOT</version>
   <packaging>war</packaging>
-
   <name>Juzu Application</name>
-
   <properties>
     <maven.compiler.target>1.7</maven.compiler.target>
     <maven.compiler.source>1.7</maven.compiler.source>
     <juzu.version>1.1.x-SNAPSHOT</juzu.version>
   </properties>
-
   <dependencies>
-
     <!-- exo-es-search project -->
     <dependency>
       <groupId>org.exoplatform.addons.es</groupId>
       <artifactId>exo-es-search-service</artifactId>
       <scope>provided</scope>
     </dependency>
-
     <!-- Juzu -->
     <dependency>
       <groupId>org.juzu</groupId>
@@ -62,7 +52,6 @@
       <artifactId>juzu-plugins-portlet</artifactId>
       <scope>provided</scope>
     </dependency>
-
     <!--less4j 1.4.0 is not compatible with antlr 3.5-->
     <dependency>
       <groupId>org.antlr</groupId>
@@ -76,7 +65,6 @@
       <artifactId>validation-api</artifactId>
       <version>1.1.0.Final</version>
     </dependency>
-
     <!-- WebJars libraries -->
     <dependency>
       <groupId>org.webjars</groupId>
@@ -93,20 +81,17 @@
       <artifactId>angularjs</artifactId>
       <version>1.4.6</version>
     </dependency>
-
     <dependency>
       <groupId>org.exoplatform.commons</groupId>
       <artifactId>commons-juzu</artifactId>
       <scope>provided</scope>
     </dependency>
-
     <!-- Groovy is shipped with GateIn -->
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
       <scope>provided</scope>
     </dependency>
-
     <!-- Dependencies for Guice in GateIn portal -->
     <dependency>
       <groupId>javax.inject</groupId>
@@ -118,7 +103,6 @@
       <artifactId>guice</artifactId>
       <scope>provided</scope>
     </dependency>
-
     <!-- Junit for testing -->
     <dependency>
       <groupId>junit</groupId>
@@ -138,7 +122,6 @@
       <version>${juzu.version}</version>
       <scope>test</scope>
     </dependency>
-
     <!-- Liquibase -->
     <dependency>
       <groupId>org.liquibase</groupId>
@@ -146,16 +129,11 @@
       <version>3.3.2</version>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
-
   <build>
     <finalName>exo-es-search-webapp</finalName>
-
     <pluginManagement>
-      <plugins>
-      </plugins>
+      <plugins />
     </pluginManagement>
   </build>
-
 </project>

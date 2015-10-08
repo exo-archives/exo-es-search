@@ -2,22 +2,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.exoplatform.addons</groupId>
     <artifactId>addons-parent-pom</artifactId>
+    <groupId>org.exoplatform.addons</groupId>
     <version>6</version>
   </parent>
-
   <groupId>org.exoplatform.addons.es</groupId>
   <artifactId>exo-es-search</artifactId>
   <version>1.0.x-SNAPSHOT</version>
   <packaging>pom</packaging>
-
   <modules>
     <module>service</module>
     <module>webapp</module>
     <module>packaging</module>
   </modules>
-
   <properties>
     <maven.compiler.target>1.7</maven.compiler.target>
     <maven.compiler.source>1.7</maven.compiler.source>
@@ -28,10 +25,8 @@
     <hibernate.version>4.1.12.Final</hibernate.version>
     <org.antlr.version>3.4</org.antlr.version>
   </properties>
-
   <dependencyManagement>
     <dependencies>
-
       <!-- Import versions of external dependencies to use -->
       <dependency>
         <groupId>org.exoplatform</groupId>
@@ -41,12 +36,11 @@
         <scope>import</scope>
         <exclusions>
           <exclusion>
-            <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
+            <groupId>org.apache.lucene</groupId>
           </exclusion>
         </exclusions>
       </dependency>
-
       <!-- Import versions from platform project -->
       <dependency>
         <groupId>org.exoplatform.platform</groupId>
@@ -56,21 +50,17 @@
         <scope>import</scope>
         <exclusions>
           <exclusion>
-            <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
+            <groupId>org.apache.lucene</groupId>
           </exclusion>
         </exclusions>
       </dependency>
-
       <!-- exo-es-search project -->
       <dependency>
         <groupId>org.exoplatform.addons.es</groupId>
         <artifactId>exo-es-search-service</artifactId>
         <version>${project.version}</version>
       </dependency>
-
     </dependencies>
-
   </dependencyManagement>
-
 </project>
