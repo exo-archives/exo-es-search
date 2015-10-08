@@ -11,19 +11,19 @@ indexingManagementServices.service('Connector', ['$http', function ($http) {
     var urlBase = '/rest/indexingManagement';
 
     this.getConnectors = function () {
-        return $http.get(urlBase + '/connectors');
+        return $http.get(urlBase + '/connector');
     };
 
     this.reindexConnector = function(connectorType) {
-        return $http.get(urlBase + '/connector/reindex/' + connectorType);
+        return $http.get(urlBase + '/connector/' + connectorType + '/_reindex');
     };
 
     this.disableIndexConnector = function(connectorType) {
-        return $http.get(urlBase + '/connector/disable/' + connectorType);
+        return $http.get(urlBase + '/connector/' + connectorType + '/_disable');
     };
 
     this.enableIndexConnector = function(connectorType) {
-        return $http.get(urlBase + '/connector/enable/' + connectorType);
+        return $http.get(urlBase + '/connector/' + connectorType + '/_enable');
     };
 
 }]);

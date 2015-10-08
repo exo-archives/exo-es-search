@@ -47,7 +47,7 @@ public class IndexingManagementRestService implements ResourceContainer {
   }
 
   @GET
-  @Path("/connectors")
+  @Path("/connector")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getConnectors() {
     LOG.info("Call getConnectors via REST");
@@ -56,7 +56,7 @@ public class IndexingManagementRestService implements ResourceContainer {
   }
 
   @GET
-  @Path("/connector/reindex/{connectorType}")
+  @Path("/connector/{connectorType}/_reindex")
   public Response reindexConnector(@PathParam("connectorType") String connectorType) {
     LOG.info("Call reindexConnector via REST");
     indexingService.reindexAll(connectorType);
@@ -64,7 +64,7 @@ public class IndexingManagementRestService implements ResourceContainer {
   }
 
   @GET
-  @Path("/connector/disable/{connectorType}")
+  @Path("/connector/{connectorType}/_disable")
   public Response disable(@PathParam("connectorType") String connectorType) {
     LOG.info("Call disable via REST");
     //TODO implement a disable connector method in IndexingService
@@ -72,7 +72,7 @@ public class IndexingManagementRestService implements ResourceContainer {
   }
 
   @GET
-  @Path("/connector/enable/{connectorType}")
+  @Path("/connector/{connectorType}/_enable")
   public Response enable(@PathParam("connectorType") String connectorType) {
     LOG.info("Call disable via REST");
     //TODO implement a enable connector method in IndexingService
