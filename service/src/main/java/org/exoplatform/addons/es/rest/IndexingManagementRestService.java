@@ -22,7 +22,11 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.resource.ResourceContainer;
 
-import javax.ws.rs.*;
+import javax.annotation.security.RolesAllowed;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -48,6 +52,7 @@ public class IndexingManagementRestService implements ResourceContainer {
 
   @GET
   @Path("/connector")
+  @RolesAllowed("users")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getConnectors() {
     LOG.info("Call getConnectors via REST");
@@ -57,6 +62,7 @@ public class IndexingManagementRestService implements ResourceContainer {
 
   @GET
   @Path("/connector/{connectorType}/_reindex")
+  @RolesAllowed("users")
   public Response reindexConnector(@PathParam("connectorType") String connectorType) {
     LOG.info("Call reindexConnector via REST");
     indexingService.reindexAll(connectorType);
@@ -65,6 +71,7 @@ public class IndexingManagementRestService implements ResourceContainer {
 
   @GET
   @Path("/connector/{connectorType}/_disable")
+  @RolesAllowed("users")
   public Response disable(@PathParam("connectorType") String connectorType) {
     LOG.info("Call disable via REST");
     //TODO implement a disable connector method in IndexingService
@@ -73,6 +80,7 @@ public class IndexingManagementRestService implements ResourceContainer {
 
   @GET
   @Path("/connector/{connectorType}/_enable")
+  @RolesAllowed("users")
   public Response enable(@PathParam("connectorType") String connectorType) {
     LOG.info("Call disable via REST");
     //TODO implement a enable connector method in IndexingService
