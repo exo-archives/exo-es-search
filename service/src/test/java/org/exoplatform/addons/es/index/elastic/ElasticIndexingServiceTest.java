@@ -32,6 +32,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -563,6 +564,20 @@ public class ElasticIndexingServiceTest {
     //Then
     //Two CUD request should be send because the first create request will reached the limit size (= 1 byte)
     verify(elasticIndexingClient, times(2)).sendCUDRequest(anyString());
+    verifyNoMoreInteractions(elasticIndexingClient);
+  }
+
+  @Test
+  public void reindexAll_commandsAreInsertedInIndexingQueue() throws ParseException {
+    //Given
+    elasticIndexingService.getConnectors().put("post", elasticIndexingServiceConnector);
+    when(elasticIndexingServiceConnector.getAllIds()).thenReturn(Arrays.asList("1", "2"));
+    //When
+    elasticIndexingService.reindexAll("post");
+    //Then
+    verify(indexingOperationDAO).create(new IndexingOperation(null, null, "post", OperationType.DELETE_ALL, null));
+    verify(indexingOperationDAO).create(new IndexingOperation(null, "1", "post", OperationType.CREATE, null));
+    verify(indexingOperationDAO).create(new IndexingOperation(null, "2", "post", OperationType.CREATE, null));
     verifyNoMoreInteractions(elasticIndexingClient);
   }
 

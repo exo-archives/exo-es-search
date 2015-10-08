@@ -5,6 +5,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -107,7 +108,7 @@ public abstract class IndexingService {
    */
   public void indexAll(String connectorName) {
     //TODO add an index operation for all entities ids in queue
-    LOG.info("Index All request for connector "+connectorName);
+    LOG.info("Index All request for connector " + connectorName);
   }
 
   /**
@@ -116,8 +117,16 @@ public abstract class IndexingService {
    * @LevelAPI Experimental
    */
   public void reindexAll(String connectorName) {
-    //TODO add a delete all operation to queue + add an index operation for all entities ids in queue
-    LOG.info("Index All request for connector "+connectorName);
+    List<String> ids;
+
+    LOG.info("Reindex all data for connector " + connectorName);
+    unindexAll(connectorName);
+    ids = getConnectors().get(connectorName).getAllIds();
+    if (ids !=null) {
+      for (String id: ids) {
+        index(connectorName, id);
+      }
+    }
   }
 
   /**

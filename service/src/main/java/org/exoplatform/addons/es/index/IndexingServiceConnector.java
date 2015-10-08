@@ -1,5 +1,7 @@
 package org.exoplatform.addons.es.index;
 
+import java.util.List;
+
 import org.exoplatform.addons.es.domain.Document;
 import org.exoplatform.container.component.BaseComponentPlugin;
 
@@ -44,4 +46,6 @@ public abstract class IndexingServiceConnector extends BaseComponentPlugin {
   public void setType(String type) {
     this.type = type;
   }
+
+  public abstract List<String> getAllIds();
 }
