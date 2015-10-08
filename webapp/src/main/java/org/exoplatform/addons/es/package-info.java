@@ -18,19 +18,16 @@
 @Portlet
 @WebJars({
     @WebJar("jquery"),
-    @WebJar("angularjs"),
-    @WebJar("bootstrap")
+    @WebJar("angularjs")
 })
 @Scripts({
     @Script(id = "jquery", value = "jquery/1.10.2/jquery.js"),
     @Script(id = "angularjs", value = "angularjs/1.4.6/angular.min.js"),
     @Script(value = "javascripts/app.js", depends = "angularjs"),
     @Script(value = "javascripts/service.js", depends = "angularjs"),
-    @Script(value = "javascripts/controller.js", depends = "angularjs"),
-    @Script(id = "bootstrap", value = "bootstrap/3.3.5/js/bootstrap.min.js", depends = "jquery")
+    @Script(value = "javascripts/controller.js", depends = "angularjs")
 })
 @Less({
-    @Stylesheet(id = "bootstrap.css", value = "bootstrap/3.3.5/css/bootstrap.min.css"),
     @Stylesheet(id = "indexingManagement-less", value = "styles/indexingManagement.less")
 })
 @Assets("*")

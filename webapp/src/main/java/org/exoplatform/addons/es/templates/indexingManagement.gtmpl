@@ -1,8 +1,8 @@
 <div ng-app="indexingManagementApp" class="indexing-service-management">
 <h3>Indexing Service Management Application</h3>
     <!-- Connector List -->
-    <div class="row">
-        <div class="col-xs-12 col-sm-12 col-md-12">
+    <div class="row-fluid">
+        <div class="span12">
             <div ng-controller="ConnectorListCtrl" class="panel panel-default">
                 <!-- Default panel contents -->
                 <div class="panel-heading">Indexing Connector Management</div>
@@ -34,7 +34,7 @@
                         <td>
                             <button type="button"
                                     ng-click="reindexConnector(connector.type)"
-                                    class="btn-connector-reindex btn btn-primary btn-xs">
+                                    class="btn-connector-reindex btn btn-primary btn-mini">
                                 Reindex
                             </button>
                         </td>
@@ -46,8 +46,8 @@
     </div>
 
     <!-- Indexing Error List -->
-    <div class="row">
-        <div class="col-xs-12 col-sm-12 col-md-12">
+    <div class="row-fluid">
+        <div class="span12">
             <div class="panel panel-default">
                 <!-- Default panel contents -->
                 <div class="panel-heading">Error Indexing Management</div>
