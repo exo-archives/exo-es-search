@@ -10,7 +10,8 @@
   <property name="autoIncrement" value="false" dbms="oracle,postgresql"/>
 
   <!-- Managing auto generation of timestamp by Database -->
-  <property name="now" value="now()" dbms="mysql,hsqldb,postgresql,h2"/>
+  <property name="now" value="now()" dbms="mysql,postgresql,h2"/>
+  <property name="now" value="CURRENT_TIMESTAMP" dbms="hsqldb"/>
   <property name="now" value="sysdate" dbms="oracle"/>
   <property name="now" value="CURRENT_TIMESTAMP" dbms="mssql"/>
 
