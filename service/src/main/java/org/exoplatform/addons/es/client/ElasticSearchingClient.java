@@ -1,8 +1,5 @@
 package org.exoplatform.addons.es.client;
 
-import java.io.IOException;
-import java.io.StringWriter;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
@@ -10,10 +7,12 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import java.io.IOException;
+import java.io.StringWriter;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
@@ -22,7 +21,7 @@ import org.exoplatform.services.log.Log;
 public class ElasticSearchingClient {
     private static final Log LOG = ExoLogger.getLogger(ElasticSearchingClient.class);
 
-    private static final String ES_SEARCH_CLIENT_PROPERTY_NAME = "exo.es.search.client";
+    private static final String ES_SEARCH_CLIENT_PROPERTY_NAME = "exo.es.search.server.url";
     private static final String ES_SEARCH_CLIENT_DEFAULT = "http://127.0.0.1:9200";
 
     //ES Information

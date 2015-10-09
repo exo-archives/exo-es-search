@@ -82,7 +82,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
         // java.lang.AssertionError: System properties invariant violated from com.carrotsearch.randomizedtesting
         //If another test ran before and set the properties, we must not remove the properties
         //If we do, we'll get the same exception.
-        this.propertiesSet = StringUtils.isBlank(System.getProperty("exo.es.index.client"));
+        this.propertiesSet = StringUtils.isBlank(System.getProperty("exo.es.index.server.url"));
 
         //ES URL
         String url = "http://" + cluster().httpAddresses()[0].getHostName() + ":" + cluster().httpAddresses()[0].getPort();
@@ -120,11 +120,11 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     @After
     public void unsetSystemParams() throws InterruptedException, ClassNotFoundException, SQLException {
         if (propertiesSet) {
-            System.clearProperty("exo.es.index.client");
+            System.clearProperty("exo.es.index.server.url");
             System.clearProperty("exo.es.indexing.batch.number");
             System.clearProperty("exo.es.indexing.replica.number.default");
             System.clearProperty("exo.es.indexing.shard.number.default");
-            System.clearProperty("exo.es.search.client");
+            System.clearProperty("exo.es.search.server.url");
             System.clearProperty("jboss.i18n.generate-proxies");
         }
     }

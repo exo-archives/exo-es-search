@@ -39,7 +39,7 @@ import java.io.InputStream;
  */
 public class ElasticIndexingClient {
 
-  private static final String ES_INDEX_CLIENT_PROPERTY_NAME = "exo.es.index.client";
+  private static final String ES_INDEX_CLIENT_PROPERTY_NAME = "exo.es.index.server.url";
   private static final String ES_INDEX_CLIENT_DEFAULT = "http://127.0.0.1:9200";
 
   private static final Log LOG = ExoLogger.getExoLogger(ElasticIndexingClient.class);
