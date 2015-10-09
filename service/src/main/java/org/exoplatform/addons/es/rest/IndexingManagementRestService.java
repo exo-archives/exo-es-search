@@ -40,6 +40,7 @@ import java.util.List;
  */
 @Path("/indexingManagement")
 @Produces(MediaType.APPLICATION_JSON)
+@RolesAllowed("administrators")
 public class IndexingManagementRestService implements ResourceContainer {
 
   private final static Log LOG = ExoLogger.getLogger(IndexingManagementRestService.class);
@@ -52,8 +53,8 @@ public class IndexingManagementRestService implements ResourceContainer {
 
   @GET
   @Path("/connector")
-  @RolesAllowed("users")
   @Produces(MediaType.APPLICATION_JSON)
+  @RolesAllowed("administrators")
   public Response getConnectors() {
     LOG.info("Call getConnectors via REST");
     List<IndexingServiceConnector> connectors = new ArrayList<>(indexingService.getConnectors().values());
@@ -62,7 +63,7 @@ public class IndexingManagementRestService implements ResourceContainer {
 
   @GET
   @Path("/connector/{connectorType}/_reindex")
-  @RolesAllowed("users")
+  @RolesAllowed("administrators")
   public Response reindexConnector(@PathParam("connectorType") String connectorType) {
     LOG.info("Call reindexConnector via REST");
     indexingService.reindexAll(connectorType);
@@ -71,7 +72,7 @@ public class IndexingManagementRestService implements ResourceContainer {
 
   @GET
   @Path("/connector/{connectorType}/_disable")
-  @RolesAllowed("users")
+  @RolesAllowed("administrators")
   public Response disable(@PathParam("connectorType") String connectorType) {
     LOG.info("Call disable via REST");
     //TODO implement a disable connector method in IndexingService
@@ -80,7 +81,7 @@ public class IndexingManagementRestService implements ResourceContainer {
 
   @GET
   @Path("/connector/{connectorType}/_enable")
-  @RolesAllowed("users")
+  @RolesAllowed("administrators")
   public Response enable(@PathParam("connectorType") String connectorType) {
     LOG.info("Call disable via REST");
     //TODO implement a enable connector method in IndexingService
