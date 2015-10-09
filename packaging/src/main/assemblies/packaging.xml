@@ -33,6 +33,7 @@
       <outputFileNameMapping>${artifact.artifactId}${dashClassifier?}.${artifact.extension}</outputFileNameMapping>
       <includes>
         <include>org.exoplatform.addons.es:exo-es-search-service</include>
+        <include>org.exoplatform.addons.es:exo-es-search-webapp</include>
       </includes>
     </dependencySet>
   </dependencySets>

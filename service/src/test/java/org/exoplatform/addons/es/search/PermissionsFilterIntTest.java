@@ -128,7 +128,6 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
             System.clearProperty("jboss.i18n.generate-proxies");
         }
     }
-
     private InitParams getInitConnectorParams() {
         InitParams params = new InitParams();
         PropertiesParam constructorParams = new PropertiesParam();

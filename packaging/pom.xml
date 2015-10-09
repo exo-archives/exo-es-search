@@ -11,7 +11,14 @@
     <dependency>
       <groupId>org.exoplatform.addons.es</groupId>
       <artifactId>exo-es-search-service</artifactId>
+      <version>${project.version}</version>
       <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.addons.es</groupId>
+      <artifactId>exo-es-search-webapp</artifactId>
+      <version>${project.version}</version>
+      <type>war</type>
     </dependency>
   </dependencies>
   <build>
