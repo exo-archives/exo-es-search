@@ -16,11 +16,13 @@
 */
 package org.exoplatform.addons.es.dao;
 
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
 import java.util.List;
 
-import org.hamcrest.Matchers;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,7 +56,7 @@ public class IndexingOperationDAOTest extends AbstractDAOTest {
 
     //Given
     List<IndexingOperation> indexingOperations = indexingOperationDAO.findAll();
-    Assert.assertEquals(indexingOperations.size(), 0);
+    assertEquals(indexingOperations.size(), 0);
     IndexingOperation indexingOperation = new IndexingOperation();
     indexingOperation.setEntityType("blog");
     indexingOperation.setOperation(OperationType.INIT);
@@ -63,29 +65,25 @@ public class IndexingOperationDAOTest extends AbstractDAOTest {
     indexingOperationDAO.create(indexingOperation);
 
     //Then
-    Assert.assertEquals(indexingOperationDAO.findAll().size(), 1);
+    assertEquals(indexingOperationDAO.findAll().size(), 1);
   }
 
   @Test
   public void testDatabaseAutoGeneratingTimestamp () {
-
     //Given
-    Long startDate = System.currentTimeMillis();
-    IndexingOperation indexingOperation = new IndexingOperation();
-    indexingOperation.setEntityType("blog");
-    indexingOperation.setOperation(OperationType.INIT);
-
+    IndexingOperation indexingOperation1 = new IndexingOperation();
+    indexingOperation1.setEntityType("blog");
+    indexingOperation1.setOperation(OperationType.INIT);
+    indexingOperationDAO.create(indexingOperation1);
+    IndexingOperation indexingOperation2 = new IndexingOperation();
+    indexingOperation2.setEntityType("blog");
+    indexingOperation2.setOperation(OperationType.INIT);
+    indexingOperationDAO.create(indexingOperation2);
     //When
-    indexingOperationDAO.create(indexingOperation);
-
+    indexingOperation1 = indexingOperationDAO.find(indexingOperation1.getId());
+    indexingOperation2 = indexingOperationDAO.find(indexingOperation2.getId());
     //Then
-    indexingOperation = indexingOperationDAO.find(indexingOperation.getId());
-    Assert.assertThat(
-        startDate,
-        Matchers.lessThanOrEqualTo(indexingOperation.getTimestamp().getTime()));
-    Assert.assertThat(
-        System.currentTimeMillis(),
-        Matchers.greaterThanOrEqualTo(indexingOperation.getTimestamp().getTime()));
+    assertThat(indexingOperation1.getTimestamp(), lessThanOrEqualTo(indexingOperation2.getTimestamp()));
   }
 
 }
