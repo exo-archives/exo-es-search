@@ -19,7 +19,7 @@
 
 package org.exoplatform.addons.es.job;
 
-import org.exoplatform.addons.es.index.IndexingService;
+import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.job.MultiTenancyJob;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.log.ExoLogger;
@@ -50,14 +50,15 @@ public class BulkIndexingJob extends MultiTenancyJob {
       // TODO: need to implement the cloud-supporting for JPA (EntityManagerService)
 
       RepositoryService repoService = container.getComponentInstanceOfType(RepositoryService.class);
-      IndexingService indexingService = container.getComponentInstanceOfType(IndexingService.class);
+      IndexingOperationProcessor indexingOperationProcessor =
+          container.getComponentInstanceOfType(IndexingOperationProcessor.class);
 
       String defaultRepoName = repoService.getConfig().getDefaultRepositoryName();
       if (!repoName.equals(defaultRepoName)) {
         // This is in cloud environment: tenant name and repoName are the same
-        IndexingService.setCurrentTenantName(repoName);
+        indexingOperationProcessor.setCurrentTenantName(repoName);
       }
-      indexingService.process();
+      indexingOperationProcessor.process();
     }
   }
 }

@@ -32,9 +32,9 @@ import org.exoplatform.addons.es.dao.impl.IndexingOperationDAOImpl;
 import org.exoplatform.addons.es.domain.Document;
 import org.exoplatform.addons.es.domain.IndexingOperation;
 import org.exoplatform.addons.es.domain.OperationType;
-import org.exoplatform.addons.es.index.IndexingService;
-import org.exoplatform.addons.es.index.elastic.ElasticIndexingService;
-import org.exoplatform.addons.es.index.elastic.ElasticIndexingServiceConnector;
+import org.exoplatform.addons.es.index.IndexingOperationProcessor;
+import org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor;
+import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
 import org.exoplatform.addons.es.search.ElasticSearchServiceConnector;
 import org.exoplatform.commons.api.search.data.SearchResult;
 import org.exoplatform.container.xml.InitParams;
@@ -67,7 +67,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
 
   private static Connection conn;
   private static Liquibase liquibase;
-  private IndexingService indexingService;
+  private IndexingOperationProcessor indexingOperationProcessor;
   private ElasticSearchServiceConnector elasticSearchServiceConnector;
   private IndexingOperationDAO dao;
   private ElasticIndexingServiceConnector testConnector;
@@ -109,8 +109,8 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
     dao = new IndexingOperationDAOImpl();
     ElasticIndexingClient client = new ElasticIndexingClient(url);
     ElasticContentRequestBuilder builder = new ElasticContentRequestBuilder();
-    indexingService = new ElasticIndexingService(dao, client, builder);
-    indexingService.addConnector(testConnector);
+    indexingOperationProcessor = new ElasticIndexingOperationProcessor(dao, client, builder);
+    indexingOperationProcessor.addConnector(testConnector);
 
     //Search connector
     ElasticSearchingClient searchingClient = new ElasticSearchingClient(url);
@@ -161,7 +161,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
     //Given
     dao.create(new IndexingOperation(null, "1", "test", OperationType.CREATE, new Date()));
     when(testConnector.create("1")).thenReturn(getSiteDocument("intranet"));
-    indexingService.process();
+    indexingOperationProcessor.process();
     admin().indices().prepareRefresh().execute().actionGet();
     //When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getSites(), 0, 20, null, null);
@@ -175,7 +175,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
     dao.create(new IndexingOperation(null, "1", "test", OperationType.CREATE, new Date()));
 
     when(testConnector.create("1")).thenReturn(getSiteDocument("OtherSite"));
-    indexingService.process();
+    indexingOperationProcessor.process();
     admin().indices().prepareRefresh().execute().actionGet();
     //When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getSites(), 0, 20, null, null);
@@ -188,7 +188,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
     //Given
     dao.create(new IndexingOperation(null, "1", "test", OperationType.CREATE, new Date()));
     when(testConnector.create("1")).thenReturn(getSiteDocument(null));
-    indexingService.process();
+    indexingOperationProcessor.process();
     admin().indices().prepareRefresh().execute().actionGet();
     //When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getSites(), 0, 20, null, null);

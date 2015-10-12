@@ -14,7 +14,7 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with this program. If not, see http://www.gnu.org/licenses/ .
 */
-package org.exoplatform.addons.es.index.elastic;
+package org.exoplatform.addons.es.index.impl;
 
 import org.apache.commons.lang.StringUtils;
 import org.exoplatform.addons.es.index.IndexingServiceConnector;

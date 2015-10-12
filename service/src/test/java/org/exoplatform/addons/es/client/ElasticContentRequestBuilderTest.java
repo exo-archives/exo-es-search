@@ -17,7 +17,7 @@
 package org.exoplatform.addons.es.client;
 
 import org.exoplatform.addons.es.domain.Document;
-import org.exoplatform.addons.es.index.elastic.ElasticIndexingServiceConnector;
+import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

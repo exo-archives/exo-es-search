@@ -14,15 +14,15 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with this program. If not, see http://www.gnu.org/licenses/ .
 */
-package org.exoplatform.addons.es.index.elastic;
+package org.exoplatform.addons.es.index.impl;
 
 import org.apache.commons.lang.StringUtils;
-import org.exoplatform.addons.es.client.ElasticIndexingClient;
 import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
+import org.exoplatform.addons.es.client.ElasticIndexingClient;
 import org.exoplatform.addons.es.dao.IndexingOperationDAO;
 import org.exoplatform.addons.es.domain.IndexingOperation;
 import org.exoplatform.addons.es.domain.OperationType;
-import org.exoplatform.addons.es.index.IndexingService;
+import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingServiceConnector;
 import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.utils.PropertyManager;
@@ -35,9 +35,11 @@ import java.util.*;
  * Created by The eXo Platform SAS
  * Author : Thibault Clement
  * tclement@exoplatform.com
- * 7/29/15
+ * 10/12/15
  */
-public class ElasticIndexingService extends IndexingService {
+public class ElasticIndexingOperationProcessor extends IndexingOperationProcessor {
+
+  private static final Log LOG = ExoLogger.getExoLogger(ElasticIndexingOperationProcessor.class);
 
   private static final String BATCH_NUMBER_PROPERTY_NAME = "exo.es.indexing.batch.number";
   private static final Integer BATCH_NUMBER_DEFAULT = 1000;
@@ -45,18 +47,15 @@ public class ElasticIndexingService extends IndexingService {
   private static final String REQUEST_SIZE_LIMIT_PROPERTY_NAME = "exo.es.indexing.request.size.limit";
   private static final Integer REQUEST_SIZE_LIMIT_DEFAULT = 10485760; //in bytes, default = 10MB
 
-  private static final Log LOG = ExoLogger.getExoLogger(ElasticIndexingService.class);
-
   private Integer batchNumber = BATCH_NUMBER_DEFAULT;
   private Integer requestSizeLimit = REQUEST_SIZE_LIMIT_DEFAULT;
 
+  //Service
   private final IndexingOperationDAO indexingOperationDAO;
-
   private final ElasticIndexingClient elasticIndexingClient;
-
   private final ElasticContentRequestBuilder elasticContentRequestBuilder;
 
-  public ElasticIndexingService(IndexingOperationDAO indexingOperationDAO, ElasticIndexingClient elasticIndexingClient, ElasticContentRequestBuilder elasticContentRequestBuilder) {
+  public ElasticIndexingOperationProcessor(IndexingOperationDAO indexingOperationDAO, ElasticIndexingClient elasticIndexingClient, ElasticContentRequestBuilder elasticContentRequestBuilder) {
     this.indexingOperationDAO = indexingOperationDAO;
     this.elasticIndexingClient = elasticIndexingClient;
     this.elasticContentRequestBuilder = elasticContentRequestBuilder;
@@ -82,43 +81,10 @@ public class ElasticIndexingService extends IndexingService {
       getConnectors().put(indexingServiceConnector.getType(), indexingServiceConnector);
       LOG.info("An Indexing Connector has been added: {}", indexingServiceConnector.getType());
       //When a new connector is added, ES index and type need to be created
-      addToIndexingQueue(indexingServiceConnector.getType(), null, OperationType.INIT);
+      addInitOperation(indexingServiceConnector.getType());
     }
   }
 
-  @Override
-  public void addToIndexingQueue(String connectorName, String id, OperationType operation) {
-    if (operation==null) {
-      throw new IllegalArgumentException("Operation cannot be null");
-    }
-    if (!getConnectors().containsKey(connectorName)) {
-      throw new IllegalStateException("Connector ["+connectorName+"] has not been registered.");
-    }
-    switch (operation) {
-      //A new type of document need to be initialise
-      case INIT: addInitOperation(connectorName);
-        break;
-      //A new entity need to be indexed
-      case CREATE: addCreateOperation(connectorName, id);
-        break;
-      //An existing entity need to be updated in the create
-      case UPDATE: addUpdateOperation(connectorName, id);
-        break;
-      //An existing entity need to be deleted from the create
-      case DELETE: addDeleteOperation(connectorName, id);
-        break;
-      //All entities of a specific type need to be deleted
-      case DELETE_ALL: addDeleteAllOperation(connectorName);
-        break;
-      default:
-        throw new IllegalArgumentException(operation+" is not an accepted operation for the Indexing Queue");
-    }
-  }
-
-  @Override
-  public void clearIndexingQueue() {
-    indexingOperationDAO.deleteAll();
-  }
 
   /**
    * Handle the Indexing queue
@@ -254,6 +220,7 @@ public class ElasticIndexingService extends IndexingService {
     return indexingOperations.size();
   }
 
+
   private void deleteOperationsForTypesBefore(OperationType[] operations, Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted, IndexingOperation refIindexOperation) {
     for (OperationType operation: operations) {
       if (indexingQueueSorted.containsKey(operation)) {
@@ -327,41 +294,6 @@ public class ElasticIndexingService extends IndexingService {
         connector.getIndex(), connector.getType(), connector.getMapping());
   }
 
-  private void addInitOperation(String connector) {
-    IndexingOperation indexingOperation = initIndexingQueue(getConnectors().get(connector), OperationType.INIT);
-    indexingOperationDAO.create(indexingOperation);
-  }
-
-  private void addCreateOperation (String connector, String id) {
-    IndexingOperation indexingOperation = initIndexingQueue(getConnectors().get(connector), OperationType.CREATE);
-    indexingOperation.setEntityId(id);
-    indexingOperationDAO.create(indexingOperation);
-  }
-
-  private void addUpdateOperation (String connector, String id) {
-    IndexingOperation indexingOperation = initIndexingQueue(getConnectors().get(connector), OperationType.UPDATE);
-    indexingOperation.setEntityId(id);
-    indexingOperationDAO.create(indexingOperation);
-  }
-
-  private void addDeleteOperation (String connector, String id) {
-    IndexingOperation indexingOperation = initIndexingQueue(getConnectors().get(connector), OperationType.DELETE);
-    indexingOperation.setEntityId(id);
-    indexingOperationDAO.create(indexingOperation);
-  }
-
-  private void addDeleteAllOperation (String connector) {
-    IndexingOperation indexingOperation = initIndexingQueue(getConnectors().get(connector), OperationType.DELETE_ALL);
-    indexingOperationDAO.create(indexingOperation);
-  }
-
-  private IndexingOperation initIndexingQueue (IndexingServiceConnector IndexingServiceConnector,
-                                               OperationType operation) {
-    IndexingOperation indexingOperation = new IndexingOperation();
-    indexingOperation.setEntityType(IndexingServiceConnector.getType());
-    indexingOperation.setOperation(operation);
-    return indexingOperation;
-  }
 
   /**
    * If the bulk request already reached a size limitation, the bulk request need to be sent immediately
@@ -378,6 +310,13 @@ public class ElasticIndexingService extends IndexingService {
     else {
       return bulkRequest;
     }
+  }
+
+  private void addInitOperation(String connector) {
+    IndexingOperation indexingOperation = new IndexingOperation();
+    indexingOperation.setEntityType(connector);
+    indexingOperation.setOperation(OperationType.INIT);
+    indexingOperationDAO.create(indexingOperation);
   }
 
   public Integer getBatchNumber() {

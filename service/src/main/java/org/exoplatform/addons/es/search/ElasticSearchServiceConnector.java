@@ -81,7 +81,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     esQuery.append("     \"from\" : " + offset + ", \"size\" : " + limit + ",\n");
 
     //Score are always tracked, even with sort
-    //https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-sort.html#_track_scores
+    //https://www.impl.co/guide/en/elasticsearch/reference/current/search-request-sort.html#_track_scores
     esQuery.append("     \"track_scores\": true,\n");
     esQuery.append("     \"sort\" : [\n");
     esQuery.append("       { \"" + (StringUtils.isNotBlank(sortMapping.get(sort))?sortMapping.get(sort):"_score") + "\" : ");

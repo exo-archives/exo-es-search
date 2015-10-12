@@ -16,6 +16,7 @@
 */
 package org.exoplatform.addons.es.rest;
 
+import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.addons.es.index.IndexingServiceConnector;
 import org.exoplatform.services.log.ExoLogger;
@@ -46,9 +47,11 @@ public class IndexingManagementRestService implements ResourceContainer {
   private final static Log LOG = ExoLogger.getLogger(IndexingManagementRestService.class);
 
   private IndexingService indexingService;
+  private IndexingOperationProcessor indexingOperationProcessor;
 
-  public IndexingManagementRestService(IndexingService indexingService) {
+  public IndexingManagementRestService(IndexingService indexingService, IndexingOperationProcessor indexingOperationProcessor) {
     this.indexingService = indexingService;
+    this.indexingOperationProcessor = indexingOperationProcessor;
   }
 
   @GET
@@ -57,7 +60,7 @@ public class IndexingManagementRestService implements ResourceContainer {
   @RolesAllowed("administrators")
   public Response getConnectors() {
     LOG.info("Call getConnectors via REST");
-    List<IndexingServiceConnector> connectors = new ArrayList<>(indexingService.getConnectors().values());
+    List<IndexingServiceConnector> connectors = new ArrayList<>(indexingOperationProcessor.getConnectors().values());
     return Response.ok(connectors, MediaType.APPLICATION_JSON).build();
   }
 

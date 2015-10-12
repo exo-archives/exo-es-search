@@ -16,9 +16,9 @@ import org.exoplatform.addons.es.dao.impl.IndexingOperationDAOImpl;
 import org.exoplatform.addons.es.domain.Document;
 import org.exoplatform.addons.es.domain.IndexingOperation;
 import org.exoplatform.addons.es.domain.OperationType;
-import org.exoplatform.addons.es.index.IndexingService;
-import org.exoplatform.addons.es.index.elastic.ElasticIndexingService;
-import org.exoplatform.addons.es.index.elastic.ElasticIndexingServiceConnector;
+import org.exoplatform.addons.es.index.IndexingOperationProcessor;
+import org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor;
+import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
 import org.exoplatform.addons.es.integration.AbstractIntegrationTest;
 import org.exoplatform.commons.api.search.data.SearchResult;
 import org.exoplatform.container.xml.InitParams;
@@ -51,7 +51,7 @@ import static org.mockito.Mockito.when;
 public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     private static Connection conn;
     private static Liquibase liquibase;
-    private IndexingService indexingService;
+    private IndexingOperationProcessor indexingOperationProcessor;
     private ElasticSearchServiceConnector elasticSearchServiceConnector;
     private IndexingOperationDAO dao;
     private ElasticIndexingServiceConnector wikiConnector;
@@ -98,8 +98,8 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
         dao = new IndexingOperationDAOImpl();
         ElasticIndexingClient client = new ElasticIndexingClient(url);
         ElasticContentRequestBuilder builder = new ElasticContentRequestBuilder();
-        indexingService = new ElasticIndexingService(dao, client, builder);
-        indexingService.addConnector(wikiConnector);
+        indexingOperationProcessor = new ElasticIndexingOperationProcessor(dao, client, builder);
+        indexingOperationProcessor.addConnector(wikiConnector);
 
         //Search connector
         ElasticSearchingClient searchingClient = new ElasticSearchingClient(url);
@@ -151,7 +151,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
         document.setPermissions(new String[]{"Alice"});
         document.setId("1");
         when(wikiConnector.create("1")).thenReturn(document);
-        indexingService.process();
+        indexingOperationProcessor.process();
         admin().indices().prepareRefresh().execute().actionGet();
         //When
         Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "RDBMS", null, 0, 20, null, null);
@@ -169,7 +169,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
         document.setPermissions(new String[]{"Bob"});
         document.setId("1");
         when(wikiConnector.create("1")).thenReturn(document);
-        indexingService.process();
+        indexingOperationProcessor.process();
         admin().indices().prepareRefresh().execute().actionGet();
         //When
         Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "RDBMS", null, 0, 20, null, null);
@@ -187,7 +187,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
         document.setPermissions(new String[]{"Bob", "Alice", "publisher:/developers"});
         document.setId("1");
         when(wikiConnector.create("1")).thenReturn(document);
-        indexingService.process();
+        indexingOperationProcessor.process();
         admin().indices().prepareRefresh().execute().actionGet();
         //When
         Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "RDBMS", null, 0, 20, null, null);
@@ -230,7 +230,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
         document.setPermissions(new String[]{permission});
         document.setId("1");
         when(wikiConnector.create("1")).thenReturn(document);
-        indexingService.process();
+        indexingOperationProcessor.process();
         admin().indices().prepareRefresh().execute().actionGet();
         //When
         Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "RDBMS", null, 0, 20, null, null);
@@ -268,7 +268,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
         document.setPermissions(new String[]{permission});
         document.setId("1");
         when(wikiConnector.create("1")).thenReturn(document);
-        indexingService.process();
+        indexingOperationProcessor.process();
         admin().indices().prepareRefresh().execute().actionGet();
         //When
         Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "RDBMS", null, 0, 20, null, null);
@@ -286,7 +286,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
         document.setPermissions(permissions);
         document.setId("1");
         when(wikiConnector.create("1")).thenReturn(document);
-        indexingService.process();
+        indexingOperationProcessor.process();
         admin().indices().prepareRefresh().execute().actionGet();
         //When
         Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "RDBMS", null, 0, 20, null, null);
