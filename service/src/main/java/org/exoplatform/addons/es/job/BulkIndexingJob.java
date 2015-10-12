@@ -17,48 +17,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.exoplatform.addons.es.job;
+    package org.exoplatform.addons.es.job;
 
 import org.exoplatform.addons.es.index.IndexingOperationProcessor;
-import org.exoplatform.job.MultiTenancyJob;
-import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.commons.utils.CommonsUtils;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.quartz.DisallowConcurrentExecution;
+import org.quartz.Job;
 import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 /**
  * @author <a href="mailto:tuyennt@exoplatform.com">Tuyen Nguyen The</a>.
  */
-public class BulkIndexingJob extends MultiTenancyJob {
+@DisallowConcurrentExecution
+public class BulkIndexingJob implements Job {
   private static final Log LOG = ExoLogger.getExoLogger(BulkIndexingJob.class);
 
   @Override
-  public Class<? extends MultiTenancyTask> getTask() {
-    return IndexingBulkTask.class;
-  }
-
-  public class IndexingBulkTask extends MultiTenancyTask {
-    public IndexingBulkTask(JobExecutionContext context, String repoName) {
-      super(context, repoName);
-    }
-
-    @Override
-    public void run() {
-      super.run();
-      LOG.debug("Running job BulkIndexingJob");
-
-      // TODO: need to implement the cloud-supporting for JPA (EntityManagerService)
-
-      RepositoryService repoService = container.getComponentInstanceOfType(RepositoryService.class);
-      IndexingOperationProcessor indexingOperationProcessor =
-          container.getComponentInstanceOfType(IndexingOperationProcessor.class);
-
-      String defaultRepoName = repoService.getConfig().getDefaultRepositoryName();
-      if (!repoName.equals(defaultRepoName)) {
-        // This is in cloud environment: tenant name and repoName are the same
-        indexingOperationProcessor.setCurrentTenantName(repoName);
-      }
-      indexingOperationProcessor.process();
-    }
+  public void execute(JobExecutionContext context) throws JobExecutionException {
+    LOG.debug("Running job BulkIndexingJob");
+    IndexingOperationProcessor indexingOperationProcessor = CommonsUtils.getService(IndexingOperationProcessor.class);
+    indexingOperationProcessor.process();
   }
 }
