@@ -66,9 +66,21 @@ indexingManagementController.controller('ConnectorListCtrl', ['$scope', 'Connect
 indexingManagementController.controller('ErrorListCtrl', ['$scope', 'Error',
     function($scope, Error) {
 
-        Error.getErrors().success(function(data) {
-            $scope.errors = data;
-        });
+        //Loads and populates the Error list
+        this.loadErrorList = function (){
+
+            Error.getErrors().success(function(data) {
+                $scope.errors = data;
+            });
+
+        }
+        //Put in interval, first trigger after 5 seconds
+        $interval(function(){
+            this.loadErrorList();
+        }.bind(this), 5000);
+
+        //invoke initialy
+        this.loadErrorList();
 
         $scope.addToQueue = function(id) {
             Error.addToQueue(id).then(function(response) {
@@ -82,9 +94,21 @@ indexingManagementController.controller('ErrorListCtrl', ['$scope', 'Error',
 indexingManagementController.controller('OperationListCtrl', ['$scope', 'Operation',
     function($scope, Operation) {
 
-        Operation.getOperations().success(function(data) {
-            $scope.operations = data;
-        });
+        //Loads and populates the operation list
+        this.loadOperationList = function (){
+
+            Operation.getOperations().success(function(data) {
+                $scope.operations = data;
+            });
+
+        }
+        //Put in interval, first trigger after 5 seconds
+        $interval(function(){
+            this.loadOperationList();
+        }.bind(this), 5000);
+
+        //invoke initialy
+        this.loadOperationList();
 
         $scope.deleteOperation = function(id) {
             Operation.deleteOperation(id).then(function(response) {

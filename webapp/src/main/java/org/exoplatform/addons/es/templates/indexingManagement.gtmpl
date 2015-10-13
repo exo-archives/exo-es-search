@@ -173,45 +173,5 @@
         </div>
     </div>
 
-    <!-- Indexing Operation List -->
-    <div class="row-fluid">
-        <div class="span12">
-            <div ng-controller="OperationListCtrl" class="panel panel-default">
-                <!-- Default panel contents -->
-                <div class="panel-heading">Operation Indexing Management</div>
-                <div class="panel-body">
-                    <p>List of all indexing operations.</p>
-                </div>
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Type</th>
-                        <th>Entity Id</th>
-                        <th>Operation</th>
-                        <th>Timestamp</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr ng-repeat="operation in operations">
-                        <th scope="row">{{operation.id}}</th>
-                        <td>{{operation.entityType}}</td>
-                        <td>{{operation.entityId}}</td>
-                        <td>{{operation.operation}}</td>
-                        <td>{{operation.timestamp.time}}</td>
-                        <td>
-                            <button type="button"
-                                    ng-click="deleteOperation(operation.id)"
-                                    class="btn-connector-reindex btn btn-primary btn-mini">
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
 
 </div>
