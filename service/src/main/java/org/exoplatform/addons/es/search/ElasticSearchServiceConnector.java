@@ -122,7 +122,13 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     esQuery.append("       \"pre_tags\" : [\"<strong>\"],\n");
     esQuery.append("       \"post_tags\" : [\"</strong>\"],\n");
     esQuery.append("       \"fields\" : {\n");
-    esQuery.append("         \"*\" : {\"fragment_size\" : 150, \"number_of_fragments\" : 3}\n");
+    for (int i=0; i<this.searchFields.size(); i++) {
+      esQuery.append("         \""+searchFields.get(i)+"\" : {\"fragment_size\" : 150, \"number_of_fragments\" : 3}");
+      if (i<this.searchFields.size()-1) {
+        esQuery.append(",");
+      }
+      esQuery.append("\n");
+    }
     esQuery.append("       }\n");
     esQuery.append("     }\n");
     esQuery.append("}");
