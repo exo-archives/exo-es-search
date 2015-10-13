@@ -16,9 +16,12 @@
 */
 package org.exoplatform.addons.es.rest;
 
+import org.exoplatform.addons.es.domain.IndexingOperation;
+import org.exoplatform.addons.es.domain.OperationType;
 import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.addons.es.index.IndexingServiceConnector;
+import org.exoplatform.addons.es.index.impl.QueueIndexingService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.resource.ResourceContainer;
@@ -30,6 +33,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,20 +51,21 @@ public class IndexingManagementRestService implements ResourceContainer {
 
   private final static Log LOG = ExoLogger.getLogger(IndexingManagementRestService.class);
 
-  private IndexingService indexingService;
+  private QueueIndexingService indexingService;
   private IndexingOperationProcessor indexingOperationProcessor;
 
   public IndexingManagementRestService(IndexingService indexingService, IndexingOperationProcessor indexingOperationProcessor) {
-    this.indexingService = indexingService;
+    this.indexingService = (QueueIndexingService) indexingService;
     this.indexingOperationProcessor = indexingOperationProcessor;
   }
+
+  // Indexing Connector
 
   @GET
   @Path("/connector")
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed("administrators")
   public Response getConnectors() {
-    LOG.info("Call getConnectors via REST");
     List<IndexingServiceConnector> connectors = new ArrayList<>(indexingOperationProcessor.getConnectors().values());
     return Response.ok(connectors, MediaType.APPLICATION_JSON).build();
   }
@@ -68,7 +74,6 @@ public class IndexingManagementRestService implements ResourceContainer {
   @Path("/connector/{connectorType}/_reindex")
   @RolesAllowed("administrators")
   public Response reindexConnector(@PathParam("connectorType") String connectorType) {
-    LOG.info("Call reindexConnector via REST");
     indexingService.reindexAll(connectorType);
     return Response.ok("ok", MediaType.TEXT_PLAIN).build();
   }
@@ -77,7 +82,6 @@ public class IndexingManagementRestService implements ResourceContainer {
   @Path("/connector/{connectorType}/_disable")
   @RolesAllowed("administrators")
   public Response disable(@PathParam("connectorType") String connectorType) {
-    LOG.info("Call disable via REST");
     //TODO implement a disable connector method in IndexingService
     return Response.ok("ok", MediaType.TEXT_PLAIN).build();
   }
@@ -86,9 +90,68 @@ public class IndexingManagementRestService implements ResourceContainer {
   @Path("/connector/{connectorType}/_enable")
   @RolesAllowed("administrators")
   public Response enable(@PathParam("connectorType") String connectorType) {
-    LOG.info("Call disable via REST");
     //TODO implement a enable connector method in IndexingService
     return Response.ok("ok", MediaType.TEXT_PLAIN).build();
+  }
+
+  @GET
+  @Path("/connector/_count")
+  @RolesAllowed("administrators")
+  public Response getNbConnectors() {
+    return Response.ok(String.valueOf(indexingOperationProcessor.getConnectors().size()), MediaType.TEXT_PLAIN).build();
+  }
+
+  // Indexing Operation
+
+  @GET
+  @Path("/operation")
+  @Produces(MediaType.APPLICATION_JSON)
+  @RolesAllowed("administrators")
+  public Response getOperations() throws ParseException {
+    List<IndexingOperation> operations = new ArrayList<>(indexingService.getOperations());
+    //List<IndexingOperation> operations = getFakeIndexingOperation();
+    return Response.ok(operations, MediaType.APPLICATION_JSON).build();
+  }
+
+  @GET
+  @Path("/operation/_count")
+  @RolesAllowed("administrators")
+  public Response getNbIndexingOperations() {
+    return Response.ok(String.valueOf(indexingService.getNumberOperations()), MediaType.TEXT_PLAIN).build();
+  }
+
+  // Indexing Error
+
+  @GET
+  @Path("/error")
+  @Produces(MediaType.APPLICATION_JSON)
+  @RolesAllowed("administrators")
+  public Response getErrors() {
+    //TODO
+    return Response.ok(null, MediaType.APPLICATION_JSON).build();
+  }
+
+  @GET
+  @Path("/error/_count")
+  @RolesAllowed("administrators")
+  public Response getNbIndexingErrors() {
+    //TODO
+    return Response.ok("0", MediaType.TEXT_PLAIN).build();
+  }
+
+  //For testing
+  private List<IndexingOperation> getFakeIndexingOperation() throws ParseException {
+    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+    IndexingOperation indexingOperation1 = new IndexingOperation(1L,null,"task", OperationType.INIT, sdf.parse("19/01/1989 12:43:45"));
+    IndexingOperation indexingOperation2 = new IndexingOperation(2L,"1","task", OperationType.CREATE, sdf.parse("19/01/1989 12:43:47"));
+    IndexingOperation indexingOperation3 = new IndexingOperation(3L,null,"social", OperationType.INIT, sdf.parse("19/01/1989 12:43:53"));
+    IndexingOperation indexingOperation4 = new IndexingOperation(4L,"2","task", OperationType.CREATE, sdf.parse("19/01/1989 12:43:55"));
+    List<IndexingOperation> operations = new ArrayList<>();
+    operations.add(indexingOperation1);
+    operations.add(indexingOperation2);
+    operations.add(indexingOperation3);
+    operations.add(indexingOperation4);
+    return operations;
   }
 
 }

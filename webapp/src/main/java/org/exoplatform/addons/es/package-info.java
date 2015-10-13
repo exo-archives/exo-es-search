@@ -33,10 +33,7 @@
 @Assets("*")
 package org.exoplatform.addons.es;
 
-import juzu.plugin.asset.Assets;
-import juzu.plugin.asset.Script;
-import juzu.plugin.asset.Scripts;
-import juzu.plugin.asset.Stylesheet;
+import juzu.plugin.asset.*;
 import juzu.plugin.less4j.Less;
 import juzu.plugin.portlet.Portlet;
 import juzu.plugin.webjars.WebJar;

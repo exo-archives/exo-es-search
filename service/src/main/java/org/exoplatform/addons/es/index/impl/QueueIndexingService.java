@@ -7,6 +7,8 @@ import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.util.List;
+
 /**
  * Created by The eXo Platform SAS
  * Author : Thibault Clement
@@ -100,6 +102,18 @@ public class QueueIndexingService implements IndexingService {
    */
   public void clearIndexingQueue() {
     indexingOperationDAO.deleteAll();
+  }
+
+  /**
+   * get the number of operations in indexQueue
+   * @LevelAPI Experimental
+   */
+  public Long getNumberOperations() {
+    return indexingOperationDAO.count();
+  }
+
+  public List<IndexingOperation> getOperations() {
+    return indexingOperationDAO.findAll();
   }
 
 }
