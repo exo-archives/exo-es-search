@@ -10,7 +10,7 @@ public interface IndexingService {
    * @param connectorName Name of the connector
    * @LevelAPI Experimental
    */
-  public void init(String connectorName);
+  void init(String connectorName);
 
   /**
    * Add a create operation to the indexing queue
@@ -18,7 +18,7 @@ public interface IndexingService {
    * @param id id of the document
    * @LevelAPI Experimental
    */
-  public void index(String connectorName, String id);
+  void index(String connectorName, String id);
 
   /**
    * Add a update operation to the indexing queue
@@ -26,7 +26,7 @@ public interface IndexingService {
    * @param id id of the document
    * @LevelAPI Experimental
    */
-  public void reindex(String connectorName, String id);
+  void reindex(String connectorName, String id);
 
   /**
    * Add a delete operation to the indexing queue
@@ -34,20 +34,20 @@ public interface IndexingService {
    * @param id id of the document
    * @LevelAPI Experimental
    */
-  public void unindex(String connectorName, String id);
+  void unindex(String connectorName, String id);
 
   /**
    * Add a reindex all operation to the indexing queue
    * @param connectorName Name of the connector
    * @LevelAPI Experimental
    */
-  public void reindexAll(String connectorName);
+  void reindexAll(String connectorName);
 
   /**
    * Add a delete all type operation to the indexing queue
    * @param connectorName Name of the connector
    * @LevelAPI Experimental
    */
-  public void unindexAll(String connectorName);
+  void unindexAll(String connectorName);
 
 }

@@ -34,6 +34,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -412,8 +413,8 @@ public class ElasticOperationProcessorTest {
     orderClient.verify(elasticIndexingClient).sendDeleteTypeRequest(elasticIndexingServiceConnector.getIndex(),
         elasticIndexingServiceConnector.getType());
     orderClient.verify(elasticIndexingClient).sendCreateTypeRequest(elasticIndexingServiceConnector.getIndex(),
-        elasticIndexingServiceConnector.getType(),
-        elasticIndexingServiceConnector.getMapping());
+            elasticIndexingServiceConnector.getType(),
+            elasticIndexingServiceConnector.getMapping());
     //No CUD operation
     verifyNoMoreInteractions(elasticIndexingClient);
   }
@@ -446,7 +447,7 @@ public class ElasticOperationProcessorTest {
   }
 
   @Test
-  public void process_ifBulkRequestReachedSizeLimit_requestIsSend() throws ParseException {
+  public void process_ifBulkRequestReachedSizeLimit_requestIsSent() throws ParseException {
     //Given
     elasticIndexingOperationProcessor.setRequestSizeLimit(1);
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -468,6 +469,29 @@ public class ElasticOperationProcessorTest {
     //Then
     //Two CUD request should be send because the first create request will reached the limit size (= 1 byte)
     verify(elasticIndexingClient, times(2)).sendCUDRequest(anyString());
+    verifyNoMoreInteractions(elasticIndexingClient);
+  }
+
+  @Test
+  public void process_ifReindexAll_requestIsSent() throws ParseException {
+    //Given
+    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+    elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
+    IndexingOperation reindexAll = new IndexingOperation(5l,null,"post",OperationType.REINDEX_ALL,sdf.parse("18/01/1989"));
+    when(indexingOperationDAO.findAllFirst(anyInt())).thenReturn(Arrays.asList(reindexAll));
+    when(elasticIndexingServiceConnector.getAllIds()).thenReturn(Arrays.asList("1","2"));
+    //When
+    elasticIndexingOperationProcessor.process();
+    //Then
+    InOrder orderClient = inOrder(elasticIndexingClient);
+    orderClient.verify(elasticIndexingClient).sendDeleteTypeRequest(elasticIndexingServiceConnector.getIndex(),
+                                                                    elasticIndexingServiceConnector.getType());
+    orderClient.verify(elasticIndexingClient).sendCreateTypeRequest(elasticIndexingServiceConnector.getIndex(),
+                                                                    elasticIndexingServiceConnector.getType(),
+                                                                    elasticIndexingServiceConnector.getMapping());
+    verify(elasticContentRequestBuilder, times(1)).getUpdateDocumentRequestContent(elasticIndexingServiceConnector, "1");
+    verify(elasticContentRequestBuilder, times(1)).getUpdateDocumentRequestContent(elasticIndexingServiceConnector, "2");
+    orderClient.verify(elasticIndexingClient, times(1)).sendCUDRequest(anyString());
     verifyNoMoreInteractions(elasticIndexingClient);
   }
 

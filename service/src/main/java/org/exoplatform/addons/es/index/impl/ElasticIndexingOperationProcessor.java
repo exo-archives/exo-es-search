@@ -16,7 +16,10 @@
 */
 package org.exoplatform.addons.es.index.impl;
 
+import java.util.*;
+
 import org.apache.commons.lang.StringUtils;
+
 import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
 import org.exoplatform.addons.es.client.ElasticIndexingClient;
 import org.exoplatform.addons.es.dao.IndexingOperationDAO;
@@ -28,8 +31,6 @@ import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-
-import java.util.*;
 
 /**
  * Created by The eXo Platform SAS
@@ -120,51 +121,50 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
 
     //Get all Indexing operations and order them per operation and type in map: <Operation, <Type, List<IndexingOperation>>>
     for (IndexingOperation indexingOperation : indexingOperations) {
-      //Check if the Indexing Operation map already contains a specific operation
-      if (!indexingQueueSorted.containsKey(indexingOperation.getOperation())) {
-        //If not add a new operation in the map
-        indexingQueueSorted.put(indexingOperation.getOperation(), new HashMap<String, List<IndexingOperation>>());
-      }
-      //Check if the operation map already contains a specific type
-      if (!indexingQueueSorted.get(indexingOperation.getOperation()).containsKey(indexingOperation.getEntityType())) {
-        //If not add a new type for the operation above
-        indexingQueueSorted.get(indexingOperation.getOperation()).put(indexingOperation.getEntityType(), new ArrayList<IndexingOperation>());
-      }
-      //Add the indexing operation in the specific Operation -> Type
-      indexingQueueSorted.get(indexingOperation.getOperation()).get(indexingOperation.getEntityType()).add(indexingOperation);
+      putIndexingOperationInMemoryQueue(indexingOperation, indexingQueueSorted);
       //Get the max timestamp of the indexing queue
       if (startProcessing.compareTo(indexingOperation.getTimestamp()) < 0) {
         startProcessing = indexingOperation.getTimestamp();
       }
     }
 
-    // Process all the requests for “init of the ES create mapping” (Operation type = I) in the indexing queue (if any)
-    if (indexingQueueSorted.containsKey(OperationType.INIT)) {
-      for (String entityType : indexingQueueSorted.get(OperationType.INIT).keySet()) {
-        sendInitRequests(getConnectors().get(entityType));
-      }
-      indexingQueueSorted.remove(OperationType.INIT);
-    }
+    processInit(indexingQueueSorted);
+    processDeleteAll(indexingQueueSorted);
+    processReindexAll(indexingQueueSorted);
+    processCUD(indexingQueueSorted);
 
-    // Process all the requests for “remove all documents of type” (Operation type = X) in the indexing queue (if any)
-    // = Delete type in ES
-    if (indexingQueueSorted.containsKey(OperationType.DELETE_ALL)) {
-      for (String entityType : indexingQueueSorted.get(OperationType.DELETE_ALL).keySet()) {
-        if (indexingQueueSorted.get(OperationType.DELETE_ALL).containsKey(entityType)) {
-          for (IndexingOperation indexingOperation : indexingQueueSorted.get(OperationType.DELETE_ALL).get(entityType)) {
-            //Remove the type (= remove all documents of this type) and recreate it
-            ElasticIndexingServiceConnector connector = (ElasticIndexingServiceConnector) getConnectors().get(indexingOperation.getEntityType());
-            elasticIndexingClient.sendDeleteTypeRequest(connector.getIndex(), connector.getType());
-            elasticIndexingClient.sendCreateTypeRequest(connector.getIndex(), connector.getType(), connector.getMapping());
-            //Remove all useless CUD operation that was plan before this delete all
-            deleteOperationsForTypesBefore(new OperationType[]{OperationType.CREATE, OperationType.DELETE}, indexingQueueSorted, indexingOperation);
-            deleteOperationsForTypes(new OperationType[]{OperationType.UPDATE}, indexingQueueSorted, indexingOperation);
-          }
-        }
-      }
-      indexingQueueSorted.remove(OperationType.DELETE_ALL);
-    }
+    // Removes the processed IDs from the “indexing queue” table that have timestamp older than the timestamp of
+    // start of processing
+    indexingOperationDAO.deleteAllBefore(startProcessing);
+    return indexingOperations.size();
+  }
 
+  /**
+   * Add an indexing operation to the Temporary inMemory IndexingQueue
+   * @param indexingOperation the operation to add to the Temporary inMemory IndexingQueue
+   * @param indexingQueueSorted Temporary inMemory IndexingQueue
+   */
+  private void putIndexingOperationInMemoryQueue(IndexingOperation indexingOperation, Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted) {
+    //Check if the Indexing Operation map already contains a specific operation
+    if (!indexingQueueSorted.containsKey(indexingOperation.getOperation())) {
+      //If not add a new operation in the map
+      indexingQueueSorted.put(indexingOperation.getOperation(), new HashMap<String, List<IndexingOperation>>());
+    }
+    //Check if the operation map already contains a specific type
+    if (!indexingQueueSorted.get(indexingOperation.getOperation()).containsKey(indexingOperation.getEntityType())) {
+      //If not add a new type for the operation above
+      indexingQueueSorted.get(indexingOperation.getOperation()).put(indexingOperation.getEntityType(), new ArrayList<IndexingOperation>());
+    }
+    //Add the indexing operation in the specific Operation -> Type
+    indexingQueueSorted.get(indexingOperation.getOperation()).get(indexingOperation.getEntityType()).add(indexingOperation);
+  }
+
+
+  /**
+   * Process all the Create / Update / Delete operations
+   * @param indexingQueueSorted Temporary inMemory IndexingQueue
+   */
+  private void processCUD(Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted) {
     //Initialise bulk request for CUD operations
     String bulkRequest = "";
 
@@ -213,11 +213,79 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
     if (StringUtils.isNotBlank(bulkRequest)) {
       elasticIndexingClient.sendCUDRequest(bulkRequest);
     }
+  }
 
-    // Removes the processed IDs from the “indexing queue” table that have timestamp older than the timestamp of
-    // start of processing
-    indexingOperationDAO.deleteAllBefore(startProcessing);
-    return indexingOperations.size();
+  /**
+   * Process all the requests for “init of the ES create mapping” (Operation type = I) in the indexing queue (if any)
+   * @param indexingQueueSorted Temporary inMemory IndexingQueue
+   */
+  private void processInit(Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted) {
+    if (indexingQueueSorted.containsKey(OperationType.INIT)) {
+      for (String entityType : indexingQueueSorted.get(OperationType.INIT).keySet()) {
+        sendInitRequests(getConnectors().get(entityType));
+      }
+      indexingQueueSorted.remove(OperationType.INIT);
+    }
+  }
+
+
+  /**
+   * Process all the requests for “remove all documents of type” (Operation type = X) in the indexing queue (if any)
+   * = Delete type in ES
+   * @param indexingQueueSorted Temporary inMemory IndexingQueue
+   */
+  private void processDeleteAll(Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted) {
+    if (indexingQueueSorted.containsKey(OperationType.DELETE_ALL)) {
+      for (String entityType : indexingQueueSorted.get(OperationType.DELETE_ALL).keySet()) {
+        if (indexingQueueSorted.get(OperationType.DELETE_ALL).containsKey(entityType)) {
+          for (IndexingOperation indexingOperation : indexingQueueSorted.get(OperationType.DELETE_ALL).get(entityType)) {
+            processDeleteAll(indexingOperation, indexingQueueSorted);
+          }
+        }
+      }
+      indexingQueueSorted.remove(OperationType.DELETE_ALL);
+    }
+  }
+
+  /**
+   *
+   * @param indexingOperation
+   * @param indexingQueueSorted Temporary inMemory IndexingQueue
+   */
+  private void processDeleteAll(IndexingOperation indexingOperation, Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted) {
+    //Remove the type (= remove all documents of this type) and recreate it
+    ElasticIndexingServiceConnector connector = (ElasticIndexingServiceConnector) getConnectors().get(indexingOperation.getEntityType());
+    elasticIndexingClient.sendDeleteTypeRequest(connector.getIndex(), connector.getType());
+    elasticIndexingClient.sendCreateTypeRequest(connector.getIndex(), connector.getType(), connector.getMapping());
+    //Remove all useless CUD operation that was plan before this delete all
+    deleteOperationsForTypesBefore(new OperationType[]{OperationType.CREATE, OperationType.DELETE}, indexingQueueSorted, indexingOperation);
+    deleteOperationsForTypes(new OperationType[]{OperationType.UPDATE}, indexingQueueSorted, indexingOperation);
+  }
+
+  /**
+   * Process all the requests for “Reindex all documents of type” (Operation type = R) in the indexing queue (if any)
+   * @param indexingQueueSorted Temporary inMemory IndexingQueue
+   */
+  private void processReindexAll(Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted) {
+    if (indexingQueueSorted.containsKey(OperationType.REINDEX_ALL)) {
+      for (String entityType : indexingQueueSorted.get(OperationType.REINDEX_ALL).keySet()) {
+        if (indexingQueueSorted.get(OperationType.REINDEX_ALL).containsKey(entityType)) {
+          for (IndexingOperation indexingOperation : indexingQueueSorted.get(OperationType.REINDEX_ALL).get(entityType)) {
+            //1- Delete all documents in ES (and purge the indexing queue)
+            processDeleteAll(indexingOperation, indexingQueueSorted);
+            //2- Get all the documents ID
+            ElasticIndexingServiceConnector connector = (ElasticIndexingServiceConnector) getConnectors().get(indexingOperation.getEntityType());
+            List<String> ids = connector.getAllIds();
+            //3- Inject as a CUD operation
+            for (String id : ids) {
+              IndexingOperation updateOperation = new IndexingOperation(null, id, indexingOperation.getEntityType(), OperationType.UPDATE, indexingOperation.getTimestamp());
+              putIndexingOperationInMemoryQueue(updateOperation, indexingQueueSorted);
+            }
+          }
+        }
+      }
+      indexingQueueSorted.remove(OperationType.REINDEX_ALL);
+    }
   }
 
 
