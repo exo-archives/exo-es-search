@@ -125,7 +125,7 @@
     </dependency>
   </dependencies>
   <build>
-    <finalName>exo-es-search-webapp</finalName>
+    <finalName>exo-es-search</finalName>
     <pluginManagement>
       <plugins />
     </pluginManagement>

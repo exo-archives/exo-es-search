@@ -1,5 +1,49 @@
 <div ng-app="indexingManagementApp" class="indexing-service-management">
-<h3>Indexing Service Management Application</h3>
+
+    <!-- Title -->
+    <h1 class="page-header">Indexing Service Management Application</h1>
+
+    <!-- Stats -->
+    <div class="row-fluid">
+        <div ng-controller="IndexingStatCtrl" class="span12 indexing-stat">
+            <div class="row-fluid">
+                <div class="span4">
+                    <div class="connector-number-stat big-number-stat clearfix">
+                        <div class="big-number-data">
+                            <span class="col-left big-number">{{nbConnectors}}</span>
+                            <span class="col-right">
+                                <em>Connectors</em>
+                                <em> registered</em>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="span4">
+                    <div class="operation-number-stat big-number-stat clearfix">
+                        <div class="big-number-data">
+                            <span class="col-left big-number">{{nbOperations}}</span>
+                            <span class="col-right">
+                                <p>Operations</p>
+                                <em> in queue</em>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="span4">
+                    <div class="error-number-stat big-number-stat clearfix">
+                        <div class="big-number-data">
+                            <span class="col-left big-number">{{nbErrors}}</span>
+                            <span class="col-right">
+                                <em>Errors</em>
+                                <em> catched</em>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Connector List -->
     <div class="row-fluid">
         <div class="span12">
@@ -45,28 +89,125 @@
         </div>
     </div>
 
-    <!-- Indexing Error List -->
+    <!-- Indexing Operation List -->
     <div class="row-fluid">
         <div class="span12">
-            <div class="panel panel-default">
+            <div ng-controller="OperationListCtrl" class="panel panel-default">
                 <!-- Default panel contents -->
-                <div class="panel-heading">Error Indexing Management</div>
+                <div class="panel-heading">Operation Indexing Management</div>
                 <div class="panel-body">
-                    <p>List of all indexing error.</p>
+                    <p>List of all indexing operations.</p>
                 </div>
                 <table class="table">
                     <thead>
                     <tr>
-                        <th>Type</th>
-                        <th>Index</th>
                         <th>Id</th>
-                        <th>Action</th>
-                        <th>Error</th>
+                        <th>Type</th>
+                        <th>Entity Id</th>
+                        <th>Operation</th>
                         <th>Timestamp</th>
                         <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
+                    <tr ng-repeat="operation in operations">
+                        <th scope="row">{{operation.id}}</th>
+                        <td>{{operation.entityType}}</td>
+                        <td>{{operation.entityId}}</td>
+                        <td>{{operation.operation}}</td>
+                        <td>{{operation.timestamp.time}}</td>
+                        <td>
+                            <button type="button"
+                                    ng-click="deleteOperation(operation.id)"
+                                    class="btn-connector-reindex btn btn-primary btn-mini">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indexing Error List -->
+    <div class="row-fluid">
+        <div class="span12">
+            <div ng-controller="ErrorListCtrl" class="panel panel-default">
+                <!-- Default panel contents -->
+                <div class="panel-heading">Error Indexing Management</div>
+                <div class="panel-body">
+                    <p>List of all indexing error.  - NO IMPLEMENTED YET - </p>
+                </div>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Type</th>
+                        <th>Entity Id</th>
+                        <th>Operation</th>
+                        <th>Timestamp</th>
+                        <th>Error</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="error in errors">
+                        <th scope="row">{{error.id}}</th>
+                        <td>{{error.entityType}}</td>
+                        <td>{{error.entityId}}</td>
+                        <td>{{error.operation}}</td>
+                        <td>{{error.timestamp}}</td>
+                        <td>{{error.error}}</td>
+                        <td>
+                            <button type="button"
+                                    ng-click="addToQueue(error.id)"
+                                    class="btn-connector-reindex btn btn-primary btn-mini">
+                                Add to queue
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indexing Operation List -->
+    <div class="row-fluid">
+        <div class="span12">
+            <div ng-controller="OperationListCtrl" class="panel panel-default">
+                <!-- Default panel contents -->
+                <div class="panel-heading">Operation Indexing Management</div>
+                <div class="panel-body">
+                    <p>List of all indexing operations.</p>
+                </div>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Type</th>
+                        <th>Entity Id</th>
+                        <th>Operation</th>
+                        <th>Timestamp</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="operation in operations">
+                        <th scope="row">{{operation.id}}</th>
+                        <td>{{operation.entityType}}</td>
+                        <td>{{operation.entityId}}</td>
+                        <td>{{operation.operation}}</td>
+                        <td>{{operation.timestamp.time}}</td>
+                        <td>
+                            <button type="button"
+                                    ng-click="deleteOperation(operation.id)"
+                                    class="btn-connector-reindex btn btn-primary btn-mini">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
