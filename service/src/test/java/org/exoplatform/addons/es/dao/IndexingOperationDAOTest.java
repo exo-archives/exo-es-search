@@ -16,10 +16,11 @@
 */
 package org.exoplatform.addons.es.dao;
 
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertNotNull;
 
+import java.lang.reflect.Field;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.After;
@@ -69,21 +70,19 @@ public class IndexingOperationDAOTest extends AbstractDAOTest {
   }
 
   @Test
-  public void testDatabaseAutoGeneratingTimestamp () {
+  public void testDatabaseAutoGeneratingTimestamp () throws NoSuchFieldException, IllegalAccessException {
     //Given
     IndexingOperation indexingOperation1 = new IndexingOperation();
     indexingOperation1.setEntityType("blog");
     indexingOperation1.setOperation(OperationType.INIT);
     indexingOperationDAO.create(indexingOperation1);
-    IndexingOperation indexingOperation2 = new IndexingOperation();
-    indexingOperation2.setEntityType("blog");
-    indexingOperation2.setOperation(OperationType.INIT);
-    indexingOperationDAO.create(indexingOperation2);
     //When
     indexingOperation1 = indexingOperationDAO.find(indexingOperation1.getId());
-    indexingOperation2 = indexingOperationDAO.find(indexingOperation2.getId());
     //Then
-    assertThat(indexingOperation1.getTimestamp(), lessThanOrEqualTo(indexingOperation2.getTimestamp()));
+    Field privateField = IndexingOperation.class.getDeclaredField("timestamp");
+    privateField.setAccessible(true);
+    Date timestamp = (Date) privateField.get(indexingOperation1);
+    assertNotNull(timestamp);
   }
 
 }

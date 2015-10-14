@@ -48,43 +48,6 @@ public class IndexingOperationDAOImpl extends GenericDAOJPAImpl<IndexingOperatio
   }
 
   @Override
-  public List<IndexingOperation> findOperationsFromLastTime(Date lastTime) {
-    return getEntityManager()
-            .createNamedQuery("IndexingOperation.findAllIndexingOperationsFromLastTime", IndexingOperation.class)
-            .setParameter("lastTime", lastTime)
-            .getResultList();
-  }
-
-  @Override
-  public List<IndexingOperation> findOperationsBeforeLastTime(Date lastTime) {
-    //TODO TEST
-    return getEntityManager()
-        .createNamedQuery("IndexingOperation.findAllIndexingOperationsBeforeLastTime", IndexingOperation.class)
-        .setParameter("lastTime", lastTime)
-        .getResultList();
-  }
-
-  @Override
-  public List<IndexingOperation> findOperationsBeforeLastTimeByOperation(Date lastTime, String operation) {
-    //TODO TEST
-    return getEntityManager()
-        .createNamedQuery("IndexingOperation.findAllIndexingOperationsBeforeLastTimeByOperation", IndexingOperation.class)
-        .setParameter("lastTime", lastTime)
-        .setParameter("operation", operation)
-        .getResultList();
-  }
-
-  @Override
-  public List<IndexingOperation> findOperationsBeforeLastTimeByOperations(Date lastTime, List<String> operations) {
-    //TODO TEST
-    return getEntityManager()
-        .createNamedQuery("IndexingOperation.findAllIndexingOperationsBeforeLastTimeByOperations", IndexingOperation.class)
-        .setParameter("lastTime", lastTime)
-        .setParameter("operations", operations)
-        .getResultList();
-  }
-
-  @Override
   public List<IndexingOperation> findAllFirst(Integer maxResults) {
       return getEntityManager()
               .createNamedQuery("IndexingOperation.findAllFirst", IndexingOperation.class)
@@ -94,12 +57,11 @@ public class IndexingOperationDAOImpl extends GenericDAOJPAImpl<IndexingOperatio
 
   @Override
   @ExoTransactional
-  public void deleteAllBefore(Date lastTime) {
+  public void deleteAllIndexingOperationsHavingIdLessThanOrEqual(long id) {
     getEntityManager()
-        .createNamedQuery("IndexingOperation.deleteBeforeTimestamp")
-        .setParameter("lastTime", lastTime)
+        .createNamedQuery("IndexingOperation.deleteAllIndexingOperationsHavingIdLessThanOrEqual")
+        .setParameter("id", id)
         .executeUpdate();
   }
-
 }
 

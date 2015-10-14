@@ -1,13 +1,29 @@
 package org.exoplatform.addons.es.search;
 
-import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
+import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.FileSystemResourceAccessor;
+
 import org.elasticsearch.common.lang3.StringUtils;
+import org.junit.*;
+
+import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
+
 import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
 import org.exoplatform.addons.es.client.ElasticIndexingClient;
 import org.exoplatform.addons.es.client.ElasticSearchingClient;
@@ -26,20 +42,6 @@ import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.MembershipEntry;
-import org.junit.*;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Created by The eXo Platform SAS
@@ -145,7 +147,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     public void test_search_returnsAlicePage() throws IOException, InterruptedException {
         //Given
         setCurrentIdentity("Alice", "admin:/portal");
-        dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE, new Date()));
+        dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE));
         Document document = new Document();
         document.addField("title", "RDBMS Guidelines");
         document.setPermissions(new String[]{"Alice"});
@@ -163,7 +165,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     public void test_search_doesntReturnBobPage() throws IOException, InterruptedException {
         //Given
         setCurrentIdentity("Alice", "admin:/portal");
-        dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE, new Date()));
+        dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE));
         Document document = new Document();
         document.addField("title", "RDBMS Guidelines");
         document.setPermissions(new String[]{"Bob"});
@@ -181,7 +183,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     public void test_searchWithMembership_returnsPage() throws IOException, InterruptedException {
         //Given
         setCurrentIdentity("JaneDoe", "publisher:/developers");
-        dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE, new Date()));
+        dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE));
         Document document = new Document();
         document.addField("title", "RDBMS Guidelines");
         document.setPermissions(new String[]{"Bob", "Alice", "publisher:/developers"});
@@ -224,7 +226,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     throws IOException, InterruptedException {
         //Given
         setCurrentIdentity("Alice", membership);
-        dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE, new Date()));
+        dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE));
         Document document = new Document();
         document.addField("title", "RDBMS Guidelines");
         document.setPermissions(new String[]{permission});
@@ -262,7 +264,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
             throws IOException, InterruptedException {
         //Given
         setCurrentIdentity("JaneDoe", membership);
-        dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE, new Date()));
+        dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE));
         Document document = new Document();
         document.addField("title", "RDBMS Guidelines");
         document.setPermissions(new String[]{permission});
@@ -280,7 +282,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
             throws IOException, InterruptedException {
         //Given
         setCurrentIdentity("JaneDoe", membership);
-        dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE, new Date()));
+        dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE));
         Document document = new Document();
         document.addField("title", "RDBMS Guidelines");
         document.setPermissions(permissions);

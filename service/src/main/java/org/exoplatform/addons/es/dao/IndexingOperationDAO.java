@@ -29,18 +29,7 @@ import java.util.List;
  * 7/29/15
  */
 public interface IndexingOperationDAO extends GenericDAO<IndexingOperation, Long> {
-
-  List<IndexingOperation> findOperationsFromLastTime(Date lastTime);
-
-  List<IndexingOperation> findOperationsBeforeLastTime(Date lastTime);
-
-  List<IndexingOperation> findOperationsBeforeLastTimeByOperation(Date lastTime, String operation);
-
-  List<IndexingOperation> findOperationsBeforeLastTimeByOperations(Date lastTime, List<String> operations);
-
   List<IndexingOperation> findAllFirst(Integer maxResults);
-
-  void deleteAllBefore(Date lastTime);
-
+  void deleteAllIndexingOperationsHavingIdLessThanOrEqual(long id);
 }
 

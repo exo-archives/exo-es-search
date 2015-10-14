@@ -32,18 +32,10 @@ import org.exoplatform.commons.api.persistence.ExoEntity;
 @ExoEntity
 @Table(name = "ES_INDEXING_QUEUE")
 @NamedQueries({
-    @NamedQuery(name = "IndexingOperation.findAllIndexingOperationsFromLastTime",
-        query = "SELECT q FROM IndexingOperation q WHERE q.timestamp >= :lastTime"),
-    @NamedQuery(name = "IndexingOperation.findAllIndexingOperationsBeforeLastTime",
-        query = "SELECT q FROM IndexingOperation q WHERE q.timestamp <= :lastTime GROUP BY q.operation"),
-    @NamedQuery(name = "IndexingOperation.findAllIndexingOperationsBeforeLastTimeByOperation",
-        query = "SELECT q FROM IndexingOperation q WHERE q.timestamp <= :lastTime AND q.operation = :operation"),
-    @NamedQuery(name = "IndexingOperation.findAllIndexingOperationsBeforeLastTimeByOperations",
-        query = "SELECT q FROM IndexingOperation q WHERE q.timestamp <= :lastTime AND q.operation IN :operations"),
-    @NamedQuery(name = "IndexingOperation.deleteBeforeTimestamp",
-        query = "DELETE FROM IndexingOperation q WHERE q.timestamp <= :lastTime"),
+    @NamedQuery(name = "IndexingOperation.deleteAllIndexingOperationsHavingIdLessThanOrEqual",
+        query = "DELETE FROM IndexingOperation q WHERE q.id <= :id"),
     @NamedQuery(name = "IndexingOperation.findAllFirst",
-        query = "SELECT q FROM IndexingOperation q ORDER BY q.timestamp")
+        query = "SELECT q FROM IndexingOperation q ORDER BY q.id")
 })
 public class IndexingOperation {
 
@@ -61,6 +53,7 @@ public class IndexingOperation {
   @Column(name = "OPERATION_TYPE")
   private String operation;
 
+  //The timestamp is only inserted in DB for information
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "OPERATION_TIMESTAMP", insertable = false, updatable = false)
   private Date timestamp;
@@ -69,12 +62,11 @@ public class IndexingOperation {
   }
 
   //TODO remove this constructor because it is only used for tests
-  public IndexingOperation(Long id, String entityId, String entityType, OperationType operation, Date timestamp) {
+  public IndexingOperation(Long id, String entityId, String entityType, OperationType operation) {
     this.id = id;
     this.entityId = entityId;
     this.entityType = entityType;
     this.setOperation(operation);
-    this.timestamp = timestamp;
   }
 
   public Long getId() {
@@ -109,10 +101,6 @@ public class IndexingOperation {
     this.operation = operation==null?null:operation.getOperationId();
   }
 
-  public Date getTimestamp() {
-    return timestamp;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -124,7 +112,6 @@ public class IndexingOperation {
     if (entityType != null ? !entityType.equals(that.entityType) : that.entityType != null) return false;
     if (id != null ? !id.equals(that.id) : that.id != null) return false;
     if (operation != null ? !operation.equals(that.operation) : that.operation != null) return false;
-    if (timestamp != null ? !timestamp.equals(that.timestamp) : that.timestamp != null) return false;
 
     return true;
   }
@@ -135,7 +122,6 @@ public class IndexingOperation {
     result = 31 * result + (entityType != null ? entityType.hashCode() : 0);
     result = 31 * result + (entityId != null ? entityId.hashCode() : 0);
     result = 31 * result + (operation != null ? operation.hashCode() : 0);
-    result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
     return result;
   }
 }

@@ -114,7 +114,7 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
     //Map<OperationType={Create,Delete,...}, Map<String=EntityType, List<IndexingOperation>>> indexingQueueSorted
     Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted = new HashMap<>();
     List<IndexingOperation> indexingOperations;
-    Date startProcessing = new Date(0L);
+    long maxIndexingOperationId =0;
 
     //Get BATCH_NUMBER (default = 1000) first indexing operations
     indexingOperations = indexingOperationDAO.findAllFirst(batchNumber);
@@ -122,9 +122,9 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
     //Get all Indexing operations and order them per operation and type in map: <Operation, <Type, List<IndexingOperation>>>
     for (IndexingOperation indexingOperation : indexingOperations) {
       putIndexingOperationInMemoryQueue(indexingOperation, indexingQueueSorted);
-      //Get the max timestamp of the indexing queue
-      if (startProcessing.compareTo(indexingOperation.getTimestamp()) < 0) {
-        startProcessing = indexingOperation.getTimestamp();
+      //Get the max ID of IndexingOperation of the bulk
+      if (maxIndexingOperationId < indexingOperation.getId()) {
+        maxIndexingOperationId = indexingOperation.getId();
       }
     }
 
@@ -135,7 +135,7 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
 
     // Removes the processed IDs from the “indexing queue” table that have timestamp older than the timestamp of
     // start of processing
-    indexingOperationDAO.deleteAllBefore(startProcessing);
+    indexingOperationDAO.deleteAllIndexingOperationsHavingIdLessThanOrEqual(maxIndexingOperationId);
     return indexingOperations.size();
   }
 
@@ -272,14 +272,13 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
         if (indexingQueueSorted.get(OperationType.REINDEX_ALL).containsKey(entityType)) {
           for (IndexingOperation indexingOperation : indexingQueueSorted.get(OperationType.REINDEX_ALL).get(entityType)) {
             //1- Delete all documents in ES (and purge the indexing queue)
-            processDeleteAll(indexingOperation, indexingQueueSorted);
+            indexingOperationDAO.create(new IndexingOperation(null, null, entityType, OperationType.DELETE_ALL));
             //2- Get all the documents ID
-            ElasticIndexingServiceConnector connector = (ElasticIndexingServiceConnector) getConnectors().get(indexingOperation.getEntityType());
+            IndexingServiceConnector connector = getConnectors().get(indexingOperation.getEntityType());
             List<String> ids = connector.getAllIds();
             //3- Inject as a CUD operation
             for (String id : ids) {
-              IndexingOperation updateOperation = new IndexingOperation(null, id, indexingOperation.getEntityType(), OperationType.UPDATE, indexingOperation.getTimestamp());
-              putIndexingOperationInMemoryQueue(updateOperation, indexingQueueSorted);
+              indexingOperationDAO.create(new IndexingOperation(null, id, entityType, OperationType.UPDATE));
             }
           }
         }
@@ -296,7 +295,7 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
           for (Iterator<IndexingOperation> iterator = indexingQueueSorted.get(operation).get(refIindexOperation.getEntityType()).iterator(); iterator.hasNext();) {
             IndexingOperation indexingOperation = iterator.next();
             //Check timestamp higher than the timestamp of the reference indexing operation, the index operation is removed
-            if (refIindexOperation.getTimestamp().compareTo(indexingOperation.getTimestamp()) > 0) {
+            if (refIindexOperation.getId() > indexingOperation.getId()) {
               iterator.remove();
             }
           }
@@ -324,8 +323,8 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
         if (indexingQueueSorted.get(operation).containsKey(indexQueue.getEntityType())) {
           for (Iterator<IndexingOperation> iterator = indexingQueueSorted.get(operation).get(indexQueue.getEntityType()).iterator(); iterator.hasNext();) {
             IndexingOperation indexingOperation = iterator.next();
-            //Check timestamp higher than the timestamp of the CUD indexing queue, the index queue is removed
-            if (indexQueue.getTimestamp().compareTo(indexingOperation.getTimestamp()) > 0
+            //Check Id higher than the Id of the CUD indexing queue, the index queue is removed
+            if ((indexQueue.getId() > indexingOperation.getId())
                 && indexingOperation.getEntityId().equals(indexQueue.getEntityId())) {
               iterator.remove();
             }

@@ -1,13 +1,16 @@
 package org.exoplatform.addons.es.index;
 
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-
 import java.util.HashMap;
 import java.util.Map;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 /**
- * Created by TClement on 10/12/15.
+ * Created by The eXo Platform SAS
+ * Author : eXoPlatform
+ *          exo@exoplatform.com
+ * 10/12/15
  */
 public abstract class IndexingOperationProcessor {
 

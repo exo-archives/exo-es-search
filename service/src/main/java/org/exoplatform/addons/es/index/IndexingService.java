@@ -1,7 +1,10 @@
 package org.exoplatform.addons.es.index;
 
 /**
- * Created by TClement on 10/12/15.
+ * Created by The eXo Platform SAS
+ * Author : eXoPlatform
+ *          exo@exoplatform.com
+ * 10/12/15
  */
 public interface IndexingService {
 

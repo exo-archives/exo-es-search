@@ -159,7 +159,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
   @Test
   public void test_searchIntranetSite_returnsIntranetDocument() throws IOException, InterruptedException {
     //Given
-    dao.create(new IndexingOperation(null, "1", "test", OperationType.CREATE, new Date()));
+    dao.create(new IndexingOperation(null, "1", "test", OperationType.CREATE));
     when(testConnector.create("1")).thenReturn(getSiteDocument("intranet"));
     indexingOperationProcessor.process();
     admin().indices().prepareRefresh().execute().actionGet();
@@ -172,7 +172,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
   @Test
   public void test_searchIntranetSite_returnsNoDocumentAttachToOtherSite() throws IOException, InterruptedException {
     //Given
-    dao.create(new IndexingOperation(null, "1", "test", OperationType.CREATE, new Date()));
+    dao.create(new IndexingOperation(null, "1", "test", OperationType.CREATE));
 
     when(testConnector.create("1")).thenReturn(getSiteDocument("OtherSite"));
     indexingOperationProcessor.process();
@@ -186,7 +186,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
   @Test
   public void test_searchIntranetSite_returnsDocumentNoAttachToSite() throws IOException, InterruptedException {
     //Given
-    dao.create(new IndexingOperation(null, "1", "test", OperationType.CREATE, new Date()));
+    dao.create(new IndexingOperation(null, "1", "test", OperationType.CREATE));
     when(testConnector.create("1")).thenReturn(getSiteDocument(null));
     indexingOperationProcessor.process();
     admin().indices().prepareRefresh().execute().actionGet();

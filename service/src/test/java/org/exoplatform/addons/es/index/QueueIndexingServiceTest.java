@@ -72,7 +72,7 @@ public class QueueIndexingServiceTest {
   @Test
   public void init_ifInitOperation_initIndexingQueueCreated() {
     //Given
-    IndexingOperation indexingOperation = new IndexingOperation(null,null,"post",OperationType.INIT,null);
+    IndexingOperation indexingOperation = new IndexingOperation(null,null,"post",OperationType.INIT);
     //When
     queueIndexingService.init("post");
     //Then
@@ -82,7 +82,7 @@ public class QueueIndexingServiceTest {
   @Test
   public void unindexAll_ifDeleteAllOperation_deleteAllIndexingQueueCreated() {
     //Given
-    IndexingOperation indexingOperation = new IndexingOperation(null,null,"post",OperationType.DELETE_ALL,null);
+    IndexingOperation indexingOperation = new IndexingOperation(null,null,"post",OperationType.DELETE_ALL);
     //When
     queueIndexingService.unindexAll("post");
     //Then
@@ -92,7 +92,7 @@ public class QueueIndexingServiceTest {
   @Test
   public void unindex_ifDeleteOperation_deleteIndexingQueueCreated() {
     //Given
-    IndexingOperation indexingOperation = new IndexingOperation(null,"1","post",OperationType.DELETE,null);
+    IndexingOperation indexingOperation = new IndexingOperation(null,"1","post",OperationType.DELETE);
     //When
     queueIndexingService.unindex("post", "1");
     //Then
@@ -102,7 +102,7 @@ public class QueueIndexingServiceTest {
   @Test
   public void reindex_ifUpdateOperation_updateIndexingQueueCreated() {
     //Given
-    IndexingOperation indexingOperation = new IndexingOperation(null,"1","post",OperationType.UPDATE,null);
+    IndexingOperation indexingOperation = new IndexingOperation(null,"1","post",OperationType.UPDATE);
     //When
     queueIndexingService.reindex("post", "1");
     //Then
@@ -112,7 +112,7 @@ public class QueueIndexingServiceTest {
   @Test
   public void reindexAll_commandsAreInsertedInIndexingQueue() throws ParseException {
     //Given
-    IndexingOperation indexingOperation = new IndexingOperation(null,null,"post",OperationType.REINDEX_ALL,null);
+    IndexingOperation indexingOperation = new IndexingOperation(null,null,"post",OperationType.REINDEX_ALL);
     //When
     queueIndexingService.reindexAll("post");
     //Then
@@ -122,7 +122,7 @@ public class QueueIndexingServiceTest {
   @Test
   public void index_ifCreateOperation_createIndexingQueueCreated() {
     //Given
-    IndexingOperation indexingOperation = new IndexingOperation(null,"1","post",OperationType.CREATE,null);
+    IndexingOperation indexingOperation = new IndexingOperation(null,"1","post",OperationType.CREATE);
     //When
     queueIndexingService.index("post", "1");
     //Then
