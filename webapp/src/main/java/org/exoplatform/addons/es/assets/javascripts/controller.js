@@ -63,8 +63,8 @@ indexingManagementController.controller('ConnectorListCtrl', ['$scope', 'Connect
     }
 ]);
 
-indexingManagementController.controller('ErrorListCtrl', ['$scope', 'Error',
-    function($scope, Error) {
+indexingManagementController.controller('ErrorListCtrl', ['$scope', '$interval', 'Error',
+    function($scope, $interval, Error) {
 
         //Loads and populates the Error list
         this.loadErrorList = function (){
@@ -91,8 +91,8 @@ indexingManagementController.controller('ErrorListCtrl', ['$scope', 'Error',
     }
 ]);
 
-indexingManagementController.controller('OperationListCtrl', ['$scope', 'Operation',
-    function($scope, Operation) {
+indexingManagementController.controller('OperationListCtrl', ['$scope', '$interval', 'Operation',
+    function($scope, $interval, Operation) {
 
         //Loads and populates the operation list
         this.loadOperationList = function (){
