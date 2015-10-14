@@ -19,6 +19,8 @@ package org.exoplatform.addons.es.client;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
@@ -42,6 +44,9 @@ public class ElasticIndexingClient {
   private static final String ES_INDEX_CLIENT_PROPERTY_NAME = "exo.es.index.server.url";
   private static final String ES_INDEX_CLIENT_DEFAULT = "http://127.0.0.1:9200";
 
+  private static final String ES_INDEX_CLIENT_PROPERTY_USERNAME = "exo.es.index.server.username";
+  private static final String ES_INDEX_CLIENT_PROPERTY_PASSWORD = "exo.es.index.server.password";
+
   private static final Log LOG = ExoLogger.getExoLogger(ElasticIndexingClient.class);
 
   private String urlClient = ES_INDEX_CLIENT_DEFAULT;
@@ -53,13 +58,13 @@ public class ElasticIndexingClient {
     if (StringUtils.isNotBlank(PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_NAME))) {
       this.urlClient = PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_NAME);
     }
-    this.client = new DefaultHttpClient();
+    this.client = getHttpClient();
   }
 
   //For testing TODO remove ?
   public ElasticIndexingClient(String url) {
     this.urlClient = url;
-    this.client = new DefaultHttpClient();
+    this.client = getHttpClient();
   }
   //For testing TODO remove ?
   public ElasticIndexingClient(HttpClient client, String url) {
@@ -139,6 +144,21 @@ public class ElasticIndexingClient {
               IOUtils.toString(is, "UTF-8"));
     }
     is.close();
+  }
+
+  private HttpClient getHttpClient() {
+    //Check if Basic Authentication need to be used
+    if (StringUtils.isNotBlank(PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_USERNAME))) {
+      DefaultHttpClient httpClient = new DefaultHttpClient();
+      httpClient.getCredentialsProvider().setCredentials(
+          new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT),
+          new UsernamePasswordCredentials(PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_USERNAME)
+              , PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_PASSWORD)));
+      LOG.debug("Basic authentication for ES activated");
+      return httpClient;
+    } else {
+      return new DefaultHttpClient();
+    }
   }
 
 
