@@ -1,19 +1,19 @@
 /* 
-* Copyright (C) 2003-2015 eXo Platform SAS.
-*
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* along with this program. If not, see http://www.gnu.org/licenses/ .
-*/
+ * Copyright (C) 2003-2015 eXo Platform SAS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see http://www.gnu.org/licenses/ .
+ */
 package org.exoplatform.addons.es.index.impl;
 
 import java.util.*;
@@ -33,30 +33,34 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 /**
- * Created by The eXo Platform SAS
- * Author : Thibault Clement
- * tclement@exoplatform.com
- * 10/12/15
+ * Created by The eXo Platform SAS Author : Thibault Clement
+ * tclement@exoplatform.com 10/12/15
  */
 public class ElasticIndexingOperationProcessor extends IndexingOperationProcessor {
 
-  private static final Log LOG = ExoLogger.getExoLogger(ElasticIndexingOperationProcessor.class);
+  private static final Log                   LOG                              = ExoLogger.getExoLogger(ElasticIndexingOperationProcessor.class);
 
-  private static final String BATCH_NUMBER_PROPERTY_NAME = "exo.es.indexing.batch.number";
-  private static final Integer BATCH_NUMBER_DEFAULT = 1000;
+  private static final String                BATCH_NUMBER_PROPERTY_NAME       = "exo.es.indexing.batch.number";
 
-  private static final String REQUEST_SIZE_LIMIT_PROPERTY_NAME = "exo.es.indexing.request.size.limit";
-  private static final Integer REQUEST_SIZE_LIMIT_DEFAULT = 10485760; //in bytes, default = 10MB
+  private static final Integer               BATCH_NUMBER_DEFAULT             = 1000;
 
-  private Integer batchNumber = BATCH_NUMBER_DEFAULT;
-  private Integer requestSizeLimit = REQUEST_SIZE_LIMIT_DEFAULT;
+  private static final String                REQUEST_SIZE_LIMIT_PROPERTY_NAME = "exo.es.indexing.request.size.limit";
 
-  //Service
-  private final IndexingOperationDAO indexingOperationDAO;
-  private final ElasticIndexingClient elasticIndexingClient;
+  private static final Integer               REQUEST_SIZE_LIMIT_DEFAULT       = 10485760;                                                       // in
+                                                                                                                                                 // bytes,
+                                                                                                                                                 // default
+                                                                                                                                                 // =
+                                                                                                                                                 // 10MB
+  // Service
+  private final IndexingOperationDAO         indexingOperationDAO;
+  private final ElasticIndexingClient        elasticIndexingClient;
   private final ElasticContentRequestBuilder elasticContentRequestBuilder;
+  private Integer                            batchNumber                      = BATCH_NUMBER_DEFAULT;
+  private Integer                            requestSizeLimit                 = REQUEST_SIZE_LIMIT_DEFAULT;
 
-  public ElasticIndexingOperationProcessor(IndexingOperationDAO indexingOperationDAO, ElasticIndexingClient elasticIndexingClient, ElasticContentRequestBuilder elasticContentRequestBuilder) {
+  public ElasticIndexingOperationProcessor(IndexingOperationDAO indexingOperationDAO,
+                                           ElasticIndexingClient elasticIndexingClient,
+                                           ElasticContentRequestBuilder elasticContentRequestBuilder) {
     this.indexingOperationDAO = indexingOperationDAO;
     this.elasticIndexingClient = elasticIndexingClient;
     this.elasticContentRequestBuilder = elasticContentRequestBuilder;
@@ -77,52 +81,54 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
   public void addConnector(IndexingServiceConnector indexingServiceConnector, Boolean override) {
     if (getConnectors().containsKey(indexingServiceConnector.getType()) && override.equals(false)) {
       LOG.error("Impossible to add connector {}. A connector with the same name has already been registered.",
-          indexingServiceConnector.getType());
+                indexingServiceConnector.getType());
     } else {
       getConnectors().put(indexingServiceConnector.getType(), indexingServiceConnector);
       LOG.info("An Indexing Connector has been added: {}", indexingServiceConnector.getType());
-      //When a new connector is added, ES index and type need to be created
+      // When a new connector is added, ES index and type need to be created
       addInitOperation(indexingServiceConnector.getType());
     }
   }
 
-
   /**
-   * Handle the Indexing queue
-   * Get all data in the indexing queue, transform them to ES requests, send requests to ES
-   * This method is ONLY called by the job scheduler.
-   *
-   * This method is not annotated with @ExoTransactional because we don't want it to be executed in
-   * one transaction. Every
+   * Handle the Indexing queue Get all data in the indexing queue, transform
+   * them to ES requests, send requests to ES This method is ONLY called by the
+   * job scheduler. This method is not annotated with @ExoTransactional because
+   * we don't want it to be executed in one transaction. Every
    */
   @Override
   public void process() {
-    //Loop until the number of data retrieved from indexing queue is less than BATCH_NUMBER (default = 1000)
+    // Loop until the number of data retrieved from indexing queue is less than
+    // BATCH_NUMBER (default = 1000)
     int processedOperations;
     do {
       processedOperations = processBulk();
     } while (processedOperations >= batchNumber);
 
-    // TODO 4: In case of error, the entityID+entityType will be logged in a “error queue” to allow a manual
-    // reprocessing of the indexing operation. However, in a first version of the implementation, the error will only
+    // TODO 4: In case of error, the entityID+entityType will be logged in a
+    // “error queue” to allow a manual
+    // reprocessing of the indexing operation. However, in a first version of
+    // the implementation, the error will only
     // be logged with ERROR level in the log file of platform.
 
   }
 
   @ExoTransactional
   private int processBulk() {
-    //Map<OperationType={Create,Delete,...}, Map<String=EntityType, List<IndexingOperation>>> indexingQueueSorted
+    // Map<OperationType={Create,Delete,...}, Map<String=EntityType,
+    // List<IndexingOperation>>> indexingQueueSorted
     Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted = new HashMap<>();
     List<IndexingOperation> indexingOperations;
-    long maxIndexingOperationId =0;
+    long maxIndexingOperationId = 0;
 
-    //Get BATCH_NUMBER (default = 1000) first indexing operations
+    // Get BATCH_NUMBER (default = 1000) first indexing operations
     indexingOperations = indexingOperationDAO.findAllFirst(batchNumber);
 
-    //Get all Indexing operations and order them per operation and type in map: <Operation, <Type, List<IndexingOperation>>>
+    // Get all Indexing operations and order them per operation and type in map:
+    // <Operation, <Type, List<IndexingOperation>>>
     for (IndexingOperation indexingOperation : indexingOperations) {
       putIndexingOperationInMemoryQueue(indexingOperation, indexingQueueSorted);
-      //Get the max ID of IndexingOperation of the bulk
+      // Get the max ID of IndexingOperation of the bulk
       if (maxIndexingOperationId < indexingOperation.getId()) {
         maxIndexingOperationId = indexingOperation.getId();
       }
@@ -133,7 +139,8 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
     processReindexAll(indexingQueueSorted);
     processCUD(indexingQueueSorted);
 
-    // Removes the processed IDs from the “indexing queue” table that have timestamp older than the timestamp of
+    // Removes the processed IDs from the “indexing queue” table that have
+    // timestamp older than the timestamp of
     // start of processing
     indexingOperationDAO.deleteAllIndexingOperationsHavingIdLessThanOrEqual(maxIndexingOperationId);
     return indexingOperations.size();
@@ -141,72 +148,82 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
 
   /**
    * Add an indexing operation to the Temporary inMemory IndexingQueue
-   * @param indexingOperation the operation to add to the Temporary inMemory IndexingQueue
+   * 
+   * @param indexingOperation the operation to add to the Temporary inMemory
+   *          IndexingQueue
    * @param indexingQueueSorted Temporary inMemory IndexingQueue
    */
-  private void putIndexingOperationInMemoryQueue(IndexingOperation indexingOperation, Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted) {
-    //Check if the Indexing Operation map already contains a specific operation
+  private void putIndexingOperationInMemoryQueue(IndexingOperation indexingOperation,
+                                                 Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted) {
+    // Check if the Indexing Operation map already contains a specific operation
     if (!indexingQueueSorted.containsKey(indexingOperation.getOperation())) {
-      //If not add a new operation in the map
+      // If not add a new operation in the map
       indexingQueueSorted.put(indexingOperation.getOperation(), new HashMap<String, List<IndexingOperation>>());
     }
-    //Check if the operation map already contains a specific type
+    // Check if the operation map already contains a specific type
     if (!indexingQueueSorted.get(indexingOperation.getOperation()).containsKey(indexingOperation.getEntityType())) {
-      //If not add a new type for the operation above
-      indexingQueueSorted.get(indexingOperation.getOperation()).put(indexingOperation.getEntityType(), new ArrayList<IndexingOperation>());
+      // If not add a new type for the operation above
+      indexingQueueSorted.get(indexingOperation.getOperation()).put(indexingOperation.getEntityType(),
+                                                                    new ArrayList<IndexingOperation>());
     }
-    //Add the indexing operation in the specific Operation -> Type
+    // Add the indexing operation in the specific Operation -> Type
     indexingQueueSorted.get(indexingOperation.getOperation()).get(indexingOperation.getEntityType()).add(indexingOperation);
   }
 
-
   /**
    * Process all the Create / Update / Delete operations
+   * 
    * @param indexingQueueSorted Temporary inMemory IndexingQueue
    */
   private void processCUD(Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted) {
-    //Initialise bulk request for CUD operations
+    // Initialise bulk request for CUD operations
     String bulkRequest = "";
 
-    //Process Delete document operation
+    // Process Delete document operation
     if (indexingQueueSorted.containsKey(OperationType.DELETE)) {
       for (String entityType : indexingQueueSorted.get(OperationType.DELETE).keySet()) {
         for (IndexingOperation deleteIndexQueue : indexingQueueSorted.get(OperationType.DELETE).get(entityType)) {
-          bulkRequest += elasticContentRequestBuilder.getDeleteDocumentRequestContent((ElasticIndexingServiceConnector) getConnectors().get(deleteIndexQueue.getEntityType()), deleteIndexQueue.getEntityId());
-          //Remove the object from other create or update operations planned before the timestamp of the delete operation
-          deleteOperationsByEntityIdForTypesBefore(new OperationType[]{OperationType.CREATE}, indexingQueueSorted, deleteIndexQueue);
-          deleteOperationsByEntityIdForTypes(new OperationType[]{OperationType.UPDATE}, indexingQueueSorted, deleteIndexQueue);
+          bulkRequest += elasticContentRequestBuilder.getDeleteDocumentRequestContent((ElasticIndexingServiceConnector) getConnectors().get(deleteIndexQueue.getEntityType()),
+                                                                                      deleteIndexQueue.getEntityId());
+          // Remove the object from other create or update operations planned
+          // before the timestamp of the delete operation
+          deleteOperationsByEntityIdForTypesBefore(new OperationType[] { OperationType.CREATE },
+                                                   indexingQueueSorted,
+                                                   deleteIndexQueue);
+          deleteOperationsByEntityIdForTypes(new OperationType[] { OperationType.UPDATE }, indexingQueueSorted, deleteIndexQueue);
         }
       }
-      //Remove the delete operations from the map
+      // Remove the delete operations from the map
       indexingQueueSorted.remove(OperationType.DELETE);
     }
 
-    //Process Create document operation
+    // Process Create document operation
     if (indexingQueueSorted.containsKey(OperationType.CREATE)) {
       for (String entityType : indexingQueueSorted.get(OperationType.CREATE).keySet()) {
         for (IndexingOperation createIndexQueue : indexingQueueSorted.get(OperationType.CREATE).get(entityType)) {
-          bulkRequest += elasticContentRequestBuilder.getCreateDocumentRequestContent((ElasticIndexingServiceConnector) getConnectors().get(createIndexQueue.getEntityType()), createIndexQueue.getEntityId());
-          //Remove the object from other update operations for this entityId
-          deleteOperationsByEntityIdForTypes(new OperationType[]{OperationType.UPDATE}, indexingQueueSorted, createIndexQueue);
-          //Check if the bulk request limit size is already reached
+          bulkRequest += elasticContentRequestBuilder.getCreateDocumentRequestContent((ElasticIndexingServiceConnector) getConnectors().get(createIndexQueue.getEntityType()),
+                                                                                      createIndexQueue.getEntityId());
+          // Remove the object from other update operations for this entityId
+          deleteOperationsByEntityIdForTypes(new OperationType[] { OperationType.UPDATE }, indexingQueueSorted, createIndexQueue);
+          // Check if the bulk request limit size is already reached
           bulkRequest = checkBulkRequestSizeReachedLimitation(bulkRequest);
         }
       }
-      //Remove the create operations from the map
+      // Remove the create operations from the map
       indexingQueueSorted.remove(OperationType.CREATE);
     }
 
-    //Process Update document operation
+    // Process Update document operation
     if (indexingQueueSorted.containsKey(OperationType.UPDATE)) {
       for (String entityType : indexingQueueSorted.get(OperationType.UPDATE).keySet()) {
         for (IndexingOperation updateIndexQueue : indexingQueueSorted.get(OperationType.UPDATE).get(entityType)) {
-          bulkRequest += elasticContentRequestBuilder.getUpdateDocumentRequestContent((ElasticIndexingServiceConnector) getConnectors().get(updateIndexQueue.getEntityType()), updateIndexQueue.getEntityId());
-          //Check if the bulk request limit size is already reached
+          bulkRequest += elasticContentRequestBuilder.getUpdateDocumentRequestContent((ElasticIndexingServiceConnector) getConnectors().get(updateIndexQueue.getEntityType()),
+                                                                                      updateIndexQueue.getEntityId());
+          // Check if the bulk request limit size is already reached
           bulkRequest = checkBulkRequestSizeReachedLimitation(bulkRequest);
         }
       }
-      //Remove the update operations from the map
+      // Remove the update operations from the map
       indexingQueueSorted.remove(OperationType.UPDATE);
     }
 
@@ -216,7 +233,9 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
   }
 
   /**
-   * Process all the requests for “init of the ES create mapping” (Operation type = I) in the indexing queue (if any)
+   * Process all the requests for “init of the ES create mapping” (Operation
+   * type = I) in the indexing queue (if any)
+   * 
    * @param indexingQueueSorted Temporary inMemory IndexingQueue
    */
   private void processInit(Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted) {
@@ -228,10 +247,10 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
     }
   }
 
-
   /**
-   * Process all the requests for “remove all documents of type” (Operation type = X) in the indexing queue (if any)
-   * = Delete type in ES
+   * Process all the requests for “remove all documents of type” (Operation type
+   * = X) in the indexing queue (if any) = Delete type in ES
+   * 
    * @param indexingQueueSorted Temporary inMemory IndexingQueue
    */
   private void processDeleteAll(Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted) {
@@ -248,22 +267,25 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
   }
 
   /**
-   *
    * @param indexingOperation
    * @param indexingQueueSorted Temporary inMemory IndexingQueue
    */
-  private void processDeleteAll(IndexingOperation indexingOperation, Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted) {
-    //Remove the type (= remove all documents of this type) and recreate it
+  private void processDeleteAll(IndexingOperation indexingOperation,
+                                Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted) {
+    // Remove the type (= remove all documents of this type) and recreate it
     ElasticIndexingServiceConnector connector = (ElasticIndexingServiceConnector) getConnectors().get(indexingOperation.getEntityType());
     elasticIndexingClient.sendDeleteTypeRequest(connector.getIndex(), connector.getType());
     elasticIndexingClient.sendCreateTypeRequest(connector.getIndex(), connector.getType(), connector.getMapping());
-    //Remove all useless CUD operation that was plan before this delete all
-    deleteOperationsForTypesBefore(new OperationType[]{OperationType.CREATE, OperationType.DELETE}, indexingQueueSorted, indexingOperation);
-    deleteOperationsForTypes(new OperationType[]{OperationType.UPDATE}, indexingQueueSorted, indexingOperation);
+    // Remove all useless CUD operation that was plan before this delete all
+    deleteOperationsForTypesBefore(new OperationType[] { OperationType.CREATE, OperationType.UPDATE, OperationType.DELETE },
+                                   indexingQueueSorted,
+                                   indexingOperation);
   }
 
   /**
-   * Process all the requests for “Reindex all documents of type” (Operation type = R) in the indexing queue (if any)
+   * Process all the requests for “Reindex all documents of type” (Operation
+   * type = R) in the indexing queue (if any)
+   * 
    * @param indexingQueueSorted Temporary inMemory IndexingQueue
    */
   private void processReindexAll(Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted) {
@@ -271,12 +293,12 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
       for (String entityType : indexingQueueSorted.get(OperationType.REINDEX_ALL).keySet()) {
         if (indexingQueueSorted.get(OperationType.REINDEX_ALL).containsKey(entityType)) {
           for (IndexingOperation indexingOperation : indexingQueueSorted.get(OperationType.REINDEX_ALL).get(entityType)) {
-            //1- Delete all documents in ES (and purge the indexing queue)
+            // 1- Delete all documents in ES (and purge the indexing queue)
             indexingOperationDAO.create(new IndexingOperation(null, null, entityType, OperationType.DELETE_ALL));
-            //2- Get all the documents ID
+            // 2- Get all the documents ID
             IndexingServiceConnector connector = getConnectors().get(indexingOperation.getEntityType());
             List<String> ids = connector.getAllIds();
-            //3- Inject as a CUD operation
+            // 3- Inject as a CUD operation
             for (String id : ids) {
               indexingOperationDAO.create(new IndexingOperation(null, id, entityType, OperationType.UPDATE));
             }
@@ -287,14 +309,18 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
     }
   }
 
-
-  private void deleteOperationsForTypesBefore(OperationType[] operations, Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted, IndexingOperation refIindexOperation) {
-    for (OperationType operation: operations) {
+  private void deleteOperationsForTypesBefore(OperationType[] operations,
+                                              Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted,
+                                              IndexingOperation refIindexOperation) {
+    for (OperationType operation : operations) {
       if (indexingQueueSorted.containsKey(operation)) {
         if (indexingQueueSorted.get(operation).containsKey(refIindexOperation.getEntityType())) {
-          for (Iterator<IndexingOperation> iterator = indexingQueueSorted.get(operation).get(refIindexOperation.getEntityType()).iterator(); iterator.hasNext();) {
+          for (Iterator<IndexingOperation> iterator = indexingQueueSorted.get(operation)
+                                                                         .get(refIindexOperation.getEntityType())
+                                                                         .iterator(); iterator.hasNext();) {
             IndexingOperation indexingOperation = iterator.next();
-            //Check timestamp higher than the timestamp of the reference indexing operation, the index operation is removed
+            // Check timestamp higher than the timestamp of the reference
+            // indexing operation, the index operation is removed
             if (refIindexOperation.getId() > indexingOperation.getId()) {
               iterator.remove();
             }
@@ -304,11 +330,15 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
     }
   }
 
-  private void deleteOperationsForTypes(OperationType[] operations, Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted, IndexingOperation indexQueue) {
-    for (OperationType operation: operations) {
+  private void deleteOperationsForTypes(OperationType[] operations,
+                                        Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted,
+                                        IndexingOperation indexQueue) {
+    for (OperationType operation : operations) {
       if (indexingQueueSorted.containsKey(operation)) {
         if (indexingQueueSorted.get(operation).containsKey(indexQueue.getEntityType())) {
-          for (Iterator<IndexingOperation> iterator = indexingQueueSorted.get(operation).get(indexQueue.getEntityType()).iterator(); iterator.hasNext();) {
+          for (Iterator<IndexingOperation> iterator = indexingQueueSorted.get(operation)
+                                                                         .get(indexQueue.getEntityType())
+                                                                         .iterator(); iterator.hasNext();) {
             iterator.next();
             iterator.remove();
           }
@@ -317,13 +347,18 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
     }
   }
 
-  private void deleteOperationsByEntityIdForTypesBefore(OperationType[] operations, Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted, IndexingOperation indexQueue) {
-    for (OperationType operation: operations) {
+  private void deleteOperationsByEntityIdForTypesBefore(OperationType[] operations,
+                                                        Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted,
+                                                        IndexingOperation indexQueue) {
+    for (OperationType operation : operations) {
       if (indexingQueueSorted.containsKey(operation)) {
         if (indexingQueueSorted.get(operation).containsKey(indexQueue.getEntityType())) {
-          for (Iterator<IndexingOperation> iterator = indexingQueueSorted.get(operation).get(indexQueue.getEntityType()).iterator(); iterator.hasNext();) {
+          for (Iterator<IndexingOperation> iterator = indexingQueueSorted.get(operation)
+                                                                         .get(indexQueue.getEntityType())
+                                                                         .iterator(); iterator.hasNext();) {
             IndexingOperation indexingOperation = iterator.next();
-            //Check Id higher than the Id of the CUD indexing queue, the index queue is removed
+            // Check Id higher than the Id of the CUD indexing queue, the index
+            // queue is removed
             if ((indexQueue.getId() > indexingOperation.getId())
                 && indexingOperation.getEntityId().equals(indexQueue.getEntityId())) {
               iterator.remove();
@@ -334,11 +369,15 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
     }
   }
 
-  private void deleteOperationsByEntityIdForTypes(OperationType[] operations, Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted, IndexingOperation indexQueue) {
-    for (OperationType operation: operations) {
+  private void deleteOperationsByEntityIdForTypes(OperationType[] operations,
+                                                  Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted,
+                                                  IndexingOperation indexQueue) {
+    for (OperationType operation : operations) {
       if (indexingQueueSorted.containsKey(operation)) {
         if (indexingQueueSorted.get(operation).containsKey(indexQueue.getEntityType())) {
-          for (Iterator<IndexingOperation> iterator = indexingQueueSorted.get(operation).get(indexQueue.getEntityType()).iterator(); iterator.hasNext();) {
+          for (Iterator<IndexingOperation> iterator = indexingQueueSorted.get(operation)
+                                                                         .get(indexQueue.getEntityType())
+                                                                         .iterator(); iterator.hasNext();) {
             IndexingOperation indexingOperation = iterator.next();
             if (indexingOperation.getEntityId().equals(indexQueue.getEntityId())) {
               iterator.remove();
@@ -352,18 +391,17 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
   private void sendInitRequests(IndexingServiceConnector IndexingServiceConnector) {
     ElasticIndexingServiceConnector connector = (ElasticIndexingServiceConnector) IndexingServiceConnector;
 
-    //Send request to create index
-    elasticIndexingClient.sendCreateIndexRequest(
-        connector.getIndex(), elasticContentRequestBuilder.getCreateIndexRequestContent(connector));
+    // Send request to create index
+    elasticIndexingClient.sendCreateIndexRequest(connector.getIndex(),
+                                                 elasticContentRequestBuilder.getCreateIndexRequestContent(connector));
 
-    //Send request to create type
-    elasticIndexingClient.sendCreateTypeRequest(
-        connector.getIndex(), connector.getType(), connector.getMapping());
+    // Send request to create type
+    elasticIndexingClient.sendCreateTypeRequest(connector.getIndex(), connector.getType(), connector.getMapping());
   }
 
-
   /**
-   * If the bulk request already reached a size limitation, the bulk request need to be sent immediately
+   * If the bulk request already reached a size limitation, the bulk request
+   * need to be sent immediately
    *
    * @param bulkRequest to analyze
    * @return
@@ -371,10 +409,9 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
   private String checkBulkRequestSizeReachedLimitation(String bulkRequest) {
     if (bulkRequest.getBytes().length >= requestSizeLimit) {
       elasticIndexingClient.sendCUDRequest(bulkRequest);
-      //return an empty bulk request
+      // return an empty bulk request
       return "";
-    }
-    else {
+    } else {
       return bulkRequest;
     }
   }
@@ -402,4 +439,3 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
     this.requestSizeLimit = requestSizeLimit;
   }
 }
-
