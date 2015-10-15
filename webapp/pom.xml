@@ -120,7 +120,6 @@
     <dependency>
       <groupId>org.liquibase</groupId>
       <artifactId>liquibase-core</artifactId>
-      <version>3.3.2</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
