@@ -27,7 +27,6 @@ import org.exoplatform.addons.es.domain.IndexingOperation;
 import org.exoplatform.addons.es.domain.OperationType;
 import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingServiceConnector;
-import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -38,25 +37,22 @@ import org.exoplatform.services.log.Log;
  */
 public class ElasticIndexingOperationProcessor extends IndexingOperationProcessor {
 
-  private static final Log                   LOG                              = ExoLogger.getExoLogger(ElasticIndexingOperationProcessor.class);
+  private static final Log                   LOG                                 = ExoLogger.getExoLogger(ElasticIndexingOperationProcessor.class);
+  private static final String                BATCH_NUMBER_PROPERTY_NAME          = "exo.es.indexing.batch.number";
+  private static final Integer               BATCH_NUMBER_DEFAULT                = 1000;
+  private static final String                REQUEST_SIZE_LIMIT_PROPERTY_NAME    = "exo.es.indexing.request.size.limit";
+  /** in bytes, default=10MB **/
+  private static final Integer               REQUEST_SIZE_LIMIT_DEFAULT          = 10485760;
+  private static final String                REINDEXING_BATCH_SIZE_PROPERTY_NAME = "exo.es.reindex.batch.size";
+  private static final int                   REINDEXING_BATCH_SIZE_DEFAULT_VALUE = 100;
 
-  private static final String                BATCH_NUMBER_PROPERTY_NAME       = "exo.es.indexing.batch.number";
-
-  private static final Integer               BATCH_NUMBER_DEFAULT             = 1000;
-
-  private static final String                REQUEST_SIZE_LIMIT_PROPERTY_NAME = "exo.es.indexing.request.size.limit";
-
-  private static final Integer               REQUEST_SIZE_LIMIT_DEFAULT       = 10485760;                                                       // in
-                                                                                                                                                 // bytes,
-                                                                                                                                                 // default
-                                                                                                                                                 // =
-                                                                                                                                                 // 10MB
   // Service
   private final IndexingOperationDAO         indexingOperationDAO;
   private final ElasticIndexingClient        elasticIndexingClient;
   private final ElasticContentRequestBuilder elasticContentRequestBuilder;
-  private Integer                            batchNumber                      = BATCH_NUMBER_DEFAULT;
-  private Integer                            requestSizeLimit                 = REQUEST_SIZE_LIMIT_DEFAULT;
+  private Integer                            batchNumber                         = BATCH_NUMBER_DEFAULT;
+  private Integer                            requestSizeLimit                    = REQUEST_SIZE_LIMIT_DEFAULT;
+  private int                                reindexBatchSize                    = REINDEXING_BATCH_SIZE_DEFAULT_VALUE;
 
   public ElasticIndexingOperationProcessor(IndexingOperationDAO indexingOperationDAO,
                                            ElasticIndexingClient elasticIndexingClient,
@@ -69,6 +65,9 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
     }
     if (StringUtils.isNotBlank(PropertyManager.getProperty(REQUEST_SIZE_LIMIT_PROPERTY_NAME))) {
       this.requestSizeLimit = Integer.valueOf(PropertyManager.getProperty(REQUEST_SIZE_LIMIT_PROPERTY_NAME));
+    }
+    if (StringUtils.isNotBlank(PropertyManager.getProperty(REINDEXING_BATCH_SIZE_PROPERTY_NAME))) {
+      this.reindexBatchSize = Integer.valueOf(PropertyManager.getProperty(REINDEXING_BATCH_SIZE_PROPERTY_NAME));
     }
   }
 
@@ -113,7 +112,6 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
 
   }
 
-  @ExoTransactional
   private int processBulk() {
     // Map<OperationType={Create,Delete,...}, Map<String=EntityType,
     // List<IndexingOperation>>> indexingQueueSorted
@@ -289,6 +287,11 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
    * @param indexingQueueSorted Temporary inMemory IndexingQueue
    */
   private void processReindexAll(Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted) {
+    List<IndexingOperation> operations;
+    List<String> ids;
+    int numberIndexed;
+    int offset;
+
     if (indexingQueueSorted.containsKey(OperationType.REINDEX_ALL)) {
       for (String entityType : indexingQueueSorted.get(OperationType.REINDEX_ALL).keySet()) {
         if (indexingQueueSorted.get(OperationType.REINDEX_ALL).containsKey(entityType)) {
@@ -297,11 +300,22 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
             indexingOperationDAO.create(new IndexingOperation(null, null, entityType, OperationType.DELETE_ALL));
             // 2- Get all the documents ID
             IndexingServiceConnector connector = getConnectors().get(indexingOperation.getEntityType());
-            List<String> ids = connector.getAllIds();
             // 3- Inject as a CUD operation
-            for (String id : ids) {
-              indexingOperationDAO.create(new IndexingOperation(null, id, entityType, OperationType.UPDATE));
-            }
+            offset = 0;
+            do {
+              ids = connector.getAllIds(offset, reindexBatchSize);
+              if (ids == null) {
+                numberIndexed = 0;
+              } else {
+                operations = new ArrayList<>(ids.size());
+                for (String id : ids) {
+                  operations.add(new IndexingOperation(null, id, entityType, OperationType.UPDATE));
+                }
+                indexingOperationDAO.createAll(operations);
+                numberIndexed = ids.size();
+                offset += reindexBatchSize;
+              }
+            } while (numberIndexed == reindexBatchSize);
           }
         }
       }
@@ -324,23 +338,6 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
             if (refIindexOperation.getId() > indexingOperation.getId()) {
               iterator.remove();
             }
-          }
-        }
-      }
-    }
-  }
-
-  private void deleteOperationsForTypes(OperationType[] operations,
-                                        Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted,
-                                        IndexingOperation indexQueue) {
-    for (OperationType operation : operations) {
-      if (indexingQueueSorted.containsKey(operation)) {
-        if (indexingQueueSorted.get(operation).containsKey(indexQueue.getEntityType())) {
-          for (Iterator<IndexingOperation> iterator = indexingQueueSorted.get(operation)
-                                                                         .get(indexQueue.getEntityType())
-                                                                         .iterator(); iterator.hasNext();) {
-            iterator.next();
-            iterator.remove();
           }
         }
       }
@@ -437,5 +434,13 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
 
   public void setRequestSizeLimit(Integer requestSizeLimit) {
     this.requestSizeLimit = requestSizeLimit;
+  }
+
+  public int getReindexBatchSize() {
+    return reindexBatchSize;
+  }
+
+  public void setReindexBatchSize(int reindexBatchSize) {
+    this.reindexBatchSize = reindexBatchSize;
   }
 }

@@ -16,6 +16,26 @@
 */
 package org.exoplatform.addons.es.index;
 
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.*;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
 import org.exoplatform.addons.es.client.ElasticIndexingClient;
 import org.exoplatform.addons.es.dao.IndexingOperationDAO;
@@ -24,22 +44,6 @@ import org.exoplatform.addons.es.domain.IndexingOperation;
 import org.exoplatform.addons.es.domain.OperationType;
 import org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor;
 import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
 
 /**
  * Created by The eXo Platform SAS
@@ -65,9 +69,6 @@ public class ElasticOperationProcessorTest {
 
   @Mock
   private ElasticContentRequestBuilder elasticContentRequestBuilder;
-
-  @Captor
-  private ArgumentCaptor<String> stringCaptor;
 
   @Before
   public void initMocks() {
@@ -346,8 +347,8 @@ public class ElasticOperationProcessorTest {
     orderClient.verify(elasticIndexingClient).sendDeleteTypeRequest(elasticIndexingServiceConnector.getIndex(),
         elasticIndexingServiceConnector.getType());
     orderClient.verify(elasticIndexingClient).sendCreateTypeRequest(elasticIndexingServiceConnector.getIndex(),
-        elasticIndexingServiceConnector.getType(),
-        elasticIndexingServiceConnector.getMapping());
+            elasticIndexingServiceConnector.getType(),
+            elasticIndexingServiceConnector.getMapping());
     //Create and Delete requests should be build
     verify(elasticContentRequestBuilder, times(1)).getCreateDocumentRequestContent(elasticIndexingServiceConnector, "1");
     verify(elasticContentRequestBuilder, times(1)).getDeleteDocumentRequestContent(elasticIndexingServiceConnector, "1");
@@ -471,22 +472,38 @@ public class ElasticOperationProcessorTest {
   @Test
   public void process_ifReindexAll_requestIsSent() throws ParseException {
     //Given
-    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+    elasticIndexingOperationProcessor.setReindexBatchSize(10);
     elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
     IndexingOperation reindexAll = new IndexingOperation(5l,null,"post",OperationType.REINDEX_ALL);
-    when(indexingOperationDAO.findAllFirst(anyInt())).thenReturn(Arrays.asList(reindexAll));
-    when(elasticIndexingServiceConnector.getAllIds()).thenReturn(Arrays.asList("1","2"));
+    when(indexingOperationDAO.findAllFirst(anyInt())).thenReturn(Collections.singletonList(reindexAll));
+    when(elasticIndexingServiceConnector.getAllIds(0, 10)).thenReturn(Arrays.asList("1", "2"));
     //When
     elasticIndexingOperationProcessor.process();
     //Then
+    ArgumentCaptor<List<IndexingOperation>> captor = ArgumentCaptor.forClass(List.class);
     InOrder orderClient = inOrder(indexingOperationDAO);
-    orderClient.verify(indexingOperationDAO).create(new IndexingOperation(null, null,
-            elasticIndexingServiceConnector.getType(), OperationType.DELETE_ALL));
-    orderClient.verify(indexingOperationDAO).create(new IndexingOperation(null, "1",
-            elasticIndexingServiceConnector.getType(), OperationType.UPDATE));
-    orderClient.verify(indexingOperationDAO).create(new IndexingOperation(null, "2",
-            elasticIndexingServiceConnector.getType(), OperationType.UPDATE));
-    verifyNoMoreInteractions(elasticIndexingClient);
+    orderClient.verify(indexingOperationDAO).create(new IndexingOperation(null, null, elasticIndexingServiceConnector.getType(), OperationType.DELETE_ALL));
+    orderClient.verify(indexingOperationDAO).createAll(captor.capture());
+    assertThat(captor.getValue().get(0), is(new IndexingOperation(null, "1", elasticIndexingServiceConnector.getType(), OperationType.UPDATE)));
+    assertThat(captor.getValue().get(1), is(new IndexingOperation(null, "2", elasticIndexingServiceConnector.getType(), OperationType.UPDATE)));
+  }
+
+  @Test
+  public void process_ifReindexAll_idsAreProcessedAsBatch() throws ParseException {
+    //Given
+    elasticIndexingOperationProcessor.setReindexBatchSize(2);
+    elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
+    IndexingOperation reindexAll = new IndexingOperation(5l,null,"post",OperationType.REINDEX_ALL);
+    when(indexingOperationDAO.findAllFirst(anyInt())).thenReturn(Collections.singletonList(reindexAll));
+    when(elasticIndexingServiceConnector.getAllIds(0, 2)).thenReturn(Arrays.asList("1", "2"));
+    when(elasticIndexingServiceConnector.getAllIds(2, 2)).thenReturn(Collections.singletonList("3"));
+    //When
+    elasticIndexingOperationProcessor.process();
+    //Then
+    ArgumentCaptor<List<IndexingOperation>> captor = ArgumentCaptor.forClass(List.class);
+    verify(indexingOperationDAO, times(2)).createAll(captor.capture());
+    assertThat(captor.getAllValues().get(0), hasSize(2));
+    assertThat(captor.getAllValues().get(1), hasSize(1));
   }
 
 }

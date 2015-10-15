@@ -48,6 +48,7 @@ public class IndexingOperationDAOImpl extends GenericDAOJPAImpl<IndexingOperatio
   }
 
   @Override
+  @ExoTransactional
   public List<IndexingOperation> findAllFirst(Integer maxResults) {
       return getEntityManager()
               .createNamedQuery("IndexingOperation.findAllFirst", IndexingOperation.class)

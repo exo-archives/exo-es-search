@@ -47,5 +47,5 @@ public abstract class IndexingServiceConnector extends BaseComponentPlugin {
     this.type = type;
   }
 
-  public abstract List<String> getAllIds();
+  public abstract List<String> getAllIds(int offset, int limit);
 }
