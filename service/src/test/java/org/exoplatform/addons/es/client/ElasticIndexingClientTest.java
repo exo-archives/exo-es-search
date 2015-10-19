@@ -70,7 +70,7 @@ public class ElasticIndexingClientTest {
   @Before
   public void initMock() throws IOException {
     MockitoAnnotations.initMocks(this);
-    elasticIndexingClient = new ElasticIndexingClient(httpClient, "http://localhost:9200");
+    elasticIndexingClient = new ElasticIndexingClient("http://localhost:9200", httpClient);
   }
 
   @Test

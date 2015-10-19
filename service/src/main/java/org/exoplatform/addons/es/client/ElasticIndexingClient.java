@@ -16,22 +16,11 @@
 */
 package org.exoplatform.addons.es.client;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * Created by The eXo Platform SAS
@@ -39,37 +28,28 @@ import java.io.InputStream;
  * tclement@exoplatform.com
  * 9/1/15
  */
-public class ElasticIndexingClient {
-
-  private static final String ES_INDEX_CLIENT_PROPERTY_NAME = "exo.es.index.server.url";
-  private static final String ES_INDEX_CLIENT_DEFAULT = "http://127.0.0.1:9200";
-
-  private static final String ES_INDEX_CLIENT_PROPERTY_USERNAME = "exo.es.index.server.username";
-  private static final String ES_INDEX_CLIENT_PROPERTY_PASSWORD = "exo.es.index.server.password";
+public class ElasticIndexingClient extends ElasticClient {
 
   private static final Log LOG = ExoLogger.getExoLogger(ElasticIndexingClient.class);
 
-  private String urlClient = ES_INDEX_CLIENT_DEFAULT;
-
-  private HttpClient client;
+  private static final String ES_INDEX_CLIENT_PROPERTY_NAME = "exo.es.index.server.url";
+  private static final String ES_INDEX_CLIENT_PROPERTY_USERNAME = "exo.es.index.server.username";
+  private static final String ES_INDEX_CLIENT_PROPERTY_PASSWORD = "exo.es.index.server.password";
 
   public ElasticIndexingClient() {
+    super();
     //Get url client from exo global properties
     if (StringUtils.isNotBlank(PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_NAME))) {
       this.urlClient = PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_NAME);
     }
-    this.client = getHttpClient();
   }
 
-  //For testing TODO remove ?
-  public ElasticIndexingClient(String url) {
-    this.urlClient = url;
-    this.client = getHttpClient();
+  public ElasticIndexingClient(String urlClient) {
+    super(urlClient);
   }
-  //For testing TODO remove ?
-  public ElasticIndexingClient(HttpClient client, String url) {
-    this.client = client;
-    this.urlClient = url;
+
+  public ElasticIndexingClient(String urlClient, HttpClient client) {
+    super(urlClient, client);
   }
 
   /**
@@ -102,63 +82,14 @@ public class ElasticIndexingClient {
     sendHttpPostRequest(urlClient + "/_bulk", bulkRequest);
   }
 
-  private void sendHttpPostRequest (String url, String content) {
-    try {
-      HttpPost httpTypeRequest = new HttpPost(url);
-      httpTypeRequest.setEntity(new StringEntity(content, "UTF-8"));
-      handleHttpResponse(client.execute(httpTypeRequest));
-
-      LOG.debug("Send request to ES:\n Method = POST \nURI =  {} \nContent = {}", url, content);
-    } catch (IOException e) {
-      throw new ElasticClientException(e);
-    }
+  @Override
+  protected String getEsUsernameProperty() {
+    return PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_USERNAME);
   }
 
-  private void sendHttpDeleteRequest (String url) {
-    try {
-      HttpDelete httpDeleteRequest = new HttpDelete(url);
-      handleHttpResponse(client.execute(httpDeleteRequest));
-
-      LOG.debug("Send request to ES:\n Method = DELETE \nURI =  {}", url);
-    } catch (IOException e) {
-      throw new ElasticClientException(e);
-    }
-
-  }
-
-  /**
-   * Handle Http response receive from ES
-   * Log an INFO if the return status code is 200
-   * Log an ERROR if the return code is different from 200
-   *
-   * @param httpResponse The Http Response to handle
-   */
-  private void handleHttpResponse(HttpResponse httpResponse) throws IOException {
-    InputStream is = httpResponse.getEntity().getContent();
-    if (httpResponse.getStatusLine().getStatusCode() != 200) {
-      //TODO manage error
-      LOG.error("Error when trying to send request to ES. The reason is: {}",
-              IOUtils.toString(is, "UTF-8"));
-    } else {
-      LOG.debug("Success request to ES: {}",
-              IOUtils.toString(is, "UTF-8"));
-    }
-    is.close();
-  }
-
-  private HttpClient getHttpClient() {
-    //Check if Basic Authentication need to be used
-    if (StringUtils.isNotBlank(PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_USERNAME))) {
-      DefaultHttpClient httpClient = new DefaultHttpClient();
-      httpClient.getCredentialsProvider().setCredentials(
-          new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT),
-          new UsernamePasswordCredentials(PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_USERNAME)
-              , PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_PASSWORD)));
-      LOG.debug("Basic authentication for ES activated");
-      return httpClient;
-    } else {
-      return new DefaultHttpClient();
-    }
+  @Override
+  protected String getEsPasswordProperty() {
+    return PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_PASSWORD);
   }
 
 
