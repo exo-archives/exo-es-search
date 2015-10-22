@@ -123,6 +123,12 @@
       <version>${elasticsearch-mapper-attachments.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.asquera.elasticsearch</groupId>
+      <artifactId>elasticsearch-http-basic</artifactId>
+      <version>1.5.1</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

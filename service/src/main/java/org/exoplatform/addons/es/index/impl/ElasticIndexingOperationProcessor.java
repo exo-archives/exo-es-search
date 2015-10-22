@@ -16,10 +16,7 @@
  */
 package org.exoplatform.addons.es.index.impl;
 
-import java.util.*;
-
 import org.apache.commons.lang.StringUtils;
-
 import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
 import org.exoplatform.addons.es.client.ElasticIndexingClient;
 import org.exoplatform.addons.es.dao.IndexingOperationDAO;
@@ -30,6 +27,8 @@ import org.exoplatform.addons.es.index.IndexingServiceConnector;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import java.util.*;
 
 /**
  * Created by The eXo Platform SAS Author : Thibault Clement
