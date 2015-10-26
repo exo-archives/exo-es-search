@@ -516,8 +516,8 @@ public class ElasticOperationProcessorTest {
     InOrder orderClient = inOrder(indexingOperationDAO);
     orderClient.verify(indexingOperationDAO).create(new IndexingOperation(null, elasticIndexingServiceConnector.getType(), OperationType.DELETE_ALL));
     orderClient.verify(indexingOperationDAO).createAll(captor.capture());
-    assertThat(captor.getValue().get(0), is(new IndexingOperation("1", elasticIndexingServiceConnector.getType(), OperationType.UPDATE)));
-    assertThat(captor.getValue().get(1), is(new IndexingOperation("2", elasticIndexingServiceConnector.getType(), OperationType.UPDATE)));
+    assertThat(captor.getValue().get(0), is(new IndexingOperation("1", elasticIndexingServiceConnector.getType(), OperationType.CREATE)));
+    assertThat(captor.getValue().get(1), is(new IndexingOperation("2", elasticIndexingServiceConnector.getType(), OperationType.CREATE)));
   }
 
   @Test

@@ -308,7 +308,7 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
               } else {
                 operations = new ArrayList<>(ids.size());
                 for (String id : ids) {
-                  operations.add(new IndexingOperation(id, entityType, OperationType.UPDATE));
+                  operations.add(new IndexingOperation(id, entityType, OperationType.CREATE));
                 }
                 indexingOperationDAO.createAll(operations);
                 numberIndexed = ids.size();
