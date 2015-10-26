@@ -61,9 +61,7 @@ public class IndexingOperation {
   public IndexingOperation() {
   }
 
-  //TODO remove this constructor because it is only used for tests
-  public IndexingOperation(Long id, String entityId, String entityType, OperationType operation) {
-    this.id = id;
+  public IndexingOperation(String entityId, String entityType, OperationType operation) {
     this.entityId = entityId;
     this.entityType = entityType;
     this.setOperation(operation);

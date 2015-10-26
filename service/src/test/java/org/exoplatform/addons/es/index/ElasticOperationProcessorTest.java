@@ -117,7 +117,7 @@ public class ElasticOperationProcessorTest {
   @Test
   public void addConnectRor_ifNewConnector_initIndexingQueueCreated() {
     //Given
-    IndexingOperation indexingOperation = new IndexingOperation(null,null,"post", OperationType.INIT);
+    IndexingOperation indexingOperation = new IndexingOperation(null,"post", OperationType.INIT);
     //When
     elasticIndexingOperationProcessor.addConnector(elasticIndexingServiceConnector);
     //Then
@@ -128,7 +128,7 @@ public class ElasticOperationProcessorTest {
   public void addConnector_ifConnectorAlreadyExist_initIndexingQueueNotCreated() {
     //Given
     elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
-    IndexingOperation indexingOperation = new IndexingOperation(null,null,"post",OperationType.INIT);
+    IndexingOperation indexingOperation = new IndexingOperation(null,"post",OperationType.INIT);
     //When
     elasticIndexingOperationProcessor.addConnector(elasticIndexingServiceConnector);
     //Then
@@ -146,11 +146,16 @@ public class ElasticOperationProcessorTest {
   public void process_ifAllOperationsInQueue_requestShouldBeSentInAnExpectedOrder() throws ParseException {
     //Given
     elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
-    IndexingOperation create = new IndexingOperation(3l,"1","post",OperationType.CREATE);
-    IndexingOperation delete = new IndexingOperation(4l,"1","post",OperationType.DELETE);
-    IndexingOperation update = new IndexingOperation(5l,"1","post",OperationType.UPDATE);
-    IndexingOperation deleteAll = new IndexingOperation(2l,null,"post",OperationType.DELETE_ALL);
-    IndexingOperation init = new IndexingOperation(1l,null,"post",OperationType.INIT);
+    IndexingOperation create = new IndexingOperation("1","post",OperationType.CREATE);
+    create.setId(4L);
+    IndexingOperation delete = new IndexingOperation("1","post",OperationType.DELETE);
+    delete.setId(5L);
+    IndexingOperation update = new IndexingOperation("1","post",OperationType.UPDATE);
+    update.setId(2L);
+    IndexingOperation deleteAll = new IndexingOperation(null,"post",OperationType.DELETE_ALL);
+    deleteAll.setId(1L);
+    IndexingOperation init = new IndexingOperation(null,"post",OperationType.INIT);
+    init.setId(3L);
     List<IndexingOperation> indexingOperations = new ArrayList<>();
     indexingOperations.add(create);
     indexingOperations.add(delete);
@@ -194,11 +199,16 @@ public class ElasticOperationProcessorTest {
     elasticIndexingOperationProcessor.getConnectors().put("post1", elasticIndexingServiceConnector);
     elasticIndexingOperationProcessor.getConnectors().put("post2", elasticIndexingServiceConnector);
     elasticIndexingOperationProcessor.getConnectors().put("post3", elasticIndexingServiceConnector);
-    IndexingOperation init = new IndexingOperation(4l,null,"post",OperationType.INIT);
-    IndexingOperation deleteAll = new IndexingOperation(5l,null,"post",OperationType.DELETE_ALL);
-    IndexingOperation delete = new IndexingOperation(2l,"1","post1",OperationType.DELETE);
-    IndexingOperation create = new IndexingOperation(1l,"2","post2",OperationType.CREATE);
-    IndexingOperation update = new IndexingOperation(3l,"3","post3",OperationType.UPDATE);
+    IndexingOperation init = new IndexingOperation(null,"post",OperationType.INIT);
+    init.setId(4L);
+    IndexingOperation deleteAll = new IndexingOperation(null,"post",OperationType.DELETE_ALL);
+    deleteAll.setId(5L);
+    IndexingOperation delete = new IndexingOperation("1","post1",OperationType.DELETE);
+    delete.setId(2L);
+    IndexingOperation create = new IndexingOperation("2","post2",OperationType.CREATE);
+    create.setId(1L);
+    IndexingOperation update = new IndexingOperation("3","post3",OperationType.UPDATE);
+    update.setId(3L);
     List<IndexingOperation> indexingOperations = new ArrayList<>();
     indexingOperations.add(create);
     indexingOperations.add(delete);
@@ -233,11 +243,15 @@ public class ElasticOperationProcessorTest {
   public void process_ifDeleteAllOperation_allOldestCreateUpdateDeleteOperationsWithSameTypeStillInQueueShouldBeCanceled() throws ParseException {
     //Given
     elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
-    IndexingOperation deleteAll = new IndexingOperation(5l,null,"post",OperationType.DELETE_ALL);
+    IndexingOperation deleteAll = new IndexingOperation(null,"post",OperationType.DELETE_ALL);
+    deleteAll.setId(5L);
     //CUD operation are older than delete all
-    IndexingOperation create = new IndexingOperation(1l,"1","post",OperationType.CREATE);
-    IndexingOperation delete = new IndexingOperation(2l,"1","post",OperationType.DELETE);
-    IndexingOperation update = new IndexingOperation(3l,"1","post",OperationType.UPDATE);
+    IndexingOperation create = new IndexingOperation("1","post",OperationType.CREATE);
+    create.setId(1L);
+    IndexingOperation delete = new IndexingOperation("1","post",OperationType.DELETE);
+    delete.setId(2L);
+    IndexingOperation update = new IndexingOperation("1","post",OperationType.UPDATE);
+    update.setId(3L);
     List<IndexingOperation> indexingOperations = new ArrayList<>();
     indexingOperations.add(create);
     indexingOperations.add(delete);
@@ -266,9 +280,12 @@ public class ElasticOperationProcessorTest {
     //Given
     elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
     //Delete operation are older than create and update
-    IndexingOperation delete = new IndexingOperation(2l,"1","post",OperationType.DELETE);
-    IndexingOperation create = new IndexingOperation(1l,"1","post",OperationType.CREATE);
-    IndexingOperation update = new IndexingOperation(3l,"1","post",OperationType.UPDATE);
+    IndexingOperation delete = new IndexingOperation("1","post",OperationType.DELETE);
+    delete.setId(2L);
+    IndexingOperation create = new IndexingOperation("1","post",OperationType.CREATE);
+    create.setId(1L);
+    IndexingOperation update = new IndexingOperation("1","post",OperationType.UPDATE);
+    update.setId(3L);
     List<IndexingOperation> indexingOperations = new ArrayList<>();
     indexingOperations.add(create);
     indexingOperations.add(delete);
@@ -296,9 +313,12 @@ public class ElasticOperationProcessorTest {
     //Given
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
-    IndexingOperation create = new IndexingOperation(1l,"1","post",OperationType.CREATE);
-    IndexingOperation oldUpdate = new IndexingOperation(3l,"1","post",OperationType.UPDATE);
-    IndexingOperation newUpdate = new IndexingOperation(3l,"1","post",OperationType.UPDATE);
+    IndexingOperation create = new IndexingOperation("1","post",OperationType.CREATE);
+    create.setId(1L);
+    IndexingOperation oldUpdate = new IndexingOperation("1","post",OperationType.UPDATE);
+    oldUpdate.setId(2L);
+    IndexingOperation newUpdate = new IndexingOperation("1","post",OperationType.UPDATE);
+    newUpdate.setId(3L);
     List<IndexingOperation> indexingOperations = new ArrayList<>();
     indexingOperations.add(create);
     indexingOperations.add(oldUpdate);
@@ -326,10 +346,13 @@ public class ElasticOperationProcessorTest {
     //Given
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
-    IndexingOperation deleteAll = new IndexingOperation(1l,null,"post",OperationType.DELETE_ALL);
+    IndexingOperation deleteAll = new IndexingOperation(null,"post",OperationType.DELETE_ALL);
+    deleteAll.setId(1L);
     //CUD operation are newer than delete all
-    IndexingOperation create = new IndexingOperation(3l,"1","post",OperationType.CREATE);
-    IndexingOperation delete = new IndexingOperation(2l,"1","post",OperationType.DELETE);
+    IndexingOperation create = new IndexingOperation("1","post",OperationType.CREATE);
+    create.setId(3L);
+    IndexingOperation delete = new IndexingOperation("1","post",OperationType.DELETE);
+    delete.setId(2L);
     List<IndexingOperation> indexingOperations = new ArrayList<>();
     indexingOperations.add(create);
     indexingOperations.add(delete);
@@ -363,8 +386,10 @@ public class ElasticOperationProcessorTest {
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
     //Delete operation are older than create
-    IndexingOperation delete = new IndexingOperation(1l,"1","post",OperationType.DELETE);
-    IndexingOperation create = new IndexingOperation(2l,"1","post",OperationType.CREATE);
+    IndexingOperation delete = new IndexingOperation("1","post",OperationType.DELETE);
+    delete.setId(1L);
+    IndexingOperation create = new IndexingOperation("1","post",OperationType.CREATE);
+    create.setId(2L);
     List<IndexingOperation> indexingOperations = new ArrayList<>();
     indexingOperations.add(create);
     indexingOperations.add(delete);
@@ -391,9 +416,11 @@ public class ElasticOperationProcessorTest {
     //Given
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
-    IndexingOperation deleteAll = new IndexingOperation(5l,null,"post",OperationType.DELETE_ALL);
+    IndexingOperation deleteAll = new IndexingOperation(null,"post",OperationType.DELETE_ALL);
+    deleteAll.setId(5L);
     //CUD operation are newer than delete all
-    IndexingOperation update = new IndexingOperation(1l,"1","post",OperationType.UPDATE);
+    IndexingOperation update = new IndexingOperation("1","post",OperationType.UPDATE);
+    update.setId(1L);
     List<IndexingOperation> indexingOperations = new ArrayList<>();
     indexingOperations.add(update);
     indexingOperations.add(deleteAll);
@@ -422,8 +449,10 @@ public class ElasticOperationProcessorTest {
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
     //Delete operation are older than update
-    IndexingOperation delete = new IndexingOperation(2l,"1","post",OperationType.DELETE);
-    IndexingOperation update = new IndexingOperation(1l,"1","post",OperationType.UPDATE);
+    IndexingOperation delete = new IndexingOperation("1","post",OperationType.DELETE);
+    delete.setId(1L);
+    IndexingOperation update = new IndexingOperation("1","post",OperationType.UPDATE);
+    update.setId(2L);
     List<IndexingOperation> indexingOperations = new ArrayList<>();
     indexingOperations.add(update);
     indexingOperations.add(delete);
@@ -449,8 +478,10 @@ public class ElasticOperationProcessorTest {
     elasticIndexingOperationProcessor.setRequestSizeLimit(1);
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
-    IndexingOperation create1 = new IndexingOperation(1l,"1","post",OperationType.CREATE);
-    IndexingOperation create2 = new IndexingOperation(2l,"2","post",OperationType.CREATE);
+    IndexingOperation create1 = new IndexingOperation("1","post",OperationType.CREATE);
+    create1.setId(1L);
+    IndexingOperation create2 = new IndexingOperation("2","post",OperationType.CREATE);
+    create2.setId(2L);
     List<IndexingOperation> indexingOperations = new ArrayList<>();
     indexingOperations.add(create1);
     indexingOperations.add(create2);
@@ -474,7 +505,8 @@ public class ElasticOperationProcessorTest {
     //Given
     elasticIndexingOperationProcessor.setReindexBatchSize(10);
     elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
-    IndexingOperation reindexAll = new IndexingOperation(5l,null,"post",OperationType.REINDEX_ALL);
+    IndexingOperation reindexAll = new IndexingOperation(null,"post",OperationType.REINDEX_ALL);
+    reindexAll.setId(1L);
     when(indexingOperationDAO.findAllFirst(anyInt())).thenReturn(Collections.singletonList(reindexAll));
     when(elasticIndexingServiceConnector.getAllIds(0, 10)).thenReturn(Arrays.asList("1", "2"));
     //When
@@ -482,10 +514,10 @@ public class ElasticOperationProcessorTest {
     //Then
     ArgumentCaptor<List<IndexingOperation>> captor = ArgumentCaptor.forClass(List.class);
     InOrder orderClient = inOrder(indexingOperationDAO);
-    orderClient.verify(indexingOperationDAO).create(new IndexingOperation(null, null, elasticIndexingServiceConnector.getType(), OperationType.DELETE_ALL));
+    orderClient.verify(indexingOperationDAO).create(new IndexingOperation(null, elasticIndexingServiceConnector.getType(), OperationType.DELETE_ALL));
     orderClient.verify(indexingOperationDAO).createAll(captor.capture());
-    assertThat(captor.getValue().get(0), is(new IndexingOperation(null, "1", elasticIndexingServiceConnector.getType(), OperationType.UPDATE)));
-    assertThat(captor.getValue().get(1), is(new IndexingOperation(null, "2", elasticIndexingServiceConnector.getType(), OperationType.UPDATE)));
+    assertThat(captor.getValue().get(0), is(new IndexingOperation("1", elasticIndexingServiceConnector.getType(), OperationType.UPDATE)));
+    assertThat(captor.getValue().get(1), is(new IndexingOperation("2", elasticIndexingServiceConnector.getType(), OperationType.UPDATE)));
   }
 
   @Test
@@ -493,7 +525,8 @@ public class ElasticOperationProcessorTest {
     //Given
     elasticIndexingOperationProcessor.setReindexBatchSize(2);
     elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
-    IndexingOperation reindexAll = new IndexingOperation(5l,null,"post",OperationType.REINDEX_ALL);
+    IndexingOperation reindexAll = new IndexingOperation(null,"post",OperationType.REINDEX_ALL);
+    reindexAll.setId(3L);
     when(indexingOperationDAO.findAllFirst(anyInt())).thenReturn(Collections.singletonList(reindexAll));
     when(elasticIndexingServiceConnector.getAllIds(0, 2)).thenReturn(Arrays.asList("1", "2"));
     when(elasticIndexingServiceConnector.getAllIds(2, 2)).thenReturn(Collections.singletonList("3"));

@@ -123,7 +123,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
   public void test_search_returnsAlicePage() throws IOException, InterruptedException {
     // Given
     setCurrentIdentity("Alice", "admin:/portal");
-    dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE));
+    dao.create(new IndexingOperation("1", "wiki", OperationType.CREATE));
     Document document = new Document();
     document.addField("title", "RDBMS Guidelines");
     document.setPermissions(new String[] { "Alice" });
@@ -141,7 +141,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
   public void test_search_doesntReturnBobPage() throws IOException, InterruptedException {
     // Given
     setCurrentIdentity("Alice", "admin:/portal");
-    dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE));
+    dao.create(new IndexingOperation("1", "wiki", OperationType.CREATE));
     Document document = new Document();
     document.addField("title", "RDBMS Guidelines");
     document.setPermissions(new String[] { "Bob" });
@@ -159,7 +159,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
   public void test_searchWithMembership_returnsPage() throws IOException, InterruptedException {
     // Given
     setCurrentIdentity("JaneDoe", "publisher:/developers");
-    dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE));
+    dao.create(new IndexingOperation("1", "wiki", OperationType.CREATE));
     Document document = new Document();
     document.addField("title", "RDBMS Guidelines");
     document.setPermissions(new String[] { "Bob", "Alice", "publisher:/developers" });
@@ -202,7 +202,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
                                                                                                                   InterruptedException {
     // Given
     setCurrentIdentity("Alice", membership);
-    dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE));
+    dao.create(new IndexingOperation("1", "wiki", OperationType.CREATE));
     Document document = new Document();
     document.addField("title", "RDBMS Guidelines");
     document.setPermissions(new String[] { permission });
@@ -240,7 +240,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
                                                                                                     InterruptedException {
     // Given
     setCurrentIdentity("JaneDoe", membership);
-    dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE));
+    dao.create(new IndexingOperation("1", "wiki", OperationType.CREATE));
     Document document = new Document();
     document.addField("title", "RDBMS Guidelines");
     document.setPermissions(new String[] { permission });
@@ -258,7 +258,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
                                                                                                      InterruptedException {
     // Given
     setCurrentIdentity("JaneDoe", membership);
-    dao.create(new IndexingOperation(null, "1", "wiki", OperationType.CREATE));
+    dao.create(new IndexingOperation("1", "wiki", OperationType.CREATE));
     Document document = new Document();
     document.addField("title", "RDBMS Guidelines");
     document.setPermissions(permissions);

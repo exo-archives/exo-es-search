@@ -296,7 +296,7 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
         if (indexingQueueSorted.get(OperationType.REINDEX_ALL).containsKey(entityType)) {
           for (IndexingOperation indexingOperation : indexingQueueSorted.get(OperationType.REINDEX_ALL).get(entityType)) {
             // 1- Delete all documents in ES (and purge the indexing queue)
-            indexingOperationDAO.create(new IndexingOperation(null, null, entityType, OperationType.DELETE_ALL));
+            indexingOperationDAO.create(new IndexingOperation(null, entityType, OperationType.DELETE_ALL));
             // 2- Get all the documents ID
             IndexingServiceConnector connector = getConnectors().get(indexingOperation.getEntityType());
             // 3- Inject as a CUD operation
@@ -308,7 +308,7 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
               } else {
                 operations = new ArrayList<>(ids.size());
                 for (String id : ids) {
-                  operations.add(new IndexingOperation(null, id, entityType, OperationType.UPDATE));
+                  operations.add(new IndexingOperation(id, entityType, OperationType.UPDATE));
                 }
                 indexingOperationDAO.createAll(operations);
                 numberIndexed = ids.size();
