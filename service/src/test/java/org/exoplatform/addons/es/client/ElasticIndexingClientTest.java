@@ -23,6 +23,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
+import org.exoplatform.commons.utils.PropertyManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -70,6 +71,7 @@ public class ElasticIndexingClientTest {
   @Before
   public void initMock() throws IOException {
     MockitoAnnotations.initMocks(this);
+    PropertyManager.setProperty("exo.es.index.server.url", "http://127.0.0.1:9200");
     elasticIndexingClient = new ElasticIndexingClient();
     elasticIndexingClient.client = httpClient;
   }
