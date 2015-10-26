@@ -16,8 +16,14 @@
  */
 package org.exoplatform.addons.es.integration;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
-import org.exoplatform.addons.es.client.ElasticSearchingClient;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.exoplatform.addons.es.search.ElasticSearchServiceConnector;
 import org.exoplatform.commons.api.search.data.SearchResult;
 import org.exoplatform.container.xml.InitParams;
@@ -25,12 +31,6 @@ import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.MembershipEntry;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by The eXo Platform SAS Author : Thibault Clement
@@ -43,12 +43,9 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
   @Before
   public void initServices() {
     Identity identity = new Identity("BCH");
-    identity.setMemberships(Arrays.asList(new MembershipEntry("Admin")));
+    identity.setMemberships(Collections.singletonList(new MembershipEntry("Admin")));
     ConversationState.setCurrent(new ConversationState(identity));
-
-    String url = "http://" + cluster().httpAddresses()[0].getHostName() + ":" + cluster().httpAddresses()[0].getPort();
-    ElasticSearchingClient client = new ElasticSearchingClient(url);
-    elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorParams(), client);
+    elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorParams(), elasticSearchingClient);
   }
 
   @Test

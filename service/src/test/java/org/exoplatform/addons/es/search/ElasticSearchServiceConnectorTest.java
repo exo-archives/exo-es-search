@@ -1,19 +1,20 @@
 package org.exoplatform.addons.es.search;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+
+import java.util.Collections;
+
+import org.json.simple.parser.ParseException;
+import org.junit.Test;
+
 import org.exoplatform.addons.es.client.ElasticSearchingClient;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.MembershipEntry;
-import org.json.simple.parser.ParseException;
-import org.junit.Test;
-
-import java.util.Arrays;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 /**
  * Created by The eXo Platform SAS
@@ -116,7 +117,7 @@ public class ElasticSearchServiceConnectorTest {
 
     private void setCurrentIdentity() {
         Identity identity = new Identity("BCH");
-        identity.setMemberships(Arrays.asList(new MembershipEntry("Admin")));
+        identity.setMemberships(Collections.singletonList(new MembershipEntry("Admin")));
         ConversationState.setCurrent(new ConversationState(identity));
     }
 }

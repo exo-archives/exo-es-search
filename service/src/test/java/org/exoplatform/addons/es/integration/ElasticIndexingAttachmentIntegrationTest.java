@@ -16,13 +16,19 @@
 */
 package org.exoplatform.addons.es.integration;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.internal.InternalNode;
 import org.elasticsearch.plugins.PluginsService;
 import org.elasticsearch.rest.RestController;
-import org.exoplatform.addons.es.client.ElasticSearchingClient;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.exoplatform.addons.es.search.ElasticSearchServiceConnector;
 import org.exoplatform.commons.api.search.data.SearchResult;
 import org.exoplatform.container.xml.InitParams;
@@ -30,12 +36,6 @@ import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.MembershipEntry;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
@@ -49,16 +49,14 @@ public class ElasticIndexingAttachmentIntegrationTest extends AbstractIntegratio
   private final static String MC23Quotes =
       "U29tZSBwZW9wbGUgd2FudCBpdCB0byBoYXBwZW4sIHNvbWUgd2lzaCBpdCB3b3VsZCBoYXBwZW4sIG90aGVycyBtYWtlIGl0IGhhcHBlbi4=";
 
-  ElasticSearchServiceConnector elasticSearchServiceConnector;
+  private ElasticSearchServiceConnector elasticSearchServiceConnector;
 
   @Before
   public void initServices() {
     Identity identity = new Identity("TCL");
-    identity.setMemberships(Arrays.asList(new MembershipEntry("BasketballPlayer")));
+    identity.setMemberships(Collections.singletonList(new MembershipEntry("BasketballPlayer")));
     ConversationState.setCurrent(new ConversationState(identity));
-    String url = "http://" + cluster().httpAddresses()[0].getHostName() + ":" + cluster().httpAddresses()[0].getPort();
-    ElasticSearchingClient client = new ElasticSearchingClient(url);
-    elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorParams(), client);
+    elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorParams(), elasticSearchingClient);
   }
 
   private InitParams getInitConnectorParams() {

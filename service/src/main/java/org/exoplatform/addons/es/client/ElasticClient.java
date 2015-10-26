@@ -53,12 +53,6 @@ public abstract class ElasticClient {
   }
 
   //For testing TODO remove ?
-  public ElasticClient(String urlClient) {
-    this.client = getHttpClient();
-    this.urlClient = urlClient;
-  }
-
-  //For testing TODO remove ?
   public ElasticClient(String urlClient, HttpClient client) {
     this.urlClient = urlClient;
     this.client = client;

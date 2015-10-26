@@ -16,12 +16,20 @@
 */
 package org.exoplatform.addons.es.integration;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.internal.InternalNode;
 import org.elasticsearch.plugins.PluginsService;
 import org.elasticsearch.rest.RestController;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.exoplatform.addons.es.client.ElasticIndexingClient;
 import org.exoplatform.addons.es.client.ElasticSearchingClient;
 import org.exoplatform.addons.es.search.ElasticSearchException;
@@ -32,13 +40,6 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
@@ -47,20 +48,21 @@ import java.util.List;
  * 10/1/15
  */
 public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrationTest {
-
-  ElasticSearchServiceConnector elasticSearchServiceConnector;
-  
   private static final String ES_USERNAME = "esuser";
   private static final String ES_PASSWORD = "espassword";
+
+  private ElasticSearchServiceConnector elasticSearchServiceConnector;
 
   @Before
   public void initServices() {
     addBasicAuthenticationProperties();
+    //Then, override clients with authentication
+    elasticSearchingClient = new ElasticSearchingClient();
+    elasticIndexingClient = new ElasticIndexingClient();
+
     Identity identity = new Identity("TCL");
     ConversationState.setCurrent(new ConversationState(identity));
-    ElasticSearchingClient client = new ElasticSearchingClient("http://" + cluster().httpAddresses()[0].getHostName() + ":" + cluster().httpAddresses()[0].getPort());
-    elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorParams(), client);
-    elasticIndexingClient = new ElasticIndexingClient("http://"+cluster().httpAddresses()[0].getHostName()+":"+cluster().httpAddresses()[0].getPort());
+    elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorParams(), elasticSearchingClient);
   }
 
   @After
@@ -85,7 +87,7 @@ public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrati
     //Change the username properties to a wrong user
     PropertyManager.setProperty("exo.es.index.server.username", "badUser");
     //Get elasticIndexingClient with latest Properties
-    elasticIndexingClient = new ElasticIndexingClient("http://"+cluster().httpAddresses()[0].getHostName()+":"+cluster().httpAddresses()[0].getPort());
+    elasticIndexingClient = new ElasticIndexingClient();
     assertFalse(indexExists("blog"));
     //When
     elasticIndexingClient.sendCreateIndexRequest("blog", "");
@@ -100,7 +102,7 @@ public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrati
     //Given
     PropertyManager.setProperty("exo.es.index.server.password", "badPassword");
     //Get elasticIndexingClient with latest Properties
-    elasticIndexingClient = new ElasticIndexingClient("http://"+cluster().httpAddresses()[0].getHostName()+":"+cluster().httpAddresses()[0].getPort());
+    elasticIndexingClient = new ElasticIndexingClient();
     assertFalse(indexExists("blog"));
     //When
     elasticIndexingClient.sendCreateIndexRequest("blog", "");
@@ -183,6 +185,8 @@ public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrati
     //Given
     //Change the username properties to a wrong user
     PropertyManager.setProperty("exo.es.search.server.username", "badUser");
+    //Get elasticSearchingClient with latest Properties
+    elasticSearchingClient = new ElasticSearchingClient();
     String mapping = "{ \"properties\" : " + "   {\"permissions\" : "
         + "       {\"type\" : \"string\", \"index\" : \"not_analyzed\"}" + "   }" + "}";
     CreateIndexRequestBuilder cirb = admin().indices().prepareCreate("test").addMapping("type1", mapping);
@@ -195,8 +199,7 @@ public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrati
         "{ \"field1\" : \"value3\", \"permissions\" : [\"TCL\"] }\n";
     elasticIndexingClient.sendCUDRequest(bulkRequest);
     admin().indices().prepareRefresh().execute().actionGet();
-    ElasticSearchingClient client = new ElasticSearchingClient("http://" + cluster().httpAddresses()[0].getHostName() + ":" + cluster().httpAddresses()[0].getPort());
-    elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorParams(), client);
+    elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorParams(), elasticSearchingClient);
 
     // When
     List<SearchResult> searchResults = new ArrayList<>(elasticSearchServiceConnector.search(null,

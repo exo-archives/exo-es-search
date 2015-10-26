@@ -16,17 +16,34 @@
 */
 package org.exoplatform.addons.es.integration;
 
-import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
+import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.FileSystemResourceAccessor;
-import org.elasticsearch.common.lang3.StringUtils;
+
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
+
 import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
-import org.exoplatform.addons.es.client.ElasticIndexingClient;
-import org.exoplatform.addons.es.client.ElasticSearchingClient;
 import org.exoplatform.addons.es.dao.IndexingOperationDAO;
 import org.exoplatform.addons.es.dao.impl.IndexingOperationDAOImpl;
 import org.exoplatform.addons.es.domain.Document;
@@ -42,17 +59,6 @@ import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.MembershipEntry;
-import org.junit.*;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.*;
-
-import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Created by The eXo Platform SAS
@@ -71,7 +77,6 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
   private ElasticSearchServiceConnector elasticSearchServiceConnector;
   private IndexingOperationDAO dao;
   private ElasticIndexingServiceConnector testConnector;
-  private boolean propertiesSet;
 
   @BeforeClass
   public static void startDB () throws ClassNotFoundException, SQLException, LiquibaseException {
@@ -93,11 +98,6 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
 
   @Before
   public void initServices() {
-    this.propertiesSet = StringUtils.isBlank(System.getProperty("exo.es.index.server.url"));
-
-    //ES URL
-    String url = "http://" + cluster().httpAddresses()[0].getHostName() + ":" + cluster().httpAddresses()[0].getPort();
-
     //Indexing Connector
     testConnector = mock(ElasticIndexingServiceConnector.class);
     when(testConnector.getType()).thenReturn("test");
@@ -107,14 +107,12 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
     when(testConnector.getMapping()).thenCallRealMethod();
     //IndexService
     dao = new IndexingOperationDAOImpl();
-    ElasticIndexingClient client = new ElasticIndexingClient(url);
     ElasticContentRequestBuilder builder = new ElasticContentRequestBuilder();
-    indexingOperationProcessor = new ElasticIndexingOperationProcessor(dao, client, builder);
+    indexingOperationProcessor = new ElasticIndexingOperationProcessor(dao, elasticIndexingClient, builder);
     indexingOperationProcessor.addConnector(testConnector);
 
     //Search connector
-    ElasticSearchingClient searchingClient = new ElasticSearchingClient(url);
-    elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorParams(), searchingClient);
+    elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorParams(), elasticSearchingClient);
 
     //Set identity
     setCurrentIdentity(USERNAME);
@@ -129,18 +127,6 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
       }
     }
     ConversationState.setCurrent(new ConversationState(new Identity(userId, membershipEntrySet)));
-  }
-
-  @After
-  public void unsetSystemParams() throws InterruptedException, ClassNotFoundException, SQLException {
-    if (propertiesSet) {
-      System.clearProperty("exo.es.index.server.url");
-      System.clearProperty("exo.es.indexing.batch.number");
-      System.clearProperty("exo.es.indexing.replica.number.default");
-      System.clearProperty("exo.es.indexing.shard.number.default");
-      System.clearProperty("exo.es.search.server.url");
-      System.clearProperty("jboss.i18n.generate-proxies");
-    }
   }
 
   private InitParams getInitConnectorParams() {

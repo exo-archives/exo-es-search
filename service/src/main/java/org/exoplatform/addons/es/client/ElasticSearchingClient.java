@@ -27,10 +27,6 @@ public class ElasticSearchingClient extends ElasticClient {
     }
   }
 
-  public ElasticSearchingClient(String urlClient) {
-    super(urlClient);
-  }
-
   public ElasticSearchingClient(String urlClient, HttpClient client) {
     super(urlClient, client);
   }

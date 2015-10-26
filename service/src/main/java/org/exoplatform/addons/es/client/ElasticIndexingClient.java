@@ -44,10 +44,6 @@ public class ElasticIndexingClient extends ElasticClient {
     }
   }
 
-  public ElasticIndexingClient(String urlClient) {
-    super(urlClient);
-  }
-
   public ElasticIndexingClient(String urlClient, HttpClient client) {
     super(urlClient, client);
   }
