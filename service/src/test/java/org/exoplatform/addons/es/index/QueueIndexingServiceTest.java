@@ -32,6 +32,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.text.ParseException;
 
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -129,12 +130,58 @@ public class QueueIndexingServiceTest {
     verify(indexingOperationDAO, times(1)).create(indexingOperation);
   }
 
-  @Test
-  public void addToIndexQueue_ifNoEntityId_CUDIndexingQueueNotCreated() {
-    //TODO not implemented yet
+  @Test(expected = IllegalArgumentException.class)
+  public void index_ifEntityIdNull_IllegalArgumentException() {
     //Given
     //When
+    queueIndexingService.index("post", null);
     //Then
+    fail("Exception expected");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void index_ifEntityIdBlank_IllegalArgumentException() {
+    //Given
+    //When
+    queueIndexingService.index("post", "");
+    //Then
+    fail("Exception expected");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void reindex_ifEntityIdNull_IllegalArgumentException() {
+    //Given
+    //When
+    queueIndexingService.reindex("post", null);
+    //Then
+    fail("Exception expected");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void reindex_ifEntityIdBlank_IllegalArgumentException() {
+    //Given
+    //When
+    queueIndexingService.reindex("post", "");
+    //Then
+    fail("Exception expected");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void unindex_ifEntityIdNull_IllegalArgumentException() {
+    //Given
+    //When
+    queueIndexingService.unindex("post", null);
+    //Then
+    fail("Exception expected");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void unindex_ifEntityIdBlank_IllegalArgumentException() {
+    //Given
+    //When
+    queueIndexingService.unindex("post", "");
+    //Then
+    fail("Exception expected");
   }
 
   @Test

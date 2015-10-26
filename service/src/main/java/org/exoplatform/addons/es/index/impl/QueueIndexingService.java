@@ -1,5 +1,6 @@
 package org.exoplatform.addons.es.index.impl;
 
+import org.apache.commons.lang.StringUtils;
 import org.exoplatform.addons.es.dao.IndexingOperationDAO;
 import org.exoplatform.addons.es.domain.IndexingOperation;
 import org.exoplatform.addons.es.domain.OperationType;
@@ -30,14 +31,23 @@ public class QueueIndexingService implements IndexingService {
   }
 
   public void index(String connectorName, String id) {
+    if (StringUtils.isBlank(id)) {
+      throw new IllegalArgumentException("Id is null");
+    }
     addToIndexingQueue(connectorName, id, OperationType.CREATE);
   }
 
   public void reindex(String connectorName, String id) {
+    if (StringUtils.isBlank(id)) {
+      throw new IllegalArgumentException("Id is null");
+    }
     addToIndexingQueue(connectorName, id, OperationType.UPDATE);
   }
 
   public void unindex(String connectorName, String id) {
+    if (StringUtils.isBlank(id)) {
+      throw new IllegalArgumentException("Id is null");
+    }
     addToIndexingQueue(connectorName, id, OperationType.DELETE);
   }
 
