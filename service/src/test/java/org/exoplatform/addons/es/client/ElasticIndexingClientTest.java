@@ -46,31 +46,32 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class ElasticIndexingClientTest {
 
-  ElasticIndexingClient elasticIndexingClient;
+  private ElasticIndexingClient elasticIndexingClient;
 
   @Mock
-  HttpClient httpClient;
+  private HttpClient httpClient;
 
   @Mock
-  HttpResponse httpResponse;
+  private HttpResponse httpResponse;
 
   @Mock
-  StatusLine statusLine;
+  private StatusLine statusLine;
 
   @Mock
-  HttpEntity httpEntity;
+  private HttpEntity httpEntity;
 
   @Captor
-  ArgumentCaptor<HttpPost> httpPostRequestCaptor;
+  private ArgumentCaptor<HttpPost> httpPostRequestCaptor;
 
   @Captor
-  ArgumentCaptor<HttpDelete> httpDeleteRequestCaptor;
+  private ArgumentCaptor<HttpDelete> httpDeleteRequestCaptor;
 
 
   @Before
   public void initMock() throws IOException {
     MockitoAnnotations.initMocks(this);
-    elasticIndexingClient = new ElasticIndexingClient("http://localhost:9200", httpClient);
+    elasticIndexingClient = new ElasticIndexingClient();
+    elasticIndexingClient.client = httpClient;
   }
 
   @Test
@@ -85,7 +86,7 @@ public class ElasticIndexingClientTest {
     //Then
     verify(httpClient, times(1)).execute(httpPostRequestCaptor.capture());
     //Check the endpoint
-    assertEquals("http://localhost:9200/index/", httpPostRequestCaptor.getValue().getURI().toString());
+    assertEquals("http://127.0.0.1:9200/index/", httpPostRequestCaptor.getValue().getURI().toString());
     //Check the content
     assertEquals("fakeSettings", IOUtils.toString(httpPostRequestCaptor.getValue().getEntity().getContent()));
 
@@ -104,7 +105,7 @@ public class ElasticIndexingClientTest {
     //Then
     verify(httpClient, times(1)).execute(httpPostRequestCaptor.capture());
     //Check the endpoint
-    assertEquals("http://localhost:9200/index/_mapping/type", httpPostRequestCaptor.getValue().getURI().toString());
+    assertEquals("http://127.0.0.1:9200/index/_mapping/type", httpPostRequestCaptor.getValue().getURI().toString());
     //Check the content
     assertEquals("fakeMappings", IOUtils.toString(httpPostRequestCaptor.getValue().getEntity().getContent()));
 
@@ -122,7 +123,7 @@ public class ElasticIndexingClientTest {
     //Then
     verify(httpClient, times(1)).execute(httpDeleteRequestCaptor.capture());
     //Check the endpoint
-    assertEquals("http://localhost:9200/index/type", httpDeleteRequestCaptor.getValue().getURI().toString());
+    assertEquals("http://127.0.0.1:9200/index/type", httpDeleteRequestCaptor.getValue().getURI().toString());
   }
 
   @Test
@@ -137,12 +138,11 @@ public class ElasticIndexingClientTest {
     //Then
     verify(httpClient, times(1)).execute(httpPostRequestCaptor.capture());
     //Check the endpoint
-    assertEquals("http://localhost:9200/_bulk", httpPostRequestCaptor.getValue().getURI().toString());
+    assertEquals("http://127.0.0.1:9200/_bulk", httpPostRequestCaptor.getValue().getURI().toString());
     //Check the content
     assertEquals("FakeBulkRequest", IOUtils.toString(httpPostRequestCaptor.getValue().getEntity().getContent()));
 
   }
-
 
   private void initHttpSuccessRequest() throws IOException {
     when(httpClient.execute(any(HttpPost.class))).thenReturn(httpResponse);
@@ -151,14 +151,5 @@ public class ElasticIndexingClientTest {
     when(httpResponse.getEntity()).thenReturn(httpEntity);
     when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream("Success", "UTF-8") );
   }
-
-  private void initHttpFailedRequest() throws IOException {
-    when(httpClient.execute(any(HttpPost.class))).thenReturn(httpResponse);
-    when(httpResponse.getStatusLine()).thenReturn(statusLine);
-    when(statusLine.getStatusCode()).thenReturn(400);
-    when(httpResponse.getEntity()).thenReturn(httpEntity);
-    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream("Failed", "UTF-8") );
-  }
-
 }
 

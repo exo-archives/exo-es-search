@@ -17,7 +17,7 @@
 package org.exoplatform.addons.es.client;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.client.HttpClient;
+
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -29,7 +29,6 @@ import org.exoplatform.services.log.Log;
  * 9/1/15
  */
 public class ElasticIndexingClient extends ElasticClient {
-
   private static final Log LOG = ExoLogger.getExoLogger(ElasticIndexingClient.class);
 
   private static final String ES_INDEX_CLIENT_PROPERTY_NAME = "exo.es.index.server.url";
@@ -41,11 +40,10 @@ public class ElasticIndexingClient extends ElasticClient {
     //Get url client from exo global properties
     if (StringUtils.isNotBlank(PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_NAME))) {
       this.urlClient = PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_NAME);
+      LOG.info("Using {} as Indexing URL", this.urlClient);
+    } else {
+      LOG.info("Using default as Indexing URL");
     }
-  }
-
-  public ElasticIndexingClient(String urlClient, HttpClient client) {
-    super(urlClient, client);
   }
 
   /**

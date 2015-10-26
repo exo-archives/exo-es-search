@@ -44,18 +44,12 @@ public abstract class ElasticClient {
 
   private static final Log LOG = ExoLogger.getExoLogger(ElasticClient.class);
 
-  String urlClient;
+  protected String urlClient;
   protected HttpClient client;
 
   public ElasticClient() {
     this.client = getHttpClient();
     this.urlClient = ES_INDEX_CLIENT_DEFAULT;
-  }
-
-  //For testing TODO remove ?
-  public ElasticClient(String urlClient, HttpClient client) {
-    this.urlClient = urlClient;
-    this.client = client;
   }
 
   String sendHttpPostRequest(String url, String content) {
