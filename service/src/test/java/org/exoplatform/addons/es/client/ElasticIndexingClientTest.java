@@ -17,6 +17,7 @@
 package org.exoplatform.addons.es.client;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
@@ -240,6 +241,18 @@ public class ElasticIndexingClientTest {
     //Then
     verify(auditTrail).isFullLogEnabled();
     verifyNoMoreInteractions(auditTrail);
+  }
+
+  @Test(expected = ElasticClientAuthenticationException.class)
+  public void createType_notAuthenticated_throwsException() throws IOException {
+    //Given
+    initHttpSuccessRequest();
+    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream("Authentication Required", "UTF-8"));
+    when(statusLine.getStatusCode()).thenReturn(401);
+    //When
+    elasticIndexingClient.sendCUDRequest("myBulk");
+    //Then
+    fail("ElasticClientAuthenticationException expected");
   }
 }
 

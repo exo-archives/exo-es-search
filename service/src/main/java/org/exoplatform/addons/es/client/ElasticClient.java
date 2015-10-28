@@ -19,6 +19,7 @@ package org.exoplatform.addons.es.client;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
@@ -100,6 +101,9 @@ public abstract class ElasticClient {
       }
     }
 
+    if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
+      throw new ElasticClientAuthenticationException();
+    }
     if (ElasticIndexingAuditTrail.isError(httpResponse.getStatusLine().getStatusCode())) {
       LOG.error("Error when trying to send request to ES. The reason is: {}", response);
     } else {

@@ -26,6 +26,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.internal.InternalNode;
 import org.elasticsearch.plugins.PluginsService;
 import org.elasticsearch.rest.RestController;
+import org.exoplatform.addons.es.client.ElasticClientAuthenticationException;
 import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
 import org.junit.After;
 import org.junit.Before;
@@ -82,7 +83,7 @@ public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrati
 
   }
 
-  @Test
+  @Test(expected = ElasticClientAuthenticationException.class)
   public void testCreateNewIndexWithBasicAuthentication_badUserAuthenticate_NoIndexCreated() {
     //Given
     //Change the username properties to a wrong user
@@ -93,12 +94,11 @@ public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrati
     //When
     elasticIndexingClient.sendCreateIndexRequest("blog", "");
     //Then
-    //the index must not be created (user not auhtorized)
-    assertFalse(indexExists("blog"));
+    fail("ElasticClientAuthenticationException expected");
 
   }
 
-  @Test
+  @Test(expected = ElasticClientAuthenticationException.class)
   public void testCreateNewIndexWithBasicAuthentication_badPasswordAuthenticate_NoIndexCreated() {
     //Given
     PropertyManager.setProperty("exo.es.index.server.password", "badPassword");
@@ -108,8 +108,7 @@ public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrati
     //When
     elasticIndexingClient.sendCreateIndexRequest("blog", "");
     //Then
-    //the index must not be created (wrong password)
-    assertFalse(indexExists("blog"));
+    fail("ElasticClientAuthenticationException expected");
 
   }
 
@@ -179,8 +178,7 @@ public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrati
 
   }
 
-  //TODO better manage error response from ES
-  @Test(expected = ElasticSearchException.class)
+  @Test(expected = ElasticClientAuthenticationException.class)
   public void testSearchingDocumentWithBasicAuthentication_badUserAuthenticate_searchIsEmpty() {
 
     //Given
@@ -212,10 +210,7 @@ public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrati
         null));
 
     // Then
-    //Document has been indexed
-    assertEquals(3,elasticDocumentNumber());
-    //Wrong user cannot access it
-    assertEquals(0, searchResults.size());
+    fail("ElasticClientAuthenticationException expected");
 
   }
 
