@@ -1,5 +1,7 @@
 package org.exoplatform.addons.es.client;
 
+import org.apache.commons.lang.StringUtils;
+
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -9,7 +11,9 @@ import org.exoplatform.services.log.Log;
  */
 public class ElasticIndexingAuditTrail {
   public static final String REINDEX_ALL = "reindex_all";
+
   public static final String DELETE_ALL  = "delete_all";
+
   private static final Log   AUDIT_TRAIL = ExoLogger.getExoLogger("org.exoplatform.indexing.es");
 
   public void audit(String action,
@@ -19,7 +23,14 @@ public class ElasticIndexingAuditTrail {
                     Integer httpStatusCode,
                     String message,
                     long executionTime) {
-    AUDIT_TRAIL.info("{};{};{};{};{};{};{}", action, entityId, index, type, httpStatusCode, message, executionTime);
+    AUDIT_TRAIL.info("{};{};{};{};{};{};{}",
+                     action,
+                     StringUtils.isBlank(entityId) ? "" : entityId,
+                     StringUtils.isBlank(index) ? "" : index,
+                     StringUtils.isBlank(type) ? "" : type,
+                     httpStatusCode == null ? "" : httpStatusCode,
+                     StringUtils.isBlank(message) ? "" : message,
+                     executionTime);
   }
 
   public void logRejectedDocument(String action,
@@ -29,6 +40,13 @@ public class ElasticIndexingAuditTrail {
                                   int httpStatusCode,
                                   String message,
                                   long executionTime) {
-    AUDIT_TRAIL.error("{};{};{};{};{};{};{}", action, entityId, index, type, httpStatusCode, message, executionTime);
+    AUDIT_TRAIL.error("{};{};{};{};{};{};{}",
+                      action,
+                      StringUtils.isBlank(entityId) ? "" : entityId,
+                      StringUtils.isBlank(index) ? "" : index,
+                      StringUtils.isBlank(type) ? "" : type,
+                      httpStatusCode,
+                      StringUtils.isBlank(message) ? "" : message,
+                      executionTime);
   }
 }
