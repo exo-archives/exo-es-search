@@ -556,5 +556,19 @@ public class ElasticOperationProcessorTest {
     verifyNoMoreInteractions(auditTrail);
   }
 
+  @Test
+  public void deleteAll_whateverTheResult_addToAuditTrail() throws IOException {
+    //Given
+    elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
+    IndexingOperation deleteAll = new IndexingOperation(null,"post",OperationType.DELETE_ALL);
+    deleteAll.setId(3L);
+    when(indexingOperationDAO.findAllFirst(anyInt())).thenReturn(Collections.singletonList(deleteAll));
+    //When
+    elasticIndexingOperationProcessor.process();
+    //Then
+    verify(auditTrail).audit(eq("delete_all"), isNull(String.class), isNull(String.class), eq("post"), isNull(Integer.class), isNull(String.class), anyLong());
+    verifyNoMoreInteractions(auditTrail);
+  }
+
 }
 

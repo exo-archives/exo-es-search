@@ -8,20 +8,27 @@ import org.exoplatform.services.log.Log;
  * 10/28/15
  */
 public class ElasticIndexingAuditTrail {
-  private static final Log AUDIT_TRAIL = ExoLogger.getExoLogger("org.exoplatform.indexing.es");
   public static final String REINDEX_ALL = "reindex_all";
+  public static final String DELETE_ALL  = "delete_all";
+  private static final Log   AUDIT_TRAIL = ExoLogger.getExoLogger("org.exoplatform.indexing.es");
 
-  public void audit(String action, String entityId, String index, String type, Integer httpStatusCode, String message, long executionTime) {
+  public void audit(String action,
+                    String entityId,
+                    String index,
+                    String type,
+                    Integer httpStatusCode,
+                    String message,
+                    long executionTime) {
     AUDIT_TRAIL.info("{};{};{};{};{};{};{}", action, entityId, index, type, httpStatusCode, message, executionTime);
   }
 
   public void logRejectedDocument(String action,
-                           String entityId,
-                           String index,
-                           String type,
-                           int httpStatusCode,
-                           String message,
-                           long executionTime) {
+                                  String entityId,
+                                  String index,
+                                  String type,
+                                  int httpStatusCode,
+                                  String message,
+                                  long executionTime) {
     AUDIT_TRAIL.error("{};{};{};{};{};{};{}", action, entityId, index, type, httpStatusCode, message, executionTime);
   }
 }

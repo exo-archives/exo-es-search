@@ -275,6 +275,9 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
                                 Map<OperationType, Map<String, List<IndexingOperation>>> indexingQueueSorted) {
     // Remove the type (= remove all documents of this type) and recreate it
     ElasticIndexingServiceConnector connector = (ElasticIndexingServiceConnector) getConnectors().get(indexingOperation.getEntityType());
+    // log in Audit Trail
+    auditTrail.audit(ElasticIndexingAuditTrail.DELETE_ALL, null, null, connector.getType(), null, null, 0);
+    // Call ES
     elasticIndexingClient.sendDeleteTypeRequest(connector.getIndex(), connector.getType());
     elasticIndexingClient.sendCreateTypeRequest(connector.getIndex(), connector.getType(), connector.getMapping());
     // Remove all useless CUD operation that was plan before this delete all

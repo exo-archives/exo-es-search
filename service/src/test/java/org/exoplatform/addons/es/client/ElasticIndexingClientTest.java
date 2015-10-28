@@ -181,11 +181,6 @@ public class ElasticIndexingClientTest {
   }
 
   @Test
-  public void sendDeleteAll_whateverTheResult_audit() throws IOException {
-    //TODO
-  }
-
-  @Test
   public void sendBulkRequest_ifLoggerLevelError_noCallToAudit() throws IOException {
     //TODO
   }
