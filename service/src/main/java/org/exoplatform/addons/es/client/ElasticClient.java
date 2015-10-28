@@ -1,20 +1,23 @@
 /* 
-* Copyright (C) 2003-2015 eXo Platform SAS.
-*
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* along with this program. If not, see http://www.gnu.org/licenses/ .
-*/
+ * Copyright (C) 2003-2015 eXo Platform SAS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see http://www.gnu.org/licenses/ .
+ */
 package org.exoplatform.addons.es.client;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -26,26 +29,23 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 /**
- * Created by The eXo Platform SAS
- * Author : Thibault Clement
- * tclement@exoplatform.com
- * 10/16/15
+ * Created by The eXo Platform SAS Author : Thibault Clement
+ * tclement@exoplatform.com 10/16/15
  */
 public abstract class ElasticClient {
 
   private static final String ES_INDEX_CLIENT_DEFAULT = "http://127.0.0.1:9200";
 
-  private static final Log LOG = ExoLogger.getExoLogger(ElasticClient.class);
+  private static final Log    LOG                     = ExoLogger.getExoLogger(ElasticClient.class);
 
-  protected String urlClient;
-  protected HttpClient client;
+  protected String            urlClient;
+
+  protected HttpClient        client;
 
   public ElasticClient() {
     this.client = getHttpClient();
@@ -53,25 +53,20 @@ public abstract class ElasticClient {
   }
 
   String sendHttpPostRequest(String url, String content) {
-
     String response;
 
     try {
       HttpPost httpTypeRequest = new HttpPost(url);
       httpTypeRequest.setEntity(new StringEntity(content, "UTF-8"));
       response = handleHttpResponse(client.execute(httpTypeRequest));
-
       LOG.debug("Sent request to ES:\n Method = POST \nURI =  {} \nContent = {}", url, content);
-
     } catch (IOException e) {
-      throw
-          new ElasticClientException(e);
+      throw new ElasticClientException(e);
     }
     return response;
   }
 
-  String sendHttpDeleteRequest (String url) {
-
+  String sendHttpDeleteRequest(String url) {
     String response;
 
     try {
@@ -87,9 +82,8 @@ public abstract class ElasticClient {
   }
 
   /**
-   * Handle Http response receive from ES
-   * Log an INFO if the return status code is 200
-   * Log an ERROR if the return code is different from 200
+   * Handle Http response receive from ES Log an INFO if the return status code
+   * is 200 Log an ERROR if the return code is different from 200
    *
    * @param httpResponse The Http Response to handle
    */
@@ -99,7 +93,7 @@ public abstract class ElasticClient {
     String response = IOUtils.toString(is, "UTF-8");
 
     if (httpResponse.getStatusLine().getStatusCode() != 200) {
-      //TODO manage error
+      // TODO manage error
       LOG.error("Error when trying to send request to ES. The reason is: {}", response);
     } else {
       LOG.debug("Success request to ES: {}", response);
@@ -111,13 +105,15 @@ public abstract class ElasticClient {
   }
 
   private HttpClient getHttpClient() {
-    //Check if Basic Authentication need to be used
+    // Check if Basic Authentication need to be used
     if (StringUtils.isNotBlank(getEsUsernameProperty())) {
       DefaultHttpClient httpClient = new DefaultHttpClient();
-      httpClient.getCredentialsProvider().setCredentials(
-          new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT),
-          new UsernamePasswordCredentials(getEsUsernameProperty(), getEsPasswordProperty()));
-      LOG.debug("Basic authentication for ES activated with username = {} and password = {}",getEsUsernameProperty(), getEsPasswordProperty());
+      httpClient.getCredentialsProvider().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT),
+                                                         new UsernamePasswordCredentials(getEsUsernameProperty(),
+                                                                                         getEsPasswordProperty()));
+      LOG.debug("Basic authentication for ES activated with username = {} and password = {}",
+                getEsUsernameProperty(),
+                getEsPasswordProperty());
       return httpClient;
     } else {
       LOG.debug("Basic authentication for ES not activated");
@@ -130,4 +126,3 @@ public abstract class ElasticClient {
   protected abstract String getEsPasswordProperty();
 
 }
-

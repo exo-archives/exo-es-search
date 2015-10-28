@@ -25,6 +25,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.internal.InternalNode;
 import org.elasticsearch.rest.RestController;
 import org.elasticsearch.test.ElasticsearchIntegrationTest;
+import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.junit.After;
 import org.junit.Before;
@@ -78,7 +79,7 @@ public class AbstractIntegrationTest extends ElasticsearchIntegrationTest {
     PropertyManager.setProperty("exo.es.index.server.url", url);
     PropertyManager.setProperty("exo.es.search.server.url", url);
 
-    elasticIndexingClient = new ElasticIndexingClient();
+    elasticIndexingClient = new ElasticIndexingClient(new ElasticIndexingAuditTrail());
     elasticSearchingClient = new ElasticSearchingClient();
   }
 

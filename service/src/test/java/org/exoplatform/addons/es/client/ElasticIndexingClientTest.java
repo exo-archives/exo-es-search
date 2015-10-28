@@ -16,14 +16,19 @@
 */
 package org.exoplatform.addons.es.client;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
+
+import java.io.IOException;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
-import org.exoplatform.commons.utils.PropertyManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,10 +38,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.io.IOException;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import org.exoplatform.commons.utils.PropertyManager;
 
 /**
  * Created by The eXo Platform SAS
@@ -46,24 +48,19 @@ import static org.mockito.Mockito.*;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ElasticIndexingClientTest {
-
   private ElasticIndexingClient elasticIndexingClient;
-
   @Mock
   private HttpClient httpClient;
-
   @Mock
   private HttpResponse httpResponse;
-
   @Mock
   private StatusLine statusLine;
-
+  @Mock
+  private ElasticIndexingAuditTrail auditTrail;
   @Mock
   private HttpEntity httpEntity;
-
   @Captor
   private ArgumentCaptor<HttpPost> httpPostRequestCaptor;
-
   @Captor
   private ArgumentCaptor<HttpDelete> httpDeleteRequestCaptor;
 
@@ -72,7 +69,7 @@ public class ElasticIndexingClientTest {
   public void initMock() throws IOException {
     MockitoAnnotations.initMocks(this);
     PropertyManager.setProperty("exo.es.index.server.url", "http://127.0.0.1:9200");
-    elasticIndexingClient = new ElasticIndexingClient();
+    elasticIndexingClient = new ElasticIndexingClient(auditTrail);
     elasticIndexingClient.client = httpClient;
   }
 
@@ -133,6 +130,12 @@ public class ElasticIndexingClientTest {
 
     //Given
     initHttpSuccessRequest();
+    String response = "{\"took\":15," +
+        "\"errors\":true," +
+        "\"items\":[" +
+        "{\"index\":{\"_index\":\"test\",\"_type\":\"type1\",\"_id\":\"1\",\"_version\":3,\"status\":200}}" +
+        "]}";
+    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream(response, "UTF-8"));
 
     //When
     elasticIndexingClient.sendCUDRequest("FakeBulkRequest");
@@ -151,7 +154,45 @@ public class ElasticIndexingClientTest {
     when(httpResponse.getStatusLine()).thenReturn(statusLine);
     when(statusLine.getStatusCode()).thenReturn(200);
     when(httpResponse.getEntity()).thenReturn(httpEntity);
-    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream("Success", "UTF-8") );
+    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream("Success", "UTF-8"));
+  }
+
+  @Test
+  public void sendBulkRequest_onError_logErrors() throws IOException {
+    //Given
+    String response = "{\"took\":15," +
+        "\"errors\":true," +
+        "\"items\":[" +
+        "{\"index\":{\"_index\":\"test\",\"_type\":\"type1\",\"_id\":\"1\",\"_version\":3,\"status\":200}}," +
+        "{\"delete\":{\"_index\":\"test\",\"_type\":\"type1\",\"_id\":\"2\",\"_version\":1,\"status\":404,\"found\":false}}," +
+        "{\"create\":{\"_index\":\"test\",\"_type\":\"type1\",\"_id\":\"3\",\"status\":409,\"error\":\"DocumentAlreadyExistsException[[test][4] [type1][3]: document already exists]\"}}," +
+        "{\"update\":{\"_index\":\"index1\",\"_type\":\"type1\",\"_id\":\"1\",\"status\":404,\"error\":\"DocumentMissingException[[index1][-1] [type1][1]: document missing]\"}}" +
+        "]}";
+    initHttpSuccessRequest();
+    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream(response, "UTF-8"));
+    //When
+    elasticIndexingClient.sendCUDRequest("myBulk");
+    //Then
+    verify(auditTrail).audit(eq("index"), eq("1"), eq("test"), eq("type1"), eq(HttpStatus.SC_OK), isNull(String.class), anyLong());
+    verify(auditTrail).logRejectedDocument(eq("delete"), eq("2"), eq("test"), eq("type1"), eq(HttpStatus.SC_NOT_FOUND), isNull(String.class), anyLong());
+    verify(auditTrail).logRejectedDocument(eq("create"), eq("3"), eq("test"), eq("type1"), eq(HttpStatus.SC_CONFLICT), eq("DocumentAlreadyExistsException[[test][4] [type1][3]: document already exists]"), anyLong());
+    verify(auditTrail).logRejectedDocument(eq("update"), eq("1"), eq("index1"), eq("type1"), eq(HttpStatus.SC_NOT_FOUND), eq("DocumentMissingException[[index1][-1] [type1][1]: document missing]"), anyLong());
+    verifyNoMoreInteractions(auditTrail);
+  }
+
+  @Test
+  public void sendReindexAll_whateverTheResult_audit() throws IOException {
+    //TODO
+  }
+
+  @Test
+  public void sendDeleteAll_whateverTheResult_audit() throws IOException {
+    //TODO
+  }
+
+  @Test
+  public void sendBulkRequest_ifLoggerLevelError_noCallToAudit() throws IOException {
+    //TODO
   }
 }
 

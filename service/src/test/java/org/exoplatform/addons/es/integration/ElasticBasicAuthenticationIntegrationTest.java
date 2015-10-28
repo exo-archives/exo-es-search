@@ -26,6 +26,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.internal.InternalNode;
 import org.elasticsearch.plugins.PluginsService;
 import org.elasticsearch.rest.RestController;
+import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,7 +59,7 @@ public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrati
     addBasicAuthenticationProperties();
     //Then, override clients with authentication
     elasticSearchingClient = new ElasticSearchingClient();
-    elasticIndexingClient = new ElasticIndexingClient();
+    elasticIndexingClient = new ElasticIndexingClient(new ElasticIndexingAuditTrail());
 
     Identity identity = new Identity("TCL");
     ConversationState.setCurrent(new ConversationState(identity));
@@ -87,7 +88,7 @@ public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrati
     //Change the username properties to a wrong user
     PropertyManager.setProperty("exo.es.index.server.username", "badUser");
     //Get elasticIndexingClient with latest Properties
-    elasticIndexingClient = new ElasticIndexingClient();
+    elasticIndexingClient = new ElasticIndexingClient(new ElasticIndexingAuditTrail());
     assertFalse(indexExists("blog"));
     //When
     elasticIndexingClient.sendCreateIndexRequest("blog", "");
@@ -102,7 +103,7 @@ public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrati
     //Given
     PropertyManager.setProperty("exo.es.index.server.password", "badPassword");
     //Get elasticIndexingClient with latest Properties
-    elasticIndexingClient = new ElasticIndexingClient();
+    elasticIndexingClient = new ElasticIndexingClient(new ElasticIndexingAuditTrail());
     assertFalse(indexExists("blog"));
     //When
     elasticIndexingClient.sendCreateIndexRequest("blog", "");
