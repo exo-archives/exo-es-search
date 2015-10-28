@@ -16,6 +16,8 @@
 */
 package org.exoplatform.addons.es.index;
 
+import org.apache.http.HttpStatus;
+import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
 import org.exoplatform.addons.es.dao.IndexingOperationDAO;
 import org.exoplatform.addons.es.domain.IndexingOperation;
 import org.exoplatform.addons.es.domain.OperationType;
@@ -30,11 +32,16 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.io.IOException;
 import java.text.ParseException;
 
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /**
  * Created by The eXo Platform SAS
@@ -48,10 +55,8 @@ public class QueueIndexingServiceTest {
   //Naming Convention Used: methodUnderTest_conditionEncounter_resultExpected
 
   private QueueIndexingService queueIndexingService;
-
   @Mock
   private IndexingOperationDAO indexingOperationDAO;
-
   @Captor
   private ArgumentCaptor<String> stringCaptor;
 
@@ -192,6 +197,5 @@ public class QueueIndexingServiceTest {
     //queueIndexingService.addToIndexingQueue("post", null, ElasticIndexingService.CREATE);
     //Then
   }
-
 }
 

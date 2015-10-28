@@ -1,14 +1,15 @@
 package org.exoplatform.addons.es.index.impl;
 
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
+
 import org.exoplatform.addons.es.dao.IndexingOperationDAO;
 import org.exoplatform.addons.es.domain.IndexingOperation;
 import org.exoplatform.addons.es.domain.OperationType;
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-
-import java.util.List;
 
 /**
  * Created by The eXo Platform SAS

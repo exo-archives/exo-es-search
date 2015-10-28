@@ -22,10 +22,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,7 +62,8 @@ public class ElasticOperationProcessorTest {
 
   @Mock
   private IndexingOperationDAO indexingOperationDAO;
-
+  @Mock
+  private ElasticIndexingAuditTrail auditTrail;
   @Mock
   private ElasticIndexingClient elasticIndexingClient;
 
@@ -73,7 +76,7 @@ public class ElasticOperationProcessorTest {
   @Before
   public void initMocks() {
     MockitoAnnotations.initMocks(this);
-    elasticIndexingOperationProcessor = new ElasticIndexingOperationProcessor(indexingOperationDAO, elasticIndexingClient, elasticContentRequestBuilder);
+    elasticIndexingOperationProcessor = new ElasticIndexingOperationProcessor(indexingOperationDAO, elasticIndexingClient, elasticContentRequestBuilder, auditTrail);
     initElasticServiceConnector();
   }
 
@@ -437,8 +440,8 @@ public class ElasticOperationProcessorTest {
     orderClient.verify(elasticIndexingClient).sendDeleteTypeRequest(elasticIndexingServiceConnector.getIndex(),
         elasticIndexingServiceConnector.getType());
     orderClient.verify(elasticIndexingClient).sendCreateTypeRequest(elasticIndexingServiceConnector.getIndex(),
-            elasticIndexingServiceConnector.getType(),
-            elasticIndexingServiceConnector.getMapping());
+        elasticIndexingServiceConnector.getType(),
+        elasticIndexingServiceConnector.getMapping());
     //No CUD operation
     verifyNoMoreInteractions(elasticIndexingClient);
   }
@@ -537,6 +540,20 @@ public class ElasticOperationProcessorTest {
     verify(indexingOperationDAO, times(2)).createAll(captor.capture());
     assertThat(captor.getAllValues().get(0), hasSize(2));
     assertThat(captor.getAllValues().get(1), hasSize(1));
+  }
+
+  @Test
+  public void reindexAll_whateverTheResult_addToAuditTrail() throws IOException {
+    //Given
+    elasticIndexingOperationProcessor.getConnectors().put("post", elasticIndexingServiceConnector);
+    IndexingOperation reindexAll = new IndexingOperation(null,"post",OperationType.REINDEX_ALL);
+    reindexAll.setId(3L);
+    when(indexingOperationDAO.findAllFirst(anyInt())).thenReturn(Collections.singletonList(reindexAll));
+    //When
+    elasticIndexingOperationProcessor.process();
+    //Then
+    verify(auditTrail).audit(eq("reindex_all"), isNull(String.class), isNull(String.class), eq("post"), isNull(Integer.class), isNull(String.class), anyLong());
+    verifyNoMoreInteractions(auditTrail);
   }
 
 }

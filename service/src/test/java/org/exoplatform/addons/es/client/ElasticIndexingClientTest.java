@@ -181,11 +181,6 @@ public class ElasticIndexingClientTest {
   }
 
   @Test
-  public void sendReindexAll_whateverTheResult_audit() throws IOException {
-    //TODO
-  }
-
-  @Test
   public void sendDeleteAll_whateverTheResult_audit() throws IOException {
     //TODO
   }

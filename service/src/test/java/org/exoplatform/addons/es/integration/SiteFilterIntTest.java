@@ -36,6 +36,7 @@ import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.FileSystemResourceAccessor;
 
+import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -108,7 +109,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
     //IndexService
     dao = new IndexingOperationDAOImpl();
     ElasticContentRequestBuilder builder = new ElasticContentRequestBuilder();
-    indexingOperationProcessor = new ElasticIndexingOperationProcessor(dao, elasticIndexingClient, builder);
+    indexingOperationProcessor = new ElasticIndexingOperationProcessor(dao, elasticIndexingClient, builder, new ElasticIndexingAuditTrail());
     indexingOperationProcessor.addConnector(testConnector);
 
     //Search connector

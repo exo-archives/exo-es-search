@@ -18,6 +18,7 @@ package org.exoplatform.addons.es.index.impl;
 
 import org.apache.commons.lang.StringUtils;
 import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
+import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
 import org.exoplatform.addons.es.client.ElasticIndexingClient;
 import org.exoplatform.addons.es.dao.IndexingOperationDAO;
 import org.exoplatform.addons.es.domain.IndexingOperation;
@@ -49,14 +50,17 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
   private final IndexingOperationDAO         indexingOperationDAO;
   private final ElasticIndexingClient        elasticIndexingClient;
   private final ElasticContentRequestBuilder elasticContentRequestBuilder;
+  private final ElasticIndexingAuditTrail    auditTrail;
   private Integer                            batchNumber                         = BATCH_NUMBER_DEFAULT;
   private Integer                            requestSizeLimit                    = REQUEST_SIZE_LIMIT_DEFAULT;
   private int                                reindexBatchSize                    = REINDEXING_BATCH_SIZE_DEFAULT_VALUE;
 
   public ElasticIndexingOperationProcessor(IndexingOperationDAO indexingOperationDAO,
                                            ElasticIndexingClient elasticIndexingClient,
-                                           ElasticContentRequestBuilder elasticContentRequestBuilder) {
+                                           ElasticContentRequestBuilder elasticContentRequestBuilder,
+                                           ElasticIndexingAuditTrail auditTrail) {
     this.indexingOperationDAO = indexingOperationDAO;
+    this.auditTrail = auditTrail;
     this.elasticIndexingClient = elasticIndexingClient;
     this.elasticContentRequestBuilder = elasticContentRequestBuilder;
     if (StringUtils.isNotBlank(PropertyManager.getProperty(BATCH_NUMBER_PROPERTY_NAME))) {
@@ -295,6 +299,7 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
       for (String entityType : indexingQueueSorted.get(OperationType.REINDEX_ALL).keySet()) {
         if (indexingQueueSorted.get(OperationType.REINDEX_ALL).containsKey(entityType)) {
           for (IndexingOperation indexingOperation : indexingQueueSorted.get(OperationType.REINDEX_ALL).get(entityType)) {
+            long startTime = System.currentTimeMillis();
             // 1- Delete all documents in ES (and purge the indexing queue)
             indexingOperationDAO.create(new IndexingOperation(null, entityType, OperationType.DELETE_ALL));
             // 2- Get all the documents ID
@@ -315,6 +320,8 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
                 offset += reindexBatchSize;
               }
             } while (numberIndexed == reindexBatchSize);
+            // 4- log in Audit Trail
+            auditTrail.audit(ElasticIndexingAuditTrail.REINDEX_ALL, null, null, entityType, null, null, (System.currentTimeMillis()-startTime));
           }
         }
       }
