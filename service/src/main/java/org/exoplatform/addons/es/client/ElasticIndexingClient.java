@@ -16,18 +16,18 @@
  */
 package org.exoplatform.addons.es.client;
 
-import org.apache.commons.lang.StringUtils;
+import java.util.Map;
+import java.util.Set;
 
-import org.exoplatform.commons.utils.PropertyManager;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
+import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 
-import java.util.Map;
-import java.util.Set;
+import org.exoplatform.commons.utils.PropertyManager;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS Author : Thibault Clement
@@ -59,14 +59,18 @@ public class ElasticIndexingClient extends ElasticClient {
    * Send request to ES to create a new index
    */
   public void sendCreateIndexRequest(String index, String settings) {
-    sendHttpPostRequest(urlClient + "/" + index + "/", settings);
+    long startTime = System.currentTimeMillis();
+    ElasticResponse response = sendHttpPostRequest(urlClient + "/" + index + "/", settings);
+    auditTrail.audit(ElasticIndexingAuditTrail.CREATE_INDEX, null, index, null, response.getStatusCode(), response.getMessage(), (System.currentTimeMillis()-startTime));
   }
 
   /**
    * Send request to ES to create a new type
    */
   public void sendCreateTypeRequest(String index, String type, String mappings) {
-    sendHttpPostRequest(urlClient + "/" + index + "/_mapping/" + type, mappings);
+    long startTime = System.currentTimeMillis();
+    ElasticResponse response = sendHttpPostRequest(urlClient + "/" + index + "/_mapping/" + type, mappings);
+    auditTrail.audit(ElasticIndexingAuditTrail.CREATE_TYPE, null, index, type, response.getStatusCode(), response.getMessage(), (System.currentTimeMillis() - startTime));
   }
 
   /**
@@ -74,7 +78,9 @@ public class ElasticIndexingClient extends ElasticClient {
    * document from a given type
    */
   public void sendDeleteTypeRequest(String index, String type) {
-    sendHttpDeleteRequest(urlClient + "/" + index + "/" + type);
+    long startTime = System.currentTimeMillis();
+    ElasticResponse response = sendHttpDeleteRequest(urlClient + "/" + index + "/" + type);
+    auditTrail.audit(ElasticIndexingAuditTrail.DELETE_TYPE, null, index, type, response.getStatusCode(), response.getMessage(), (System.currentTimeMillis() - startTime));
   }
 
   /**
@@ -85,8 +91,8 @@ public class ElasticIndexingClient extends ElasticClient {
    */
   public void sendCUDRequest(String bulkRequest) {
     long startTime = System.currentTimeMillis();
-    String response = sendHttpPostRequest(urlClient + "/_bulk", bulkRequest);
-    logBulkResponse(response, (System.currentTimeMillis()-startTime));
+    ElasticResponse response = sendHttpPostRequest(urlClient + "/_bulk", bulkRequest);
+    logBulkResponse(response.getMessage(), (System.currentTimeMillis()-startTime));
   }
 
   private void logBulkResponse(String response, long executionTime) {
@@ -103,6 +109,9 @@ public class ElasticIndexingClient extends ElasticClient {
           LOG.error("Unable to parse Bulk response: items is not a JSONArray. items={}", items);
           throw new ElasticClientException("Unable to parse Bulk response: items is not a JSONArray.");
         }
+        //Looping over all the items is required because
+        //in case of error, ES send a response with Status 200 and a flag errors:true
+        //in the JSON message
         for (Object item : ((JSONArray) items).toArray()) {
           if (!(item instanceof JSONObject)) {
             LOG.error("Unable to parse Bulk response: item is not a JSONObject. item={}", item);
@@ -118,17 +127,22 @@ public class ElasticIndexingClient extends ElasticClient {
 
   private void logBulkResponseItem(JSONObject item, long executionTime) {
     for(Map.Entry operation : (Set<Map.Entry>)item.entrySet()) {
-      String operationName = (String) operation.getKey();
-      JSONObject operationDetails = (JSONObject) operation.getValue();
-      String index = (String) operationDetails.get("_index");
-      String type = (String) operationDetails.get("_type");
-      String id = (String) operationDetails.get("_id");
-      Long status = (Long) operationDetails.get("status");
-      String error = (String) operationDetails.get("error");
-      if ((status>=200) && (status<=299)) {
-        auditTrail.audit(operationName, id, index, type, status.intValue(), error, executionTime);
-      } else {
-        auditTrail.logRejectedDocument(operationName, id, index, type, status.intValue(), error, executionTime);
+      String operationName = operation.getKey()==null?null:(String) operation.getKey();
+      if (operation.getValue()!=null) {
+        JSONObject operationDetails = (JSONObject) operation.getValue();
+        String index = operationDetails.get("_index")==null?null:(String) operationDetails.get("_index");
+        String type = operationDetails.get("_type")==null?null:(String) operationDetails.get("_type");
+        String id = operationDetails.get("_id")==null?null:(String) operationDetails.get("_id");
+        Long status = operationDetails.get("status")==null?null:(Long) operationDetails.get("status");
+        String error = operationDetails.get("error")==null?null:(String) operationDetails.get("error");
+        Integer httpStatusCode = status==null?null:status.intValue();
+        if (ElasticIndexingAuditTrail.isError(httpStatusCode)) {
+          auditTrail.logRejectedDocumentBulkOperation(operationName, id, index, type, httpStatusCode, error, executionTime);
+        } else {
+          if (auditTrail.isFullLogEnabled()) {
+            auditTrail.logAcceptedBulkOperation(operationName, id, index, type, httpStatusCode, error, executionTime);
+          }
+        }
       }
     }
   }

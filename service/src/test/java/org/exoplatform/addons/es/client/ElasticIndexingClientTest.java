@@ -158,7 +158,7 @@ public class ElasticIndexingClientTest {
   }
 
   @Test
-  public void sendBulkRequest_onError_logErrors() throws IOException {
+  public void sendBulkRequest_forEveryDocument_callAuditTrail() throws IOException {
     //Given
     String response = "{\"took\":15," +
         "\"errors\":true," +
@@ -170,19 +170,76 @@ public class ElasticIndexingClientTest {
         "]}";
     initHttpSuccessRequest();
     when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream(response, "UTF-8"));
+    when(auditTrail.isFullLogEnabled()).thenReturn(true);
     //When
     elasticIndexingClient.sendCUDRequest("myBulk");
     //Then
-    verify(auditTrail).audit(eq("index"), eq("1"), eq("test"), eq("type1"), eq(HttpStatus.SC_OK), isNull(String.class), anyLong());
-    verify(auditTrail).logRejectedDocument(eq("delete"), eq("2"), eq("test"), eq("type1"), eq(HttpStatus.SC_NOT_FOUND), isNull(String.class), anyLong());
-    verify(auditTrail).logRejectedDocument(eq("create"), eq("3"), eq("test"), eq("type1"), eq(HttpStatus.SC_CONFLICT), eq("DocumentAlreadyExistsException[[test][4] [type1][3]: document already exists]"), anyLong());
-    verify(auditTrail).logRejectedDocument(eq("update"), eq("1"), eq("index1"), eq("type1"), eq(HttpStatus.SC_NOT_FOUND), eq("DocumentMissingException[[index1][-1] [type1][1]: document missing]"), anyLong());
+    verify(auditTrail).isFullLogEnabled();
+    verify(auditTrail).logAcceptedBulkOperation(eq("index"), eq("1"), eq("test"), eq("type1"), eq(HttpStatus.SC_OK), isNull(String.class), anyLong());
+    verify(auditTrail).logRejectedDocumentBulkOperation(eq("delete"), eq("2"), eq("test"), eq("type1"), eq(HttpStatus.SC_NOT_FOUND), isNull(String.class), anyLong());
+    verify(auditTrail).logRejectedDocumentBulkOperation(eq("create"), eq("3"), eq("test"), eq("type1"), eq(HttpStatus.SC_CONFLICT), eq("DocumentAlreadyExistsException[[test][4] [type1][3]: document already exists]"), anyLong());
+    verify(auditTrail).logRejectedDocumentBulkOperation(eq("update"), eq("1"), eq("index1"), eq("type1"), eq(HttpStatus.SC_NOT_FOUND), eq("DocumentMissingException[[index1][-1] [type1][1]: document missing]"), anyLong());
     verifyNoMoreInteractions(auditTrail);
   }
 
   @Test
-  public void sendBulkRequest_ifLoggerLevelError_noCallToAudit() throws IOException {
-    //TODO
+  public void createIndex_callAuditTrail() throws IOException {
+    //Given
+    String response = "{\"error\":\"IndexAlreadyExistsException[[profile] already exists]\",\"status\":400}";
+    initHttpSuccessRequest();
+    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream(response, "UTF-8"));
+    when(statusLine.getStatusCode()).thenReturn(400);
+    //When
+    elasticIndexingClient.sendCreateIndexRequest("profile", "mySettings");
+    //Then
+    verify(auditTrail).audit(eq("create_index"), isNull(String.class), eq("profile"), isNull(String.class), eq(HttpStatus.SC_BAD_REQUEST), eq("{\"error\":\"IndexAlreadyExistsException[[profile] already exists]\",\"status\":400}"), anyLong());
+    verifyNoMoreInteractions(auditTrail);
+  }
+
+  @Test
+  public void createType_callAuditTrail() throws IOException {
+    //Given
+    String response = "{\"error\":\"IndexMissingException[[profile] missing]\",\"status\":404}";
+    initHttpSuccessRequest();
+    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream(response, "UTF-8"));
+    when(statusLine.getStatusCode()).thenReturn(404);
+    //When
+    elasticIndexingClient.sendCreateTypeRequest("profile", "profile", "mySettings");
+    //Then
+    verify(auditTrail).audit(eq("create_type"), isNull(String.class), eq("profile"), eq("profile"), eq(HttpStatus.SC_NOT_FOUND), eq("{\"error\":\"IndexMissingException[[profile] missing]\",\"status\":404}"), anyLong());
+    verifyNoMoreInteractions(auditTrail);
+  }
+
+  @Test
+  public void deleteType_callAuditTrail() throws IOException {
+    //Given
+    String response = "{\"error\": \"TypeMissingException[[_all] type[[unknownType]] missing: No index has the type.]\",\"status\": 404}";
+    initHttpSuccessRequest();
+    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream(response, "UTF-8"));
+    when(statusLine.getStatusCode()).thenReturn(404);
+    //When
+    elasticIndexingClient.sendDeleteTypeRequest("profile", "profile");
+    //Then
+    verify(auditTrail).audit(eq("delete_type"), isNull(String.class), eq("profile"), eq("profile"), eq(HttpStatus.SC_NOT_FOUND), eq("{\"error\": \"TypeMissingException[[_all] type[[unknownType]] missing: No index has the type.]\",\"status\": 404}"), anyLong());
+    verifyNoMoreInteractions(auditTrail);
+  }
+
+  @Test
+  public void sendBulkRequest_fullLogNotEnabled_auditTrailNotCalled() throws IOException {
+    //Given
+    String response = "{\"took\":15," +
+        "\"errors\":false," +
+        "\"items\":[" +
+        "{\"index\":{\"_index\":\"test\",\"_type\":\"type1\",\"_id\":\"1\",\"_version\":3,\"status\":200}}" +
+        "]}";
+    initHttpSuccessRequest();
+    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream(response, "UTF-8"));
+    when(auditTrail.isFullLogEnabled()).thenReturn(false);
+    //When
+    elasticIndexingClient.sendCUDRequest("myBulk");
+    //Then
+    verify(auditTrail).isFullLogEnabled();
+    verifyNoMoreInteractions(auditTrail);
   }
 }
 

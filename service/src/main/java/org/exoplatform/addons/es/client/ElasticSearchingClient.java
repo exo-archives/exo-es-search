@@ -30,7 +30,8 @@ public class ElasticSearchingClient extends ElasticClient {
   }
 
   public String sendRequest(String esQuery, String index, String type) {
-    return sendHttpPostRequest(urlClient + "/" + index + "/" + type + "/_search", esQuery);
+    ElasticResponse response = sendHttpPostRequest(urlClient + "/" + index + "/" + type + "/_search", esQuery);
+    return response.getMessage();
   }
 
   @Override

@@ -52,8 +52,8 @@ public abstract class ElasticClient {
     this.urlClient = ES_INDEX_CLIENT_DEFAULT;
   }
 
-  String sendHttpPostRequest(String url, String content) {
-    String response;
+  ElasticResponse sendHttpPostRequest(String url, String content) {
+    ElasticResponse response;
 
     try {
       HttpPost httpTypeRequest = new HttpPost(url);
@@ -66,8 +66,8 @@ public abstract class ElasticClient {
     return response;
   }
 
-  String sendHttpDeleteRequest(String url) {
-    String response;
+  ElasticResponse sendHttpDeleteRequest(String url) {
+    ElasticResponse response;
 
     try {
       HttpDelete httpDeleteRequest = new HttpDelete(url);
@@ -83,25 +83,29 @@ public abstract class ElasticClient {
 
   /**
    * Handle Http response receive from ES Log an INFO if the return status code
-   * is 200 Log an ERROR if the return code is different from 200
+   * is 2xx Log an ERROR if the return code is different from 2xx
    *
    * @param httpResponse The Http Response to handle
    */
-  private String handleHttpResponse(HttpResponse httpResponse) throws IOException {
+  private ElasticResponse handleHttpResponse(HttpResponse httpResponse) throws IOException {
+    String response;
 
-    InputStream is = httpResponse.getEntity().getContent();
-    String response = IOUtils.toString(is, "UTF-8");
+    InputStream is = null;
+    try {
+      is = httpResponse.getEntity().getContent();
+      response = IOUtils.toString(is, "UTF-8");
+    } finally {
+      if (is!=null) {
+        is.close();
+      }
+    }
 
-    if (httpResponse.getStatusLine().getStatusCode() != 200) {
-      // TODO manage error
+    if (ElasticIndexingAuditTrail.isError(httpResponse.getStatusLine().getStatusCode())) {
       LOG.error("Error when trying to send request to ES. The reason is: {}", response);
     } else {
       LOG.debug("Success request to ES: {}", response);
     }
-
-    is.close();
-
-    return response;
+    return new ElasticResponse(response, httpResponse.getStatusLine().getStatusCode());
   }
 
   private HttpClient getHttpClient() {

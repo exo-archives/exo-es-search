@@ -10,11 +10,20 @@ import org.exoplatform.services.log.Log;
  * 10/28/15
  */
 public class ElasticIndexingAuditTrail {
-  public static final String REINDEX_ALL = "reindex_all";
+  public static final String REINDEX_ALL  = "reindex_all";
+  public static final String DELETE_ALL   = "delete_all";
+  public static final String CREATE_INDEX = "create_index";
+  public static final String CREATE_TYPE  = "create_type";
+  public static final String DELETE_TYPE  = "delete_type";
 
-  public static final String DELETE_ALL  = "delete_all";
+  private static final Log   AUDIT_TRAIL  = ExoLogger.getExoLogger("org.exoplatform.indexing.es");
 
-  private static final Log   AUDIT_TRAIL = ExoLogger.getExoLogger("org.exoplatform.indexing.es");
+  private static final char  SEPARATOR    = ';';
+  private static final String LOG_PATTERN = "{}"+StringUtils.repeat(SEPARATOR+"{}",6);
+
+  static boolean isError(Integer httpStatusCode) {
+    return (httpStatusCode != null) && ((httpStatusCode < 200) || (httpStatusCode > 299));
+  }
 
   public void audit(String action,
                     String entityId,
@@ -23,30 +32,92 @@ public class ElasticIndexingAuditTrail {
                     Integer httpStatusCode,
                     String message,
                     long executionTime) {
-    AUDIT_TRAIL.info("{};{};{};{};{};{};{}",
-                     action,
-                     StringUtils.isBlank(entityId) ? "" : entityId,
-                     StringUtils.isBlank(index) ? "" : index,
-                     StringUtils.isBlank(type) ? "" : type,
-                     httpStatusCode == null ? "" : httpStatusCode,
-                     StringUtils.isBlank(message) ? "" : message,
-                     executionTime);
+    if (isError(httpStatusCode)) {
+      logError(action, entityId, index, type, httpStatusCode, message, executionTime);
+    } else {
+      logInfo(action, entityId, index, type, httpStatusCode, message, executionTime);
+    }
   }
 
-  public void logRejectedDocument(String action,
-                                  String entityId,
-                                  String index,
-                                  String type,
-                                  int httpStatusCode,
-                                  String message,
-                                  long executionTime) {
-    AUDIT_TRAIL.error("{};{};{};{};{};{};{}",
-                      action,
-                      StringUtils.isBlank(entityId) ? "" : entityId,
-                      StringUtils.isBlank(index) ? "" : index,
-                      StringUtils.isBlank(type) ? "" : type,
-                      httpStatusCode,
-                      StringUtils.isBlank(message) ? "" : message,
-                      executionTime);
+  public void logRejectedDocumentBulkOperation(String action,
+                                               String entityId,
+                                               String index,
+                                               String type,
+                                               Integer httpStatusCode,
+                                               String message,
+                                               long executionTime) {
+    logError(action, entityId, index, type, httpStatusCode, message, executionTime);
+  }
+
+  public boolean isFullLogEnabled() {
+    return AUDIT_TRAIL.isDebugEnabled();
+  }
+
+  public void logAcceptedBulkOperation(String action,
+                                       String entityId,
+                                       String index,
+                                       String type,
+                                       Integer httpStatusCode,
+                                       String message,
+                                       long executionTime) {
+    logDebug(action, entityId, index, type, httpStatusCode, message, executionTime);
+  }
+
+  private void logInfo(String action,
+                       String entityId,
+                       String index,
+                       String type,
+                       Integer httpStatusCode,
+                       String message,
+                       long executionTime) {
+    AUDIT_TRAIL.info(LOG_PATTERN,
+        action,
+        StringUtils.isBlank(entityId) ? "" : escape(entityId),
+        StringUtils.isBlank(index) ? "" : escape(index),
+        StringUtils.isBlank(type) ? "" : escape(type),
+        httpStatusCode == null ? "" : httpStatusCode,
+        StringUtils.isBlank(message) ? "" : escape(message),
+        executionTime);
+  }
+
+  private void logError(String action,
+                        String entityId,
+                        String index,
+                        String type,
+                        Integer httpStatusCode,
+                        String message,
+                        long executionTime) {
+    AUDIT_TRAIL.error(LOG_PATTERN,
+        action,
+        StringUtils.isBlank(entityId) ? "" : escape(entityId),
+        StringUtils.isBlank(index) ? "" : escape(index),
+        StringUtils.isBlank(type) ? "" : escape(type),
+        httpStatusCode == null ? "" : httpStatusCode,
+        StringUtils.isBlank(message) ? "" : escape(message),
+        executionTime);
+  }
+
+  private void logDebug(String action,
+                        String entityId,
+                        String index,
+                        String type,
+                        Integer httpStatusCode,
+                        String message,
+                        long executionTime) {
+    AUDIT_TRAIL.debug(LOG_PATTERN,
+        action,
+        StringUtils.isBlank(entityId) ? "" : escape(entityId),
+        StringUtils.isBlank(index) ? "" : escape(index),
+        StringUtils.isBlank(type) ? "" : escape(type),
+        httpStatusCode == null ? "" : httpStatusCode,
+        StringUtils.isBlank(message) ? "" : escape(message),
+        executionTime);
+  }
+
+  private String escape(String message) {
+    if (message == null) {
+      return null;
+    }
+    return message.replace(SEPARATOR, ',');
   }
 }
