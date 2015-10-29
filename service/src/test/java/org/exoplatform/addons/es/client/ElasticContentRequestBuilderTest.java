@@ -25,6 +25,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -114,7 +115,7 @@ public class ElasticContentRequestBuilderTest {
     JSONArray permissions = (JSONArray) parsedRequestLine2.get("permissions");
     assertTrue(permissions.contains("vizir"));
     assertTrue(permissions.contains("goleador"));
-    assertThat((Long) parsedRequestLine2.get("lastUpdatedDate"), is(601146000000L));
+    assertThat((Long) parsedRequestLine2.get("lastUpdatedDate"), is(601171200000L));
     assertThat((String) parsedRequestLine2.get("url"), is("MyUrlBaby"));
   }
 
@@ -140,7 +141,7 @@ public class ElasticContentRequestBuilderTest {
     JSONArray permissions = (JSONArray) parsedRequestLine2.get("permissions");
     assertTrue(permissions.contains("vizir"));
     assertTrue(permissions.contains("goleador"));
-    assertThat((Long) parsedRequestLine2.get("lastUpdatedDate"), is(601146000000L));
+    assertThat((Long) parsedRequestLine2.get("lastUpdatedDate"), is(601171200000L));
     assertThat((String) parsedRequestLine2.get("url"), is("MyUrlBaby"));
   }
 
@@ -155,6 +156,7 @@ public class ElasticContentRequestBuilderTest {
 
   private void initDocumentMock() throws ParseException {
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+    sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
     when(document.getLastUpdatedDate()).thenReturn(sdf.parse("19/01/1989"));
     when(document.getId()).thenReturn("1");
     when(document.getUrl()).thenReturn("MyUrlBaby");

@@ -101,6 +101,5 @@ public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
     //Then
     assertFalse(typeExists("type1"));
   }
-
 }
 
