@@ -27,6 +27,7 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -53,7 +54,7 @@ public abstract class ElasticClient {
     this.urlClient = ES_INDEX_CLIENT_DEFAULT;
   }
 
-  ElasticResponse sendHttpPostRequest(String url, String content) {
+  protected ElasticResponse sendHttpPostRequest(String url, String content) {
     ElasticResponse response;
 
     try {
@@ -61,21 +62,34 @@ public abstract class ElasticClient {
       httpTypeRequest.setEntity(new StringEntity(content, "UTF-8"));
       response = handleHttpResponse(client.execute(httpTypeRequest));
       LOG.debug("Sent request to ES:\n Method = POST \nURI =  {} \nContent = {}", url, content);
+      logResultDependingOnStatusCode(url, response);
     } catch (IOException e) {
       throw new ElasticClientException(e);
     }
     return response;
   }
 
-  ElasticResponse sendHttpDeleteRequest(String url) {
+  protected ElasticResponse sendHttpDeleteRequest(String url) {
     ElasticResponse response;
 
     try {
       HttpDelete httpDeleteRequest = new HttpDelete(url);
       response = handleHttpResponse(client.execute(httpDeleteRequest));
-
       LOG.debug("Sent request to ES:\n Method = DELETE \nURI =  {}", url);
+      logResultDependingOnStatusCode(url, response);
+    } catch (IOException e) {
+      throw new ElasticClientException(e);
+    }
+    return response;
+  }
 
+  protected ElasticResponse sendHttpGetRequest(String url) {
+    ElasticResponse response;
+
+    try {
+      HttpGet httpGetRequest = new HttpGet(url);
+      response = handleHttpResponse(client.execute(httpGetRequest));
+      LOG.debug("Sent request to ES:\n Method = GET \nURI =  {}", url);
     } catch (IOException e) {
       throw new ElasticClientException(e);
     }
@@ -89,27 +103,38 @@ public abstract class ElasticClient {
    * @param httpResponse The Http Response to handle
    */
   private ElasticResponse handleHttpResponse(HttpResponse httpResponse) throws IOException {
-    String response;
-
+    String response = null;
     InputStream is = null;
-    try {
-      is = httpResponse.getEntity().getContent();
-      response = IOUtils.toString(is, "UTF-8");
-    } finally {
-      if (is!=null) {
-        is.close();
+
+    if (httpResponse.getEntity()!=null) {
+      try {
+        is = httpResponse.getEntity().getContent();
+        response = IOUtils.toString(is, "UTF-8");
+      } finally {
+        if (is != null) {
+          is.close();
+        }
       }
     }
 
     if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
       throw new ElasticClientAuthenticationException();
     }
-    if (ElasticIndexingAuditTrail.isError(httpResponse.getStatusLine().getStatusCode())) {
-      LOG.error("Error when trying to send request to ES. The reason is: {}", response);
-    } else {
-      LOG.debug("Success request to ES: {}", response);
-    }
     return new ElasticResponse(response, httpResponse.getStatusLine().getStatusCode());
+  }
+
+  private void logResultDependingOnStatusCode(String url, ElasticResponse response) {
+    if (ElasticIndexingAuditTrail.isError(response.getStatusCode())) {
+      LOG.error("Error when trying to send request to ES. Url: {}, StatusCode: {}, Message: {}",
+          url,
+          response.getStatusCode(),
+          response.getMessage());
+    } else {
+      LOG.debug("Success request to ES. Url: {}, StatusCode: {}, Message: {}",
+          url,
+          response.getStatusCode(),
+          response.getMessage());
+    }
   }
 
   private HttpClient getHttpClient() {

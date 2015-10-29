@@ -28,18 +28,16 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import org.exoplatform.commons.utils.PropertyManager;
+import org.mockito.stubbing.Answer;
 
 /**
  * Created by The eXo Platform SAS
@@ -53,17 +51,13 @@ public class ElasticIndexingClientTest {
   @Mock
   private HttpClient httpClient;
   @Mock
-  private HttpResponse httpResponse;
-  @Mock
-  private StatusLine statusLine;
-  @Mock
   private ElasticIndexingAuditTrail auditTrail;
-  @Mock
-  private HttpEntity httpEntity;
   @Captor
   private ArgumentCaptor<HttpPost> httpPostRequestCaptor;
   @Captor
   private ArgumentCaptor<HttpDelete> httpDeleteRequestCaptor;
+  @Captor
+  private ArgumentCaptor<HttpGet> httpGetRequestCaptor;
 
 
   @Before
@@ -76,86 +70,54 @@ public class ElasticIndexingClientTest {
 
   @Test
   public void sendCreateIndexRequest_IfCreateNewIndex_requestShouldBeSentToElastic() throws IOException {
-
     //Given
-    initHttpSuccessRequest();
-
+    initClientMock(404, 200, "Success");
     //When
     elasticIndexingClient.sendCreateIndexRequest("index", "fakeSettings");
-
     //Then
-    verify(httpClient, times(1)).execute(httpPostRequestCaptor.capture());
-    //Check the endpoint
-    assertEquals("http://127.0.0.1:9200/index/", httpPostRequestCaptor.getValue().getURI().toString());
-    //Check the content
-    assertEquals("fakeSettings", IOUtils.toString(httpPostRequestCaptor.getValue().getEntity().getContent()));
-
+    verify(httpClient, times(2)).execute(any(HttpRequestBase.class));
   }
 
   @Test
   public void sendCreateTypeRequest_IfCreateNewType_requestShouldBeSentToElastic() throws IOException {
-
     //Given
-    initHttpSuccessRequest();
-
+    initClientMock(999, 200, "Success");
     //When
     elasticIndexingClient.sendCreateTypeRequest("index", "type", "fakeMappings");
-
-
     //Then
-    verify(httpClient, times(1)).execute(httpPostRequestCaptor.capture());
-    //Check the endpoint
+    verify(httpClient).execute(httpPostRequestCaptor.capture());
     assertEquals("http://127.0.0.1:9200/index/_mapping/type", httpPostRequestCaptor.getValue().getURI().toString());
-    //Check the content
     assertEquals("fakeMappings", IOUtils.toString(httpPostRequestCaptor.getValue().getEntity().getContent()));
 
   }
 
   @Test
   public void sendDeleteTypeRequest_IfCreateNewType_deleteRequestShouldBeSentToElastic() throws IOException {
-
     //Given
-    initHttpSuccessRequest();
-
+    initClientMock(999, 200, "Success");
     //When
     elasticIndexingClient.sendDeleteTypeRequest("index", "type");
-
     //Then
-    verify(httpClient, times(1)).execute(httpDeleteRequestCaptor.capture());
-    //Check the endpoint
+    verify(httpClient).execute(httpDeleteRequestCaptor.capture());
     assertEquals("http://127.0.0.1:9200/index/type", httpDeleteRequestCaptor.getValue().getURI().toString());
   }
 
   @Test
   public void sendCUDRequest_IfCUDOperation_bulkRequestShouldBeSentToElastic() throws IOException {
-
     //Given
-    initHttpSuccessRequest();
     String response = "{\"took\":15," +
         "\"errors\":true," +
         "\"items\":[" +
         "{\"index\":{\"_index\":\"test\",\"_type\":\"type1\",\"_id\":\"1\",\"_version\":3,\"status\":200}}" +
         "]}";
-    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream(response, "UTF-8"));
-
+    initClientMock(999, 200, response);
     //When
     elasticIndexingClient.sendCUDRequest("FakeBulkRequest");
-
     //Then
-    verify(httpClient, times(1)).execute(httpPostRequestCaptor.capture());
-    //Check the endpoint
+    verify(httpClient).execute(httpPostRequestCaptor.capture());
     assertEquals("http://127.0.0.1:9200/_bulk", httpPostRequestCaptor.getValue().getURI().toString());
-    //Check the content
     assertEquals("FakeBulkRequest", IOUtils.toString(httpPostRequestCaptor.getValue().getEntity().getContent()));
 
-  }
-
-  private void initHttpSuccessRequest() throws IOException {
-    when(httpClient.execute(any(HttpPost.class))).thenReturn(httpResponse);
-    when(httpResponse.getStatusLine()).thenReturn(statusLine);
-    when(statusLine.getStatusCode()).thenReturn(200);
-    when(httpResponse.getEntity()).thenReturn(httpEntity);
-    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream("Success", "UTF-8"));
   }
 
   @Test
@@ -169,8 +131,7 @@ public class ElasticIndexingClientTest {
         "{\"create\":{\"_index\":\"test\",\"_type\":\"type1\",\"_id\":\"3\",\"status\":409,\"error\":\"DocumentAlreadyExistsException[[test][4] [type1][3]: document already exists]\"}}," +
         "{\"update\":{\"_index\":\"index1\",\"_type\":\"type1\",\"_id\":\"1\",\"status\":404,\"error\":\"DocumentMissingException[[index1][-1] [type1][1]: document missing]\"}}" +
         "]}";
-    initHttpSuccessRequest();
-    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream(response, "UTF-8"));
+    initClientMock(999, 200, response);
     when(auditTrail.isFullLogEnabled()).thenReturn(true);
     //When
     elasticIndexingClient.sendCUDRequest("myBulk");
@@ -187,9 +148,7 @@ public class ElasticIndexingClientTest {
   public void createIndex_callAuditTrail() throws IOException {
     //Given
     String response = "{\"error\":\"IndexAlreadyExistsException[[profile] already exists]\",\"status\":400}";
-    initHttpSuccessRequest();
-    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream(response, "UTF-8"));
-    when(statusLine.getStatusCode()).thenReturn(400);
+    initClientMock(404, 400, response);
     //When
     elasticIndexingClient.sendCreateIndexRequest("profile", "mySettings");
     //Then
@@ -201,9 +160,7 @@ public class ElasticIndexingClientTest {
   public void createType_callAuditTrail() throws IOException {
     //Given
     String response = "{\"error\":\"IndexMissingException[[profile] missing]\",\"status\":404}";
-    initHttpSuccessRequest();
-    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream(response, "UTF-8"));
-    when(statusLine.getStatusCode()).thenReturn(404);
+    initClientMock(999, 404, response);
     //When
     elasticIndexingClient.sendCreateTypeRequest("profile", "profile", "mySettings");
     //Then
@@ -215,9 +172,7 @@ public class ElasticIndexingClientTest {
   public void deleteType_callAuditTrail() throws IOException {
     //Given
     String response = "{\"error\": \"TypeMissingException[[_all] type[[unknownType]] missing: No index has the type.]\",\"status\": 404}";
-    initHttpSuccessRequest();
-    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream(response, "UTF-8"));
-    when(statusLine.getStatusCode()).thenReturn(404);
+    initClientMock(999, 404, response);
     //When
     elasticIndexingClient.sendDeleteTypeRequest("profile", "profile");
     //Then
@@ -233,8 +188,7 @@ public class ElasticIndexingClientTest {
         "\"items\":[" +
         "{\"index\":{\"_index\":\"test\",\"_type\":\"type1\",\"_id\":\"1\",\"_version\":3,\"status\":200}}" +
         "]}";
-    initHttpSuccessRequest();
-    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream(response, "UTF-8"));
+    initClientMock(999, 200, response);
     when(auditTrail.isFullLogEnabled()).thenReturn(false);
     //When
     elasticIndexingClient.sendCUDRequest("myBulk");
@@ -246,13 +200,66 @@ public class ElasticIndexingClientTest {
   @Test(expected = ElasticClientAuthenticationException.class)
   public void createType_notAuthenticated_throwsException() throws IOException {
     //Given
-    initHttpSuccessRequest();
-    when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream("Authentication Required", "UTF-8"));
-    when(statusLine.getStatusCode()).thenReturn(401);
+    initClientMock(999, 401, "Authentication Required");
     //When
     elasticIndexingClient.sendCUDRequest("myBulk");
     //Then
     fail("ElasticClientAuthenticationException expected");
+  }
+
+  @Test
+  public void createIndex_indexAlreadyExists_noRequestIsSentToES() throws IOException {
+    //Given
+    initClientMock(200, 999, "");
+    //When
+    elasticIndexingClient.sendCreateIndexRequest("myIndex", "mySettings");
+    //Then
+    verify(httpClient, times(1)).execute(httpGetRequestCaptor.capture());
+    assertEquals("http://127.0.0.1:9200/myIndex", httpGetRequestCaptor.getValue().getURI().toString());
+    verifyNoMoreInteractions(httpClient);
+  }
+
+  @Test
+  public void createIndex_indexNotExists_requestIsSentToES() throws IOException {
+    //Given
+    initClientMock(404, 200, "Success");
+    //When
+    elasticIndexingClient.sendCreateIndexRequest("myIndex", "mySettings");
+    //Then
+    verify(httpClient, times(2)).execute(httpPostRequestCaptor.capture());
+    assertEquals("http://127.0.0.1:9200/myIndex", httpPostRequestCaptor.getValue().getURI().toString());
+    assertEquals("mySettings", IOUtils.toString(httpPostRequestCaptor.getValue().getEntity().getContent()));
+    verifyNoMoreInteractions(httpClient);
+  }
+
+  private void initClientMock(Integer getStatus, Integer postStatus, String postContent) throws IOException {
+    // Get request
+    final HttpResponse getResponse = mock(HttpResponse.class);
+    StatusLine getStatusLine = mock(StatusLine.class);
+    HttpEntity getHttpEntity = mock(HttpEntity.class);
+    when(getResponse.getStatusLine()).thenReturn(getStatusLine);
+    when(getStatusLine.getStatusCode()).thenReturn(getStatus);
+    when(getResponse.getEntity()).thenReturn(getHttpEntity);
+    when(getHttpEntity.getContent()).thenReturn(IOUtils.toInputStream("", "UTF-8"));
+    // Post request
+    final HttpResponse postResponse = mock(HttpResponse.class);
+    StatusLine postStatusLine = mock(StatusLine.class);
+    HttpEntity postHttpEntity = mock(HttpEntity.class);
+    when(postResponse.getStatusLine()).thenReturn(postStatusLine);
+    when(postStatusLine.getStatusCode()).thenReturn(postStatus);
+    when(postResponse.getEntity()).thenReturn(postHttpEntity);
+    when(postHttpEntity.getContent()).thenReturn(IOUtils.toInputStream(postContent, "UTF-8"));
+    // Mock setting
+    when(httpClient.execute(any(HttpGet.class))).thenAnswer(new Answer<HttpResponse>() {
+      @Override
+      public HttpResponse answer(InvocationOnMock invocation) throws Throwable {
+        Object[] args = invocation.getArguments();
+        if (args[0] instanceof HttpGet) {
+          return getResponse;
+        }
+        return postResponse;
+      }
+    });
   }
 }
 

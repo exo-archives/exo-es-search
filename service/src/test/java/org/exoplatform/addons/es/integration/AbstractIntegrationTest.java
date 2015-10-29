@@ -40,7 +40,7 @@ import org.exoplatform.addons.es.client.ElasticSearchingClient;
  * tclement@exoplatform.com 9/11/15
  */
 @ThreadLeakScope(ThreadLeakScope.Scope.NONE)
-@ElasticsearchIntegrationTest.ClusterScope(scope = ElasticsearchIntegrationTest.Scope.TEST, numDataNodes = 0)
+@ElasticsearchIntegrationTest.ClusterScope(numDataNodes = 0)
 public class AbstractIntegrationTest extends ElasticsearchIntegrationTest {
 
   protected ElasticIndexingClient elasticIndexingClient;
@@ -63,8 +63,8 @@ public class AbstractIntegrationTest extends ElasticsearchIntegrationTest {
 
   @Before
   public void init() {
-    internalCluster().ensureAtLeastNumDataNodes(4);
-    assertEquals("All nodes in cluster should have HTTP endpoint exposed", 4, cluster().httpAddresses().length);
+    internalCluster().ensureAtLeastNumDataNodes(2);
+    assertEquals("All nodes in cluster should have HTTP endpoint exposed", 2, cluster().httpAddresses().length);
     String url = "http://" + cluster().httpAddresses()[0].getHostName() + ":" + cluster().httpAddresses()[0].getPort();
 
     // If the test is executed standalone, the properties are not present at the

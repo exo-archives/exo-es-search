@@ -19,6 +19,7 @@ package org.exoplatform.addons.es.client;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -59,9 +60,19 @@ public class ElasticIndexingClient extends ElasticClient {
    * Send request to ES to create a new index
    */
   public void sendCreateIndexRequest(String index, String settings) {
-    long startTime = System.currentTimeMillis();
-    ElasticResponse response = sendHttpPostRequest(urlClient + "/" + index + "/", settings);
-    auditTrail.audit(ElasticIndexingAuditTrail.CREATE_INDEX, null, index, null, response.getStatusCode(), response.getMessage(), (System.currentTimeMillis()-startTime));
+    String url = urlClient + "/" + index;
+    ElasticResponse responseExists = sendHttpGetRequest(url);
+    if (responseExists.getStatusCode() == HttpStatus.SC_OK) {
+      LOG.info("Index {} already exists. Index creation requests will not be sent.", index);
+    } else if (responseExists.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
+      LOG.info("Index {} doesn't exist. Index creation requests will be sent.", index);
+
+      long startTime = System.currentTimeMillis();
+      ElasticResponse responseCreate = sendHttpPostRequest(url, settings);
+      auditTrail.audit(ElasticIndexingAuditTrail.CREATE_INDEX, null, index, null, responseCreate.getStatusCode(), responseCreate.getMessage(), (System.currentTimeMillis() - startTime));
+    } else {
+      LOG.error("Index exists: Unsupported HttpStatusCode {}. url={}", responseExists.getStatusCode(), url);
+    }
   }
 
   /**
