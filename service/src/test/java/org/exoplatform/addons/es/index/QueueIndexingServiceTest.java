@@ -188,14 +188,5 @@ public class QueueIndexingServiceTest {
     //Then
     fail("Exception expected");
   }
-
-  @Test
-  public void addToIndexQueue_ifNoConnectorExist_triggerException() {
-    //TODO implement specific exception
-    //Given
-    //When
-    //queueIndexingService.addToIndexingQueue("post", null, ElasticIndexingService.CREATE);
-    //Then
-  }
 }
 

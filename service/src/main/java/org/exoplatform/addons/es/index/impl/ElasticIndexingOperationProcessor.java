@@ -106,13 +106,6 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
     do {
       processedOperations = processBulk();
     } while (processedOperations >= batchNumber);
-
-    // TODO 4: In case of error, the entityID+entityType will be logged in a
-    // “error queue” to allow a manual
-    // reprocessing of the indexing operation. However, in a first version of
-    // the implementation, the error will only
-    // be logged with ERROR level in the log file of platform.
-
   }
 
   private int processBulk() {
