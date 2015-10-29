@@ -142,10 +142,10 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
     LOG.debug("Search Query response from ES : {} ", jsonResponse);
 
-    Collection<SearchResult> results = new ArrayList<SearchResult>();
+    Collection<SearchResult> results = new ArrayList<>();
     JSONParser parser = new JSONParser();
 
-    Map json = null;
+    Map json;
     try {
       json = (Map)parser.parse(jsonResponse);
     } catch (ParseException e) {
@@ -170,8 +170,8 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
       while( keys.hasNext() ) {
         String key = (String)keys.next();
         JSONArray highlights = (JSONArray) hitHighlight.get(key);
-        for (int i =0; i < highlights.size(); ++i) {
-          excerpt.append("... ").append(highlights.get(i));
+        for (Object highlight : highlights) {
+          excerpt.append("... ").append(highlight);
         }
       }
 

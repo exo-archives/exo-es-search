@@ -47,7 +47,6 @@ public class ElasticContentRequestBuilder {
     Map<String, String> indexProperties = new HashMap<>();
     indexProperties.put("number_of_shards", String.valueOf(connector.getShards()));
     indexProperties.put("number_of_replicas", String.valueOf(connector.getReplicas()));
-    //TODO do we have to define more ?
 
     JSONObject indexSettings = new JSONObject();
     for (String setting: indexProperties.keySet()) {
@@ -56,7 +55,10 @@ public class ElasticContentRequestBuilder {
     JSONObject indexJSON = new JSONObject();
     indexJSON.put("settings", indexSettings);
 
-    return indexJSON.toJSONString();
+    String request =  indexJSON.toJSONString();
+
+    LOG.debug("Create index request to ES: \n " + request);
+    return request;
   }
 
   /**
@@ -75,7 +77,10 @@ public class ElasticContentRequestBuilder {
     JSONObject deleteRequest = new JSONObject();
     deleteRequest.put("delete", cudHeaderRequest);
 
-    return deleteRequest.toJSONString()+"\n";
+    String request =  deleteRequest.toJSONString()+"\n";
+
+    LOG.debug("Delete request to ES: \n " + request);
+    return request;
   }
 
   /**
@@ -101,9 +106,9 @@ public class ElasticContentRequestBuilder {
     JSONObject createRequest = new JSONObject();
     createRequest.put("create", ElasticInformation);
 
-    String request = createRequest.toJSONString()+"\n"+document.toJSON()+"\n";
+    String request = createRequest.toJSONString() + "\n" + document.toJSON() + "\n";
 
-    LOG.info("Create request to ES: \n " + request);
+    LOG.debug("Create request to ES: \n " + request);
 
     return request;
   }
@@ -128,9 +133,9 @@ public class ElasticContentRequestBuilder {
     JSONObject updateRequest = new JSONObject();
     updateRequest.put("index", ElasticInformation);
 
-    String request = updateRequest.toJSONString()+"\n"+document.toJSON()+"\n";
+    String request = updateRequest.toJSONString() + "\n" + document.toJSON() + "\n";
 
-    LOG.info("Update request to ES: \n " + request);
+    LOG.debug("Update request to ES: \n " + request);
 
     return request;
   }
