@@ -35,15 +35,16 @@ import org.exoplatform.services.log.Log;
  * tclement@exoplatform.com 9/1/15
  */
 public class ElasticIndexingClient extends ElasticClient {
-  private static final Log    LOG                               = ExoLogger.getExoLogger(ElasticIndexingClient.class);
-  private static final String ES_INDEX_CLIENT_PROPERTY_NAME     = "exo.es.index.server.url";
-  private static final String ES_INDEX_CLIENT_PROPERTY_USERNAME = "exo.es.index.server.username";
-  private static final String ES_INDEX_CLIENT_PROPERTY_PASSWORD = "exo.es.index.server.password";
+  public static final String        EMPTY_JSON                        = "{}";
+  private static final Log          LOG                               = ExoLogger.getExoLogger(ElasticIndexingClient.class);
+  private static final String       ES_INDEX_CLIENT_PROPERTY_NAME     = "exo.es.index.server.url";
+  private static final String       ES_INDEX_CLIENT_PROPERTY_USERNAME = "exo.es.index.server.username";
+  private static final String       ES_INDEX_CLIENT_PROPERTY_PASSWORD = "exo.es.index.server.password";
   private ElasticIndexingAuditTrail auditTrail;
 
   public ElasticIndexingClient(ElasticIndexingAuditTrail auditTrail) {
     super();
-    if (auditTrail==null) {
+    if (auditTrail == null) {
       throw new IllegalArgumentException("AuditTrail is null");
     }
     this.auditTrail = auditTrail;
@@ -69,7 +70,13 @@ public class ElasticIndexingClient extends ElasticClient {
 
       long startTime = System.currentTimeMillis();
       ElasticResponse responseCreate = sendHttpPostRequest(url, settings);
-      auditTrail.audit(ElasticIndexingAuditTrail.CREATE_INDEX, null, index, null, responseCreate.getStatusCode(), responseCreate.getMessage(), (System.currentTimeMillis() - startTime));
+      auditTrail.audit(ElasticIndexingAuditTrail.CREATE_INDEX,
+                       null,
+                       index,
+                       null,
+                       responseCreate.getStatusCode(),
+                       responseCreate.getMessage(),
+                       (System.currentTimeMillis() - startTime));
     } else {
       LOG.error("Index exists: Unsupported HttpStatusCode {}. url={}", responseExists.getStatusCode(), url);
     }
@@ -79,9 +86,27 @@ public class ElasticIndexingClient extends ElasticClient {
    * Send request to ES to create a new type
    */
   public void sendCreateTypeRequest(String index, String type, String mappings) {
-    long startTime = System.currentTimeMillis();
-    ElasticResponse response = sendHttpPostRequest(urlClient + "/" + index + "/_mapping/" + type, mappings);
-    auditTrail.audit(ElasticIndexingAuditTrail.CREATE_TYPE, null, index, type, response.getStatusCode(), response.getMessage(), (System.currentTimeMillis() - startTime));
+    String url = urlClient + "/" + index + "/_mapping/" + type;
+    ElasticResponse responseExists = sendHttpGetRequest(url);
+    if (responseExists.getStatusCode() == HttpStatus.SC_OK) {
+      if (EMPTY_JSON.equals(responseExists.getMessage())) {
+        LOG.info("Mapping doesn't exist for type {}. Mapping creation requests will be sent.", type);
+
+        long startTime = System.currentTimeMillis();
+        ElasticResponse response = sendHttpPostRequest(url, mappings);
+        auditTrail.audit(ElasticIndexingAuditTrail.CREATE_TYPE,
+                         null,
+                         index,
+                         type,
+                         response.getStatusCode(),
+                         response.getMessage(),
+                         (System.currentTimeMillis() - startTime));
+      } else {
+        LOG.info("Mapping already exists for type {}. Mapping creation requests will not be sent.", type);
+      }
+    } else {
+      LOG.error("Mapping exists: Unsupported HttpStatusCode {}. url={}", responseExists.getStatusCode(), url);
+    }
   }
 
   /**
@@ -91,7 +116,13 @@ public class ElasticIndexingClient extends ElasticClient {
   public void sendDeleteTypeRequest(String index, String type) {
     long startTime = System.currentTimeMillis();
     ElasticResponse response = sendHttpDeleteRequest(urlClient + "/" + index + "/" + type);
-    auditTrail.audit(ElasticIndexingAuditTrail.DELETE_TYPE, null, index, type, response.getStatusCode(), response.getMessage(), (System.currentTimeMillis() - startTime));
+    auditTrail.audit(ElasticIndexingAuditTrail.DELETE_TYPE,
+                     null,
+                     index,
+                     type,
+                     response.getStatusCode(),
+                     response.getMessage(),
+                     (System.currentTimeMillis() - startTime));
   }
 
   /**
@@ -103,7 +134,7 @@ public class ElasticIndexingClient extends ElasticClient {
   public void sendCUDRequest(String bulkRequest) {
     long startTime = System.currentTimeMillis();
     ElasticResponse response = sendHttpPostRequest(urlClient + "/_bulk", bulkRequest);
-    logBulkResponse(response.getMessage(), (System.currentTimeMillis()-startTime));
+    logBulkResponse(response.getMessage(), (System.currentTimeMillis() - startTime));
   }
 
   private void logBulkResponse(String response, long executionTime) {
@@ -113,16 +144,17 @@ public class ElasticIndexingClient extends ElasticClient {
         LOG.error("Unable to parse Bulk response: response is not a JSON. response={}", response);
         throw new ElasticClientException("Unable to parse Bulk response: response is not a JSON.");
       }
-      //process items
+      // process items
       Object items = ((JSONObject) parsedResponse).get("items");
       if (items != null) {
         if (!(items instanceof JSONArray)) {
           LOG.error("Unable to parse Bulk response: items is not a JSONArray. items={}", items);
           throw new ElasticClientException("Unable to parse Bulk response: items is not a JSONArray.");
         }
-        //Looping over all the items is required because
-        //in case of error, ES send a response with Status 200 and a flag errors:true
-        //in the JSON message
+        // Looping over all the items is required because
+        // in case of error, ES send a response with Status 200 and a flag
+        // errors:true
+        // in the JSON message
         for (Object item : ((JSONArray) items).toArray()) {
           if (!(item instanceof JSONObject)) {
             LOG.error("Unable to parse Bulk response: item is not a JSONObject. item={}", item);
@@ -137,16 +169,16 @@ public class ElasticIndexingClient extends ElasticClient {
   }
 
   private void logBulkResponseItem(JSONObject item, long executionTime) {
-    for(Map.Entry operation : (Set<Map.Entry>)item.entrySet()) {
-      String operationName = operation.getKey()==null?null:(String) operation.getKey();
-      if (operation.getValue()!=null) {
+    for (Map.Entry operation : (Set<Map.Entry>) item.entrySet()) {
+      String operationName = operation.getKey() == null ? null : (String) operation.getKey();
+      if (operation.getValue() != null) {
         JSONObject operationDetails = (JSONObject) operation.getValue();
-        String index = operationDetails.get("_index")==null?null:(String) operationDetails.get("_index");
-        String type = operationDetails.get("_type")==null?null:(String) operationDetails.get("_type");
-        String id = operationDetails.get("_id")==null?null:(String) operationDetails.get("_id");
-        Long status = operationDetails.get("status")==null?null:(Long) operationDetails.get("status");
-        String error = operationDetails.get("error")==null?null:(String) operationDetails.get("error");
-        Integer httpStatusCode = status==null?null:status.intValue();
+        String index = operationDetails.get("_index") == null ? null : (String) operationDetails.get("_index");
+        String type = operationDetails.get("_type") == null ? null : (String) operationDetails.get("_type");
+        String id = operationDetails.get("_id") == null ? null : (String) operationDetails.get("_id");
+        Long status = operationDetails.get("status") == null ? null : (Long) operationDetails.get("status");
+        String error = operationDetails.get("error") == null ? null : (String) operationDetails.get("error");
+        Integer httpStatusCode = status == null ? null : status.intValue();
         if (ElasticIndexingAuditTrail.isError(httpStatusCode)) {
           auditTrail.logRejectedDocumentBulkOperation(operationName, id, index, type, httpStatusCode, error, executionTime);
         } else {
