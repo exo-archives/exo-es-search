@@ -1,20 +1,20 @@
 package org.exoplatform.addons.es.search;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
-import java.util.Collections;
-
-import org.json.simple.parser.ParseException;
-import org.junit.Test;
-
 import org.exoplatform.addons.es.client.ElasticSearchingClient;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.MembershipEntry;
+import org.json.simple.parser.ParseException;
+import org.junit.Test;
+import org.mockito.Mock;
+
+import java.util.Collections;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * Created by The eXo Platform SAS
@@ -23,11 +23,15 @@ import org.exoplatform.services.security.MembershipEntry;
  * 9/9/15
  */
 public class ElasticSearchServiceConnectorTest {
+
+  @Mock
+  private ElasticSearchingClient elasticSearchingClient;
+  
     @Test
     public void testMembership() throws ParseException {
         //Given
         setCurrentIdentity();
-        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
+        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
         //When
         String query = connector.buildQuery("My Wiki", null, 0, 20, "name", "asc");
         //Then
@@ -39,7 +43,7 @@ public class ElasticSearchServiceConnectorTest {
     public void testSortIsRelevancyByDefault() {
         //Given
         setCurrentIdentity();
-        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
+        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
         //When
         String query = connector.buildQuery("My Wiki", null, 0, 20, null, null);
         //Then
@@ -50,7 +54,7 @@ public class ElasticSearchServiceConnectorTest {
   public void testSortRelevancyIsEqual_score() {
     //Given
     setCurrentIdentity();
-    ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
+    ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
     //When
     String query = connector.buildQuery("My Wiki", null, 0, 20, "relevancy", null);
     //Then
@@ -61,7 +65,7 @@ public class ElasticSearchServiceConnectorTest {
   public void testDateRelevancyIsEqualLastUpdatedDate() {
     //Given
     setCurrentIdentity();
-    ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
+    ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
     //When
     String query = connector.buildQuery("My Wiki", null, 0, 20, "date", null);
     //Then
@@ -72,7 +76,7 @@ public class ElasticSearchServiceConnectorTest {
     public void testOrderIsAscByDefault() {
         //Given
         setCurrentIdentity();
-        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
+        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
         //When
         String query = connector.buildQuery("My Wiki", null, 0, 20, "name", null);
         //Then
@@ -84,7 +88,7 @@ public class ElasticSearchServiceConnectorTest {
     public void testScoresAreTracked() {
         //Given
         setCurrentIdentity();
-        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
+        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
         //When
         String query = connector.buildQuery("My Wiki", null, 0, 20, "name", "asc");
         //Then
@@ -95,7 +99,7 @@ public class ElasticSearchServiceConnectorTest {
     public void testSearchWithoutIdentity() {
         //Given
         ConversationState.setCurrent(null);
-        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), new ElasticSearchingClient());
+        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
         //When
         connector.buildQuery("My Wiki", null, 0, 20, null, null);
         //Then

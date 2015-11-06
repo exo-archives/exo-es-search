@@ -15,8 +15,9 @@ public class ElasticIndexingAuditTrail {
   public static final String CREATE_INDEX = "create_index";
   public static final String CREATE_TYPE  = "create_type";
   public static final String DELETE_TYPE  = "delete_type";
+  public static final String SEARCH_TYPE  = "search_type";
 
-  private static final Log   AUDIT_TRAIL  = ExoLogger.getExoLogger("org.exoplatform.indexing.es");
+  private static final Log   AUDIT_TRAIL  = ExoLogger.getExoLogger("org.exoplatform.es.audittrail");
 
   private static final char  SEPARATOR    = ';';
   private static final String LOG_PATTERN = "{}"+StringUtils.repeat(SEPARATOR+"{}",6);
@@ -61,6 +62,24 @@ public class ElasticIndexingAuditTrail {
                                        String message,
                                        long executionTime) {
     logDebug(action, entityId, index, type, httpStatusCode, message, executionTime);
+  }
+
+  public void logRejectedSearchOperation(String action,
+                                            String index,
+                                            String type,
+                                            Integer httpStatusCode,
+                                            String message,
+                                            long executionTime) {
+    logError(action, null, index, type, httpStatusCode, message, executionTime);
+  }
+
+  public void logAcceptedSearchOperation(String action,
+                                       String index,
+                                       String type,
+                                       Integer httpStatusCode,
+                                       String message,
+                                       long executionTime) {
+    logDebug(action, null, index, type, httpStatusCode, message, executionTime);
   }
 
   private void logInfo(String action,

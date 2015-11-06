@@ -18,8 +18,8 @@ public class ElasticSearchingClient extends ElasticClient {
   private static final String ES_SEARCH_CLIENT_PROPERTY_PASSWORD = "exo.es.search.server.password";
 
 
-  public ElasticSearchingClient() {
-    super();
+  public ElasticSearchingClient(ElasticIndexingAuditTrail auditTrail) {
+    super(auditTrail);
     //Get url client from exo global properties
     if (StringUtils.isNotBlank(PropertyManager.getProperty(ES_SEARCH_CLIENT_PROPERTY_NAME))) {
       this.urlClient = PropertyManager.getProperty(ES_SEARCH_CLIENT_PROPERTY_NAME);
@@ -30,8 +30,19 @@ public class ElasticSearchingClient extends ElasticClient {
   }
 
   public String sendRequest(String esQuery, String index, String type) {
-    ElasticResponse response = sendHttpPostRequest(urlClient + "/" + index + "/" + type + "/_search", esQuery);
-    return response.getMessage();
+    long startTime = System.currentTimeMillis();
+    ElasticResponse elasticResponse = sendHttpPostRequest(urlClient + "/" + index + "/" + type + "/_search", esQuery);
+    String response = elasticResponse.getMessage();
+    int statusCode = elasticResponse.getStatusCode();
+    if (ElasticIndexingAuditTrail.isError(statusCode)) {
+      auditTrail.logRejectedSearchOperation(ElasticIndexingAuditTrail.SEARCH_TYPE, index, type, statusCode, response, (System.currentTimeMillis() - startTime));
+    }
+    else {
+      if (auditTrail.isFullLogEnabled()) {
+        auditTrail.logAcceptedSearchOperation(ElasticIndexingAuditTrail.SEARCH_TYPE, index, type, statusCode, response, (System.currentTimeMillis() - startTime));
+      }
+    }
+    return response;
   }
 
   @Override

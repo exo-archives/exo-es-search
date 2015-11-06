@@ -16,8 +16,7 @@
  */
 package org.exoplatform.addons.es.integration;
 
-import static org.elasticsearch.index.query.QueryBuilders.termQuery;
-
+import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.settings.ImmutableSettings;
@@ -26,14 +25,13 @@ import org.elasticsearch.node.internal.InternalNode;
 import org.elasticsearch.rest.RestController;
 import org.elasticsearch.test.ElasticsearchIntegrationTest;
 import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
+import org.exoplatform.addons.es.client.ElasticIndexingClient;
+import org.exoplatform.addons.es.client.ElasticSearchingClient;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.junit.After;
 import org.junit.Before;
 
-import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
-
-import org.exoplatform.addons.es.client.ElasticIndexingClient;
-import org.exoplatform.addons.es.client.ElasticSearchingClient;
+import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 
 /**
  * Created by The eXo Platform SAS Author : Thibault Clement
@@ -80,7 +78,7 @@ public class AbstractIntegrationTest extends ElasticsearchIntegrationTest {
     PropertyManager.setProperty("exo.es.search.server.url", url);
 
     elasticIndexingClient = new ElasticIndexingClient(new ElasticIndexingAuditTrail());
-    elasticSearchingClient = new ElasticSearchingClient();
+    elasticSearchingClient = new ElasticSearchingClient(new ElasticIndexingAuditTrail());
   }
 
   @After

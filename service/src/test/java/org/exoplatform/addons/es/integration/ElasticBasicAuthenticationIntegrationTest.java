@@ -16,10 +16,6 @@
 */
 package org.exoplatform.addons.es.integration;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
@@ -28,13 +24,8 @@ import org.elasticsearch.plugins.PluginsService;
 import org.elasticsearch.rest.RestController;
 import org.exoplatform.addons.es.client.ElasticClientAuthenticationException;
 import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import org.exoplatform.addons.es.client.ElasticIndexingClient;
 import org.exoplatform.addons.es.client.ElasticSearchingClient;
-import org.exoplatform.addons.es.search.ElasticSearchException;
 import org.exoplatform.addons.es.search.ElasticSearchServiceConnector;
 import org.exoplatform.commons.api.search.data.SearchResult;
 import org.exoplatform.commons.utils.PropertyManager;
@@ -42,6 +33,13 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
@@ -59,7 +57,7 @@ public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrati
   public void initServices() {
     addBasicAuthenticationProperties();
     //Then, override clients with authentication
-    elasticSearchingClient = new ElasticSearchingClient();
+    elasticSearchingClient = new ElasticSearchingClient(new ElasticIndexingAuditTrail());
     elasticIndexingClient = new ElasticIndexingClient(new ElasticIndexingAuditTrail());
 
     Identity identity = new Identity("TCL");
@@ -185,7 +183,7 @@ public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrati
     //Change the username properties to a wrong user
     PropertyManager.setProperty("exo.es.search.server.username", "badUser");
     //Get elasticSearchingClient with latest Properties
-    elasticSearchingClient = new ElasticSearchingClient();
+    elasticSearchingClient = new ElasticSearchingClient(new ElasticIndexingAuditTrail());
     String mapping = "{ \"properties\" : " + "   {\"permissions\" : "
         + "       {\"type\" : \"string\", \"index\" : \"not_analyzed\"}" + "   }" + "}";
     CreateIndexRequestBuilder cirb = admin().indices().prepareCreate("test").addMapping("type1", mapping);

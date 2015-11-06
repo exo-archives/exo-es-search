@@ -43,7 +43,7 @@ public class ElasticIndexingClient extends ElasticClient {
   private ElasticIndexingAuditTrail auditTrail;
 
   public ElasticIndexingClient(ElasticIndexingAuditTrail auditTrail) {
-    super();
+    super(auditTrail);
     if (auditTrail == null) {
       throw new IllegalArgumentException("AuditTrail is null");
     }

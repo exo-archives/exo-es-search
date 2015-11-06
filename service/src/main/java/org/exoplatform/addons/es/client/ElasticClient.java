@@ -46,12 +46,16 @@ public abstract class ElasticClient {
   private static final Log    LOG                     = ExoLogger.getExoLogger(ElasticClient.class);
 
   protected String            urlClient;
-
   protected HttpClient        client;
+  protected ElasticIndexingAuditTrail auditTrail;
 
-  public ElasticClient() {
+  public ElasticClient(ElasticIndexingAuditTrail auditTrail) {
     this.client = getHttpClient();
     this.urlClient = ES_INDEX_CLIENT_DEFAULT;
+    if (auditTrail==null) {
+      throw new IllegalArgumentException("AuditTrail is null");
+    }
+    this.auditTrail = auditTrail;
   }
 
   protected ElasticResponse sendHttpPostRequest(String url, String content) {
