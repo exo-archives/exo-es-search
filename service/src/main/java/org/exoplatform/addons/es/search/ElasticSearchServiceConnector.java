@@ -45,7 +45,10 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
   private final ElasticSearchingClient client;
 
   //ES connector information
+  //Index is optional: if null, search on all the cluster
   private String index;
+  //Type is optional: if null, search on all the index
+  private String type;
   private List<String> searchFields;
 
   //SearchResult information
@@ -59,6 +62,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     this.client = client;
     PropertiesParam param = initParams.getPropertiesParam("constructor.params");
     this.index = param.getProperty("index");
+    this.type = param.getProperty("type");
     this.titleElasticFieldName = param.getProperty("titleField");
     this.searchFields = new ArrayList<>(Arrays.asList(param.getProperty("searchFields").split(",")));
     //Indicate in which order element will be displayed
@@ -70,7 +74,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
   public Collection<SearchResult> search(SearchContext context, String query, Collection<String> sites,
                                          int offset, int limit, String sort, String order) {
     String esQuery = buildQuery(query, sites, offset, limit, sort, order);
-    String jsonResponse = this.client.sendRequest(esQuery, this.index, this.getSearchType());
+    String jsonResponse = this.client.sendRequest(esQuery, this.index, this.type);
     return buildResult(jsonResponse);
 
   }
@@ -316,6 +320,14 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
   public void setSearchFields(List<String> searchFields) {
     this.searchFields = searchFields;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
   }
 }
 

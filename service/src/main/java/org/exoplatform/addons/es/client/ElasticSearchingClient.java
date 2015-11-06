@@ -31,7 +31,14 @@ public class ElasticSearchingClient extends ElasticClient {
 
   public String sendRequest(String esQuery, String index, String type) {
     long startTime = System.currentTimeMillis();
-    ElasticResponse elasticResponse = sendHttpPostRequest(urlClient + "/" + index + "/" + type + "/_search", esQuery);
+    StringBuilder url = new StringBuilder();
+    url.append(urlClient);
+    if (StringUtils.isNotBlank(index)) {
+      url.append("/" + index);
+      if (StringUtils.isNotBlank(type)) url.append("/" + type);
+    }
+    url.append("/_search");
+    ElasticResponse elasticResponse = sendHttpPostRequest(url.toString(), esQuery);
     String response = elasticResponse.getMessage();
     int statusCode = elasticResponse.getStatusCode();
     if (ElasticIndexingAuditTrail.isError(statusCode)) {

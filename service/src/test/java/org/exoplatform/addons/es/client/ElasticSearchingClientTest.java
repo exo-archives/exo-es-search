@@ -63,6 +63,8 @@ public class ElasticSearchingClientTest {
     elasticSearchingClient.client = httpClient;
   }
 
+
+
   @Test
   public void sendSearchRequest_successRequest_callAuditTrailWithSuccessMessage() throws IOException {
     //Given
