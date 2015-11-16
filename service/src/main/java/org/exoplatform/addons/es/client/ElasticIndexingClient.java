@@ -21,14 +21,15 @@ import java.util.Set;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.impl.conn.SingleClientConnManager;
+import org.exoplatform.commons.utils.PropertyManager;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
-
-import org.exoplatform.commons.utils.PropertyManager;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS Author : Thibault Clement
@@ -198,6 +199,11 @@ public class ElasticIndexingClient extends ElasticClient {
   @Override
   protected String getEsPasswordProperty() {
     return PropertyManager.getProperty(ES_INDEX_CLIENT_PROPERTY_PASSWORD);
+  }
+  
+  @Override
+  protected ClientConnectionManager getClientConnectionManager() {
+    return new SingleClientConnManager();
   }
 
 }

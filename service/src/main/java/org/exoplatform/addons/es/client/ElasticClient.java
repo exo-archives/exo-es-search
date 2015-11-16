@@ -29,9 +29,9 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -161,5 +161,7 @@ public abstract class ElasticClient {
   protected abstract String getEsUsernameProperty();
 
   protected abstract String getEsPasswordProperty();
+  
+  protected abstract ClientConnectionManager getClientConnectionManager();
 
 }

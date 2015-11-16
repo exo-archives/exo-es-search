@@ -1,7 +1,8 @@
 package org.exoplatform.addons.es.client;
 
 import org.apache.commons.lang.StringUtils;
-
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -60,6 +61,11 @@ public class ElasticSearchingClient extends ElasticClient {
   @Override
   protected String getEsPasswordProperty() {
     return PropertyManager.getProperty(ES_SEARCH_CLIENT_PROPERTY_PASSWORD);
+  }
+  
+  @Override
+  protected ClientConnectionManager getClientConnectionManager() {
+    return new ThreadSafeClientConnManager();
   }
 
 }
