@@ -25,6 +25,7 @@ import org.exoplatform.addons.es.domain.IndexingOperation;
 import org.exoplatform.addons.es.domain.OperationType;
 import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingServiceConnector;
+import org.exoplatform.commons.api.persistence.DataInitializer;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -59,7 +60,8 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
   public ElasticIndexingOperationProcessor(IndexingOperationDAO indexingOperationDAO,
                                            ElasticIndexingClient elasticIndexingClient,
                                            ElasticContentRequestBuilder elasticContentRequestBuilder,
-                                           ElasticIndexingAuditTrail auditTrail) {
+                                           ElasticIndexingAuditTrail auditTrail,
+                                           DataInitializer dataInitializer) {
     this.indexingOperationDAO = indexingOperationDAO;
     this.auditTrail = auditTrail;
     this.elasticIndexingClient = elasticIndexingClient;

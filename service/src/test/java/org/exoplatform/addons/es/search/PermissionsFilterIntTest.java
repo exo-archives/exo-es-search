@@ -86,7 +86,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     // IndexService
     dao = new IndexingOperationDAOImpl();
     ElasticContentRequestBuilder builder = new ElasticContentRequestBuilder();
-    indexingOperationProcessor = new ElasticIndexingOperationProcessor(dao, elasticIndexingClient, builder, new ElasticIndexingAuditTrail());
+    indexingOperationProcessor = new ElasticIndexingOperationProcessor(dao, elasticIndexingClient, builder, new ElasticIndexingAuditTrail(), null);
     indexingOperationProcessor.addConnector(wikiConnector);
     indexingOperationProcessor.start();
 

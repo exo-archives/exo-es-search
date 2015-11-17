@@ -75,7 +75,7 @@ public class ElasticOperationProcessorTest {
   @Before
   public void initMocks() {
     MockitoAnnotations.initMocks(this);
-    elasticIndexingOperationProcessor = new ElasticIndexingOperationProcessor(indexingOperationDAO, elasticIndexingClient, elasticContentRequestBuilder, auditTrail);
+    elasticIndexingOperationProcessor = new ElasticIndexingOperationProcessor(indexingOperationDAO, elasticIndexingClient, elasticContentRequestBuilder, auditTrail, null);
     initElasticServiceConnector();
   }
 

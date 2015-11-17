@@ -16,35 +16,15 @@
 */
 package org.exoplatform.addons.es.integration;
 
-import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
+import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.FileSystemResourceAccessor;
-
-import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
-
 import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
+import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
 import org.exoplatform.addons.es.dao.IndexingOperationDAO;
 import org.exoplatform.addons.es.dao.impl.IndexingOperationDAOImpl;
 import org.exoplatform.addons.es.domain.Document;
@@ -60,6 +40,23 @@ import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.MembershipEntry;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by The eXo Platform SAS
@@ -109,7 +106,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
     //IndexService
     dao = new IndexingOperationDAOImpl();
     ElasticContentRequestBuilder builder = new ElasticContentRequestBuilder();
-    indexingOperationProcessor = new ElasticIndexingOperationProcessor(dao, elasticIndexingClient, builder, new ElasticIndexingAuditTrail());
+    indexingOperationProcessor = new ElasticIndexingOperationProcessor(dao, elasticIndexingClient, builder, new ElasticIndexingAuditTrail(), null);
     indexingOperationProcessor.addConnector(testConnector);
 
     //Search connector
