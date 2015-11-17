@@ -16,18 +16,15 @@
 */
 package org.exoplatform.addons.es.index;
 
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.*;
-
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
+import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
 import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
+import org.exoplatform.addons.es.client.ElasticIndexingClient;
+import org.exoplatform.addons.es.dao.IndexingOperationDAO;
+import org.exoplatform.addons.es.domain.Document;
+import org.exoplatform.addons.es.domain.IndexingOperation;
+import org.exoplatform.addons.es.domain.OperationType;
+import org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor;
+import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,14 +35,16 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
-import org.exoplatform.addons.es.client.ElasticIndexingClient;
-import org.exoplatform.addons.es.dao.IndexingOperationDAO;
-import org.exoplatform.addons.es.domain.Document;
-import org.exoplatform.addons.es.domain.IndexingOperation;
-import org.exoplatform.addons.es.domain.OperationType;
-import org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor;
-import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by The eXo Platform SAS
@@ -123,6 +122,7 @@ public class ElasticOperationProcessorTest {
     IndexingOperation indexingOperation = new IndexingOperation(null,"post", OperationType.INIT);
     //When
     elasticIndexingOperationProcessor.addConnector(elasticIndexingServiceConnector);
+    elasticIndexingOperationProcessor.start();
     //Then
     verify(indexingOperationDAO, times(1)).create(indexingOperation);
   }

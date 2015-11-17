@@ -28,6 +28,7 @@ import org.exoplatform.addons.es.index.IndexingServiceConnector;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.picocontainer.Startable;
 
 import java.util.*;
 
@@ -35,7 +36,7 @@ import java.util.*;
  * Created by The eXo Platform SAS Author : Thibault Clement
  * tclement@exoplatform.com 10/12/15
  */
-public class ElasticIndexingOperationProcessor extends IndexingOperationProcessor {
+public class ElasticIndexingOperationProcessor extends IndexingOperationProcessor implements Startable {
 
   private static final Log                   LOG                                 = ExoLogger.getExoLogger(ElasticIndexingOperationProcessor.class);
   private static final String                BATCH_NUMBER_PROPERTY_NAME          = "exo.es.indexing.batch.number";
@@ -87,8 +88,6 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
     } else {
       getConnectors().put(indexingServiceConnector.getType(), indexingServiceConnector);
       LOG.info("An Indexing Connector has been added: {}", indexingServiceConnector.getType());
-      // When a new connector is added, ES index and type need to be created
-      addInitOperation(indexingServiceConnector.getType());
     }
   }
 
@@ -444,5 +443,22 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
 
   public void setReindexBatchSize(int reindexBatchSize) {
     this.reindexBatchSize = reindexBatchSize;
+  }
+
+  @Override
+  public void start() {
+    // ES index and type need to be created for all registered connectors
+    initConnectors();
+  }
+
+  @Override
+  public void stop() {
+
+  }
+
+  private void initConnectors() {
+    for (Map.Entry<String, IndexingServiceConnector> entry: getConnectors().entrySet()) {
+      addInitOperation(entry.getValue().getType());
+    }
   }
 }

@@ -1,37 +1,18 @@
 package org.exoplatform.addons.es.search;
 
-import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
 import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.FileSystemResourceAccessor;
-
-import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import org.exoplatform.addons.es.client.ElasticContentRequestBuilder;
+import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
 import org.exoplatform.addons.es.dao.IndexingOperationDAO;
 import org.exoplatform.addons.es.dao.impl.IndexingOperationDAOImpl;
 import org.exoplatform.addons.es.domain.Document;
 import org.exoplatform.addons.es.domain.IndexingOperation;
 import org.exoplatform.addons.es.domain.OperationType;
-import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor;
 import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
 import org.exoplatform.addons.es.integration.AbstractIntegrationTest;
@@ -41,6 +22,22 @@ import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.MembershipEntry;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
@@ -51,7 +48,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
 
   private static Liquibase                liquibase;
 
-  private IndexingOperationProcessor      indexingOperationProcessor;
+  private ElasticIndexingOperationProcessor      indexingOperationProcessor;
 
   private ElasticSearchServiceConnector   elasticSearchServiceConnector;
 
@@ -91,6 +88,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     ElasticContentRequestBuilder builder = new ElasticContentRequestBuilder();
     indexingOperationProcessor = new ElasticIndexingOperationProcessor(dao, elasticIndexingClient, builder, new ElasticIndexingAuditTrail());
     indexingOperationProcessor.addConnector(wikiConnector);
+    indexingOperationProcessor.start();
 
     // Search connector
     elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorParams(), elasticSearchingClient);
