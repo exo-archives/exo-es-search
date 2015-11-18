@@ -15,7 +15,7 @@
   <property name="now" value="CURRENT_TIMESTAMP" dbms="mssql"/>
 
 
-  <changeSet author="tuyennt@exoplatform.com" id="1.0.0-1">
+  <changeSet author="exo-es-search" id="1.0.0-1">
     <createTable tableName="ES_INDEXING_QUEUE">
       <column name="OPERATION_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
         <constraints nullable="false" primaryKey="true" primaryKeyName="PK_ES_INDEXING_QUEUE"/>
