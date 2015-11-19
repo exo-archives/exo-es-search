@@ -85,6 +85,7 @@ public abstract class ElasticIndexingServiceConnector extends IndexingServiceCon
 
       JSONObject properties = new JSONObject();
       properties.put("permissions", notAnalyzedField);
+      properties.put("url", notAnalyzedField);
       properties.put("sites", notAnalyzedField);
 
       JSONObject mappingProperties = new JSONObject();

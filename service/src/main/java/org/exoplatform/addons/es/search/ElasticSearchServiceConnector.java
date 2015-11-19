@@ -91,7 +91,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     esQuery.append("       { \"" + (StringUtils.isNotBlank(sortMapping.get(sort))?sortMapping.get(sort):"_score") + "\" : ");
     esQuery.append(             "{\"order\" : \"" + (StringUtils.isNotBlank(order)?order:"asc") + "\"}}\n");
     esQuery.append("     ],\n");
-    esQuery.append("     \"_source\": [\"" + getTitleElasticFieldName() + "\"],");
+    esQuery.append("     \"_source\": [" + getSourceFields() + "],");
     esQuery.append("     \"query\": {\n");
     esQuery.append("        \"filtered\" : {\n");
     esQuery.append("            \"query\" : {\n");
@@ -288,6 +288,20 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
       }
     }
     return entries;
+  }
+
+  private String getSourceFields() {
+
+    List<String> fields = new ArrayList<>();
+    fields.add("url");
+    fields.add(getTitleElasticFieldName());
+
+    List<String> sourceFields = new ArrayList<>();
+    for (String sourceField: fields) {
+      sourceFields.add("\"" + sourceField + "\"");
+    }
+
+    return StringUtils.join(sourceFields, ",");
   }
 
   public String getIndex() {
