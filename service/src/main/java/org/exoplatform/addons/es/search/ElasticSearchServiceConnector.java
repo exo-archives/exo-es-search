@@ -142,7 +142,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     return esQuery.toString();
   }
 
-  private Collection<SearchResult> buildResult(String jsonResponse) {
+  protected Collection<SearchResult> buildResult(String jsonResponse) {
 
     LOG.debug("Search Query response from ES : {} ", jsonResponse);
 
@@ -197,7 +197,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
   }
 
-  private String getFields() {
+  protected String getFields() {
     List<String> fields = new ArrayList<>();
     for (String searchField: searchFields) {
       fields.add("\"" + searchField + "\"");
@@ -205,7 +205,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     return StringUtils.join(fields, ",");
   }
 
-  private String getPermissionFilter() {
+  protected String getPermissionFilter() {
     Set<String> membershipSet = getUserMemberships();
     if ((membershipSet != null) && (membershipSet.size()>0)) {
       String memberships = StringUtils.join(membershipSet.toArray(new String[membershipSet.size()]), "|");
@@ -223,7 +223,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     }
   }
 
-  private String getSitesFilter(Collection<String> sitesCollection) {
+  protected String getSitesFilter(Collection<String> sitesCollection) {
     if ((sitesCollection != null) && (sitesCollection.size()>0)) {
       String sites = StringUtils.join(sitesCollection.toArray(new String[sitesCollection.size()]), "|");
       return "{\n" +
@@ -290,7 +290,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     return entries;
   }
 
-  private String getSourceFields() {
+  protected String getSourceFields() {
 
     List<String> fields = new ArrayList<>();
     fields.add("url");
