@@ -63,7 +63,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     PropertiesParam param = initParams.getPropertiesParam("constructor.params");
     this.index = param.getProperty("index");
     this.type = param.getProperty("type");
-    this.titleElasticFieldName = param.getProperty("titleField");
+    if (StringUtils.isNotBlank(param.getProperty("titleField"))) this.titleElasticFieldName = param.getProperty("titleField");
     this.searchFields = new ArrayList<>(Arrays.asList(param.getProperty("searchFields").split(",")));
     //Indicate in which order element will be displayed
     sortMapping.put("relevancy", "_score");
@@ -79,7 +79,19 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
   }
 
-  public String buildQuery(String query, Collection<String> sites, int offset, int limit, String sort, String order) {
+  public Collection<SearchResult> filteredSearch(SearchContext context, String query, Map<String, String> filters, Collection<String> sites,
+                                         int offset, int limit, String sort, String order) {
+    String esQuery = buildFilteredQuery(query, sites, filters, offset, limit, sort, order);
+    String jsonResponse = this.client.sendRequest(esQuery, this.index, this.type);
+    return buildResult(jsonResponse);
+
+  }
+
+  protected String buildQuery(String query, Collection<String> sites, int offset, int limit, String sort, String order) {
+    return buildFilteredQuery(query, sites, null, offset, limit, sort, order);
+  }
+
+  protected String buildFilteredQuery(String query, Collection<String> sites, Map<String, String> filters, int offset, int limit, String sort, String order) {
     StringBuilder esQuery = new StringBuilder();
     esQuery.append("{\n");
     esQuery.append("     \"from\" : " + offset + ", \"size\" : " + limit + ",\n");
@@ -116,7 +128,9 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     esQuery.append("                      " + getSitesFilter(sites) + "\n");
     esQuery.append("                       ]\n");
     esQuery.append("                    }\n");
-    esQuery.append("                  }\n");
+    esQuery.append("                  }");
+    esQuery.append(getAdditionalFilters(filters));
+    esQuery.append("                  \n");
     esQuery.append("                ]\n");
     esQuery.append("              }\n");
     esQuery.append("            }");
@@ -195,6 +209,33 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
     return results;
 
+  }
+
+  protected String getAdditionalFilters(Map<String, String> filters) {
+
+    if (filters == null) return "";
+
+    StringBuilder filter = new StringBuilder();
+
+    for (String field: filters.keySet()) {
+
+      filter.append("                  ,\n");
+      filter.append("                  {\n");
+      filter.append("                   \"bool\" : {\n");
+      filter.append("                     \"should\" : [\n");
+      filter.append("                      " + getTermFilter(field, filters.get(field)) + "\n");
+      filter.append("                       ]\n");
+      filter.append("                    }\n");
+      filter.append("                  }");
+
+    }
+
+    return filter.toString();
+
+  }
+
+  private String getTermFilter(String field, String value) {
+    return "{\n \"term\" : { \"" + field + "\" : \"" + value + "\" }\n }";
   }
 
   protected String getFields() {
@@ -342,6 +383,10 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
   public void setType(String type) {
     this.type = type;
+  }
+
+  public ElasticSearchingClient getClient() {
+    return client;
   }
 }
 
