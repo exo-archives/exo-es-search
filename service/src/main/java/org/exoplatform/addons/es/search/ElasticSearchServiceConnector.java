@@ -79,6 +79,24 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
   }
 
+  /**
+   *
+   * Search on ES with additional filter on the search query
+   * Different Filter are:
+   * - Term Filter (Check if a specific term of a field exist)
+   * - Not exist Filter (Check if a term not exist)
+   * - Exist Filter (check if a term exist)
+   *
+   * @param context
+   * @param query
+   * @param filters
+   * @param sites
+   * @param offset
+   * @param limit
+   * @param sort
+   * @param order
+   * @return a collection of SearchResult
+   */
   public Collection<SearchResult> filteredSearch(SearchContext context, String query, List<ElasticSearchFilter> filters, Collection<String> sites,
                                          int offset, int limit, String sort, String order) {
     String esQuery = buildFilteredQuery(query, sites, filters, offset, limit, sort, order);
@@ -246,10 +264,24 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     return "";
   }
 
+  /**
+   * Check if a specific term of a field exist
+   * Note that this field should be set as not_analyzed
+   *
+   * @param field
+   * @param value
+   * @return a Term Filter
+   */
   private String getTermFilter(String field, String value) {
     return "{\n \"term\" : { \"" + field + "\" : \"" + value + "\" }\n }";
   }
 
+  /**
+   * Check if a specific field not exist
+   *
+   * @param field
+   * @return a not Exist Term Filter
+   */
   private String getNotExistFilter(String field) {
     return "{\n" +
         "  \"not\": {\n" +
@@ -258,6 +290,12 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
         "}";
   }
 
+  /**
+   * Check if a specific field exist
+   *
+   * @param field
+   * @return an Exist Filter
+   */
   private String getExistFilter(String field) {
     return "{\n \"exists\" : { \"field\" : \"" + field + "\" }\n }";
   }
