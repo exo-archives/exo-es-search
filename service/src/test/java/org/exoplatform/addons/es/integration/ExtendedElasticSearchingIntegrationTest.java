@@ -17,6 +17,8 @@
 package org.exoplatform.addons.es.integration;
 
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
+import org.exoplatform.addons.es.search.ElasticSearchFilter;
+import org.exoplatform.addons.es.search.ElasticSearchFilterType;
 import org.exoplatform.addons.es.search.ElasticSearchServiceConnector;
 import org.exoplatform.commons.api.search.data.SearchResult;
 import org.exoplatform.container.xml.InitParams;
@@ -80,8 +82,8 @@ public class ExtendedElasticSearchingIntegrationTest extends AbstractIntegration
     // to search immediately,
     // but will become visible within 1 second
     admin().indices().prepareRefresh().execute().actionGet();
-    Map<String, String> filters = new HashMap<>();
-    filters.put("otherFilter", "f1");
+    List<ElasticSearchFilter> filters = new ArrayList<>();
+    filters.add(new ElasticSearchFilter(ElasticSearchFilterType.FILTER_BY_TERM, "otherFilter", "f1"));
 
     // When
     List<SearchResult> searchResults = new ArrayList<>(elasticSearchServiceConnector.filteredSearch(null,

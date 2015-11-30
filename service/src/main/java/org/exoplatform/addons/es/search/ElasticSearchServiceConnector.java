@@ -79,7 +79,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
   }
 
-  public Collection<SearchResult> filteredSearch(SearchContext context, String query, Map<String, String> filters, Collection<String> sites,
+  public Collection<SearchResult> filteredSearch(SearchContext context, String query, List<ElasticSearchFilter> filters, Collection<String> sites,
                                          int offset, int limit, String sort, String order) {
     String esQuery = buildFilteredQuery(query, sites, filters, offset, limit, sort, order);
     String jsonResponse = this.client.sendRequest(esQuery, this.index, this.type);
@@ -91,7 +91,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     return buildFilteredQuery(query, sites, null, offset, limit, sort, order);
   }
 
-  protected String buildFilteredQuery(String query, Collection<String> sites, Map<String, String> filters, int offset, int limit, String sort, String order) {
+  protected String buildFilteredQuery(String query, Collection<String> sites, List<ElasticSearchFilter> filters, int offset, int limit, String sort, String order) {
     StringBuilder esQuery = new StringBuilder();
     esQuery.append("{\n");
     esQuery.append("     \"from\" : " + offset + ", \"size\" : " + limit + ",\n");
@@ -211,31 +211,55 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
   }
 
-  protected String getAdditionalFilters(Map<String, String> filters) {
+  protected String getAdditionalFilters(List<ElasticSearchFilter> filters) {
 
     if (filters == null) return "";
 
-    StringBuilder filter = new StringBuilder();
+    StringBuilder filterJSON = new StringBuilder();
 
-    for (String field: filters.keySet()) {
+    for (ElasticSearchFilter filter: filters) {
 
-      filter.append("                  ,\n");
-      filter.append("                  {\n");
-      filter.append("                   \"bool\" : {\n");
-      filter.append("                     \"should\" : [\n");
-      filter.append("                      " + getTermFilter(field, filters.get(field)) + "\n");
-      filter.append("                       ]\n");
-      filter.append("                    }\n");
-      filter.append("                  }");
+      filterJSON.append("                  ,\n");
+      filterJSON.append("                  {\n");
+      filterJSON.append("                   \"bool\" : {\n");
+      filterJSON.append("                     \"should\" : [\n");
+      filterJSON.append("                      " + getFilter(filter) + "\n");
+      filterJSON.append("                       ]\n");
+      filterJSON.append("                    }\n");
+      filterJSON.append("                  }");
 
     }
 
-    return filter.toString();
+    return filterJSON.toString();
 
+  }
+
+  private String getFilter(ElasticSearchFilter filter) {
+    switch (filter.getType()) {
+      case FILTER_BY_TERM:
+        return getTermFilter(filter.getField(), filter.getValue());
+      case FILTER_EXIST:
+        return getExistFilter(filter.getField());
+      case FILTER_NOT_EXIST:
+        return getNotExistFilter(filter.getField());
+    }
+    return "";
   }
 
   private String getTermFilter(String field, String value) {
     return "{\n \"term\" : { \"" + field + "\" : \"" + value + "\" }\n }";
+  }
+
+  private String getNotExistFilter(String field) {
+    return "{\n" +
+        "  \"not\": {\n" +
+        "    \"exists\" : { \"field\" : \"" + field + "\" }\n" +
+        "  }\n" +
+        "}";
+  }
+
+  private String getExistFilter(String field) {
+    return "{\n \"exists\" : { \"field\" : \"" + field + "\" }\n }";
   }
 
   protected String getFields() {
