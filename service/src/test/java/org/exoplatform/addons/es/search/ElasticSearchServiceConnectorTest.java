@@ -47,7 +47,7 @@ public class ElasticSearchServiceConnectorTest {
         //When
         String query = connector.buildQuery("My Wiki", null, 0, 20, null, null);
         //Then
-        assertThat(query, containsString("{ \"_score\" : {\"order\" : \"asc\"}}"));
+        assertThat(query, containsString("{ \"_score\" : {\"order\" : \"desc\"}}"));
     }
 
   @Test
@@ -58,7 +58,7 @@ public class ElasticSearchServiceConnectorTest {
     //When
     String query = connector.buildQuery("My Wiki", null, 0, 20, "relevancy", null);
     //Then
-    assertThat(query, containsString("{ \"_score\" : {\"order\" : \"asc\"}}"));
+    assertThat(query, containsString("{ \"_score\" : {\"order\" : \"desc\"}}"));
   }
 
   @Test
@@ -69,11 +69,11 @@ public class ElasticSearchServiceConnectorTest {
     //When
     String query = connector.buildQuery("My Wiki", null, 0, 20, "date", null);
     //Then
-    assertThat(query, containsString("{ \"lastUpdatedDate\" : {\"order\" : \"asc\"}}"));
+    assertThat(query, containsString("{ \"lastUpdatedDate\" : {\"order\" : \"desc\"}}"));
   }
 
     @Test
-    public void testOrderIsAscByDefault() {
+    public void testOrderIsDescByDefault() {
         //Given
         setCurrentIdentity();
         ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
@@ -81,7 +81,7 @@ public class ElasticSearchServiceConnectorTest {
         String query = connector.buildQuery("My Wiki", null, 0, 20, "name", null);
         //Then
         assertThat(query, containsString("\"sort\""));
-        assertThat(query, containsString("{\"order\" : \"asc\"}"));
+        assertThat(query, containsString("{\"order\" : \"desc\"}"));
     }
 
     @Test

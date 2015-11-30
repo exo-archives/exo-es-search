@@ -119,7 +119,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     esQuery.append("     \"track_scores\": true,\n");
     esQuery.append("     \"sort\" : [\n");
     esQuery.append("       { \"" + (StringUtils.isNotBlank(sortMapping.get(sort))?sortMapping.get(sort):"_score") + "\" : ");
-    esQuery.append(             "{\"order\" : \"" + (StringUtils.isNotBlank(order)?order:"asc") + "\"}}\n");
+    esQuery.append(             "{\"order\" : \"" + (StringUtils.isNotBlank(order)?order:"desc") + "\"}}\n");
     esQuery.append("     ],\n");
     esQuery.append("     \"_source\": [" + getSourceFields() + "],");
     esQuery.append("     \"query\": {\n");
