@@ -14,24 +14,40 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with this program. If not, see http://www.gnu.org/licenses/ .
 */
-package org.exoplatform.addons.es.dao;
+package org.exoplatform.addons.es.rest.resource;
 
-import org.exoplatform.addons.es.domain.IndexingOperation;
-import org.exoplatform.commons.api.persistence.GenericDAO;
-
-import java.util.List;
+import java.io.Serializable;
 
 /**
  * Created by The eXo Platform SAS
  * Author : Thibault Clement
  * tclement@exoplatform.com
- * 7/29/15
+ * 12/4/15
  */
-public interface IndexingOperationDAO extends GenericDAO<IndexingOperation, Long> {
+public class ConnectorResource implements Serializable {
 
-  List<IndexingOperation> findAllFirst(Integer maxResults);
-  void deleteAllIndexingOperationsHavingIdLessThanOrEqual(long id);
+  private String type;
+  private boolean enable;
 
-  List<IndexingOperation> findAll(int offset, int limit);
+  public ConnectorResource(String type, boolean enable) {
+    this.type = type;
+    this.enable = enable;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+
+  public boolean isEnable() {
+    return enable;
+  }
+
+  public void setEnable(boolean enable) {
+    this.enable = enable;
+  }
 }
 

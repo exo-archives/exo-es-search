@@ -1,15 +1,14 @@
 package org.exoplatform.addons.es.index.impl;
 
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
-
 import org.exoplatform.addons.es.dao.IndexingOperationDAO;
 import org.exoplatform.addons.es.domain.IndexingOperation;
 import org.exoplatform.addons.es.domain.OperationType;
 import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
@@ -123,8 +122,20 @@ public class QueueIndexingService implements IndexingService {
     return indexingOperationDAO.count();
   }
 
-  public List<IndexingOperation> getOperations() {
-    return indexingOperationDAO.findAll();
+  public List<IndexingOperation> getOperations(int offset, int limit) {
+    return indexingOperationDAO.findAll(offset, limit);
   }
 
+  public IndexingOperation getOperation(String operationId) {
+    return indexingOperationDAO.find(Long.getLong(operationId));
+  }
+
+  public void deleteAllOperations() {
+    indexingOperationDAO.deleteAll();
+  }
+
+  public void deleteOperation(String operationId) {
+    IndexingOperation indexingOperation = indexingOperationDAO.find(Long.getLong(operationId));
+    indexingOperationDAO.delete(indexingOperation);
+  }
 }

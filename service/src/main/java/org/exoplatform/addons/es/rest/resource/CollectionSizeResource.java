@@ -14,24 +14,31 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with this program. If not, see http://www.gnu.org/licenses/ .
 */
-package org.exoplatform.addons.es.dao;
+package org.exoplatform.addons.es.rest.resource;
 
-import org.exoplatform.addons.es.domain.IndexingOperation;
-import org.exoplatform.commons.api.persistence.GenericDAO;
-
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Created by The eXo Platform SAS
  * Author : Thibault Clement
  * tclement@exoplatform.com
- * 7/29/15
+ * 12/4/15
  */
-public interface IndexingOperationDAO extends GenericDAO<IndexingOperation, Long> {
+public class CollectionSizeResource<T> extends CollectionResource<T> {
 
-  List<IndexingOperation> findAllFirst(Integer maxResults);
-  void deleteAllIndexingOperationsHavingIdLessThanOrEqual(long id);
+  private int size = 0;
 
-  List<IndexingOperation> findAll(int offset, int limit);
+  public CollectionSizeResource(Collection<T> resources, int size) {
+    super(resources);
+    this.size = size;
+  }
+
+  public int getSize() {
+    return size;
+  }
+
+  public void setSize(int size) {
+    this.size = size;
+  }
 }
 
