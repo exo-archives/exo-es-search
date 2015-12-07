@@ -51,7 +51,7 @@ public class IndexingOperationDAOImpl extends GenericDAOJPAImpl<IndexingOperatio
   @ExoTransactional
   public List<IndexingOperation> findAllFirst(Integer maxResults) {
       return getEntityManager()
-              .createNamedQuery("IndexingOperation.findAllFirst", IndexingOperation.class)
+              .createNamedQuery("IndexingOperation.findAll", IndexingOperation.class)
               .setMaxResults(maxResults)
               .getResultList();
   }
@@ -63,6 +63,15 @@ public class IndexingOperationDAOImpl extends GenericDAOJPAImpl<IndexingOperatio
         .createNamedQuery("IndexingOperation.deleteAllIndexingOperationsHavingIdLessThanOrEqual")
         .setParameter("id", id)
         .executeUpdate();
+  }
+
+  @Override
+  public List<IndexingOperation> findAll(int offset, int limit) {
+    return getEntityManager()
+        .createNamedQuery("IndexingOperation.findAll", IndexingOperation.class)
+        .setFirstResult(offset)
+        .setMaxResults(limit)
+        .getResultList();
   }
 }
 

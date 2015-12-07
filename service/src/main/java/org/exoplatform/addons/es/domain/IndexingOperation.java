@@ -16,11 +16,11 @@
 */
 package org.exoplatform.addons.es.domain;
 
-import java.util.Date;
+import org.exoplatform.commons.api.persistence.ExoEntity;
 
 import javax.persistence.*;
-
-import org.exoplatform.commons.api.persistence.ExoEntity;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Created by The eXo Platform SAS
@@ -34,10 +34,10 @@ import org.exoplatform.commons.api.persistence.ExoEntity;
 @NamedQueries({
     @NamedQuery(name = "IndexingOperation.deleteAllIndexingOperationsHavingIdLessThanOrEqual",
         query = "DELETE FROM IndexingOperation q WHERE q.id <= :id"),
-    @NamedQuery(name = "IndexingOperation.findAllFirst",
+    @NamedQuery(name = "IndexingOperation.findAll",
         query = "SELECT q FROM IndexingOperation q ORDER BY q.id")
 })
-public class IndexingOperation {
+public class IndexingOperation implements Serializable {
 
   @Id
   @GeneratedValue

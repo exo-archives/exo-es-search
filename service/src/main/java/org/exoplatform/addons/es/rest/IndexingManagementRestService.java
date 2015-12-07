@@ -16,18 +16,6 @@
 */
 package org.exoplatform.addons.es.rest;
 
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import org.exoplatform.addons.es.domain.IndexingOperation;
 import org.exoplatform.addons.es.index.IndexingOperationProcessor;
 import org.exoplatform.addons.es.index.IndexingService;
@@ -36,6 +24,17 @@ import org.exoplatform.addons.es.index.impl.QueueIndexingService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.resource.ResourceContainer;
+
+import javax.annotation.security.RolesAllowed;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
@@ -107,7 +106,7 @@ public class IndexingManagementRestService implements ResourceContainer {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed("administrators")
   public Response getOperations() throws ParseException {
-    List<IndexingOperation> operations = new ArrayList<>(indexingService.getOperations());
+    List<IndexingOperation> operations = new ArrayList<>(indexingService.getOperations(0,100));
     //List<IndexingOperation> operations = getFakeIndexingOperation();
     return Response.ok(operations, MediaType.APPLICATION_JSON).build();
   }
@@ -138,4 +137,3 @@ public class IndexingManagementRestService implements ResourceContainer {
     return Response.ok("0", MediaType.TEXT_PLAIN).build();
   }
 }
-
