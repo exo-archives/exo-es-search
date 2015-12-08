@@ -16,9 +16,6 @@
  */
 package org.exoplatform.addons.es.client;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -34,6 +31,9 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by The eXo Platform SAS Author : Thibault Clement
@@ -144,7 +144,7 @@ public abstract class ElasticClient {
   private HttpClient getHttpClient() {
     // Check if Basic Authentication need to be used
     if (StringUtils.isNotBlank(getEsUsernameProperty())) {
-      DefaultHttpClient httpClient = new DefaultHttpClient();
+      DefaultHttpClient httpClient = new DefaultHttpClient(getClientConnectionManager());
       httpClient.getCredentialsProvider().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT),
                                                          new UsernamePasswordCredentials(getEsUsernameProperty(),
                                                                                          getEsPasswordProperty()));
