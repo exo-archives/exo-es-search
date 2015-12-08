@@ -154,7 +154,7 @@ public abstract class ElasticClient {
       return httpClient;
     } else {
       LOG.debug("Basic authentication for ES not activated");
-      return new DefaultHttpClient();
+      return new DefaultHttpClient(getClientConnectionManager());
     }
   }
 
