@@ -16,6 +16,9 @@
 */
 package org.exoplatform.addons.es.rest.resource;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import java.io.Serializable;
 
 /**
@@ -24,6 +27,7 @@ import java.io.Serializable;
  * tclement@exoplatform.com
  * 12/4/15
  */
+@ApiModel(value="An Indexing Connector Resources")
 public class ConnectorResource implements Serializable {
 
   private String type;
@@ -34,6 +38,7 @@ public class ConnectorResource implements Serializable {
     this.enable = enable;
   }
 
+  @ApiModelProperty(value = "The Connector Type")
   public String getType() {
     return type;
   }
@@ -42,6 +47,7 @@ public class ConnectorResource implements Serializable {
     this.type = type;
   }
 
+  @ApiModelProperty(value = "Does the Connector is enable or not", allowableValues = "true,false")
   public boolean isEnable() {
     return enable;
   }

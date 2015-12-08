@@ -16,6 +16,9 @@
 */
 package org.exoplatform.addons.es.rest.resource;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import java.io.Serializable;
 
 /**
@@ -24,6 +27,7 @@ import java.io.Serializable;
  * tclement@exoplatform.com
  * 12/4/15
  */
+@ApiModel(value="An Indexing Operation Resource")
 public class OperationResource  implements Serializable {
 
   private String entityType;
@@ -39,6 +43,7 @@ public class OperationResource  implements Serializable {
     this.operation = operation;
   }
 
+  @ApiModelProperty(value = "The Entity Type")
   public String getEntityType() {
     return entityType;
   }
@@ -47,6 +52,7 @@ public class OperationResource  implements Serializable {
     this.entityType = entityType;
   }
 
+  @ApiModelProperty(value = "The Entity Id", notes = "Mandatory if the operation is index/reindex/unindex")
   public String getEntityId() {
     return entityId;
   }
@@ -55,6 +61,7 @@ public class OperationResource  implements Serializable {
     this.entityId = entityId;
   }
 
+  @ApiModelProperty(value = "The Indexing operation", allowableValues = "init,index,reindex,unindex,reindexAll,unindexAll")
   public String getOperation() {
     return operation;
   }
