@@ -65,7 +65,7 @@
   </component>
 
   <component>
-    <type>org.exoplatform.addons.es.rest.impl.IndexingManagementRestServiceV1</type>
+    <type>org.exoplatform.addons.es.rest.IndexingManagementRestServiceV1</type>
   </component>
 
   <external-component-plugins>

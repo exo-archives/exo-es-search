@@ -16,9 +16,6 @@
  */
 package org.exoplatform.addons.es.client;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -34,6 +31,9 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by The eXo Platform SAS Author : Thibault Clement

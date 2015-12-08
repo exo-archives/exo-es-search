@@ -134,8 +134,7 @@ public class QueueIndexingService implements IndexingService {
     indexingOperationDAO.deleteAll();
   }
 
-  public void deleteOperation(String operationId) {
-    IndexingOperation indexingOperation = indexingOperationDAO.find(Long.getLong(operationId));
+  public void deleteOperation(IndexingOperation indexingOperation) {
     indexingOperationDAO.delete(indexingOperation);
   }
 }
