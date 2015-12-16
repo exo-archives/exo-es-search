@@ -79,6 +79,7 @@ public class IndexingManagementRestServiceV1 implements ResourceContainer {
 
   @GET
   @Path(IndexingManagementRestServiceV1.CONNECTORS_URI)
+  @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed("administrators")
   @ApiOperation(value = "Return all Indexing Connectors")
   @ApiResponses(value = {
@@ -175,6 +176,7 @@ public class IndexingManagementRestServiceV1 implements ResourceContainer {
 
   @PUT
   @Path(IndexingManagementRestServiceV1.CONNECTORS_URI+"/{connectorType}")
+  @Consumes(MediaType.APPLICATION_JSON)
   @RolesAllowed("administrators")
   @ApiOperation(value = "Update an Indexing Connector to enable / disable it")
   @ApiResponses(value = {
@@ -273,12 +275,16 @@ public class IndexingManagementRestServiceV1 implements ResourceContainer {
 
   @POST
   @Path(IndexingManagementRestServiceV1.OPERATIONS_URI)
+  @Consumes(MediaType.APPLICATION_JSON)
   @RolesAllowed("administrators")
   @ApiOperation(value = "Add an Indexing Operation to the queue")
   @ApiResponses(value = {
       @ApiResponse(code = 201, message = "Indexing Operation successfully added"),
       @ApiResponse(code = 400, message = "The specified Indexing Operation is unknown")})
   public Response addOperation(
+      @ApiParam(
+          value = "An Indexing Operation Resource",
+          required = true)
       OperationResource operationResource
   ) {
 
