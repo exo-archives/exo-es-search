@@ -36,14 +36,16 @@ define('connectorController', ['SHARED/jquery', 'indexingManagementApi', 'operat
                 var html = "";
                 for(var i = 0; i < json.resources.length; i++) {
 
+                    var checked = '';
+                    if (json.resources[i].enable) checked = 'checked';
+
                     html += "<tr>" +
                     "    <th scope='row'>" + json.resources[i].type + "</th>" +
                     "    <td>" + json.resources[i].description + "</td>" +
                     "    <td>" + json.resources[i].index + "</td>" +
                     "    <td>" +
                     "        <div class='connector-switch'>" +
-                    "            <input id='" + json.resources[i].type + "' type='checkbox'>" +
-                    "            <label for='" + json.resources[i].type + "' class='label-primary'></label>" +
+                    "            <input type='checkbox' name='connector-switch' data-connectorType='" + json.resources[i].type + "' " + checked + ">" +
                     "        </div>" +
                     "    </td>" +
                     "    <td>" +
