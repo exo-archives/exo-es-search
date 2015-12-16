@@ -1,5 +1,5 @@
 
-require(['SHARED/jquery', 'controller/statController', 'controller/connectorController', 'controller/operationController'],
+require(['SHARED/jquery', 'statController', 'connectorController', 'operationController'],
     function($, statController, connectorController, operationController){
 
         //Get the Services
