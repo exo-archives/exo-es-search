@@ -49,7 +49,7 @@ define('connectorController', ['SHARED/jquery', 'indexingManagementApi', 'operat
                     "        </div>" +
                     "    </td>" +
                     "    <td>" +
-                    "        <button data-connectorType='" + json.resources[i].type + "' type='button'class='btn-connector-reindex btn btn-primary btn-mini'>" +
+                    "        <button data-connectorType='" + json.resources[i].type + "' type='button' class='btn-connector-reindex btn btn-primary btn-mini'>" +
                     "           Reindex" +
                     "        </button>" +
                     "    </td>" +
