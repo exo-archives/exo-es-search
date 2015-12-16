@@ -26,10 +26,6 @@ import java.io.IOException;
 public class IndexingManagementApplication {
 
   @Inject
-  @Path("indexingManagementAngular.gtmpl")
-  org.exoplatform.addons.es.templates.indexingManagementAngular indexingManagementAngular;
-
-  @Inject
   @Path("indexingManagement.gtmpl")
   org.exoplatform.addons.es.templates.indexingManagement indexingManagement;
 

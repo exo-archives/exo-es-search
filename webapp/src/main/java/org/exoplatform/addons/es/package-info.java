@@ -16,16 +16,15 @@
 
 @juzu.Application(defaultController = IndexingManagementApplication.class)
 @Portlet
-@WebJars({
-    @WebJar("jquery"),
-    @WebJar("angularjs")
-})
 @Scripts({
-    @Script(id = "jquery", value = "jquery/1.10.2/jquery.js"),
-    @Script(id = "angularjs", value = "angularjs/1.4.6/angular.min.js"),
-    @Script(value = "javascripts/app.js", depends = "angularjs"),
-    @Script(value = "javascripts/service.js", depends = "angularjs"),
-    @Script(value = "javascripts/controller.js", depends = "angularjs")
+    @Script(id = "apiClient", value = "scripts/rest/client/ApiClient.js"),
+    @Script(id = "indexingOperationResource", value = "scripts/rest/model/AnIndexingOperationResource.js"),
+    @Script(id = "indexingConnectorResources", value = "scripts/rest/model/AnIndexingConnectorResources.js"),
+    @Script(id = "indexingManagementApi" , value = "scripts/rest/api/VindexingManagementApi.js", depends = {"apiClient"}),
+    @Script(id = "statController" , value = "scripts/app/controller/statController.js", depends = {"indexingManagementApi"}),
+    @Script(id = "connectorController" , value = "scripts/app/controller/connectorController.js", depends = {"indexingManagementApi","indexingOperationResource"}),
+    @Script(id = "operationController" , value = "scripts/app/controller/operationController.js", depends = {"indexingManagementApi", "indexingOperationResource"}),
+    @Script(id = "main" , value = "scripts/app/main.js", depends = {"statController","connectorController","operationController"})
 })
 @Less({
     @Stylesheet(id = "indexingManagement-less", value = "styles/indexingManagement.less")
@@ -33,8 +32,9 @@
 @Assets("*")
 package org.exoplatform.addons.es;
 
-import juzu.plugin.asset.*;
+import juzu.plugin.asset.Assets;
+import juzu.plugin.asset.Script;
+import juzu.plugin.asset.Scripts;
+import juzu.plugin.asset.Stylesheet;
 import juzu.plugin.less4j.Less;
 import juzu.plugin.portlet.Portlet;
-import juzu.plugin.webjars.WebJar;
-import juzu.plugin.webjars.WebJars;
