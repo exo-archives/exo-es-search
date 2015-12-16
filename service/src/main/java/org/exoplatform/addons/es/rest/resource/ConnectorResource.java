@@ -33,6 +33,9 @@ public class ConnectorResource implements Serializable {
   private String type;
   private boolean enable;
 
+  public ConnectorResource() {
+  }
+
   public ConnectorResource(String type, boolean enable) {
     this.type = type;
     this.enable = enable;
