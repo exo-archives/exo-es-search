@@ -46,7 +46,7 @@ define('operationEnum', ['SHARED/jquery'],
 
 
 //export module
-define('indexingOperationResource', ['jquery'],
+define('indexingOperationResource', ['SHARED/jquery'],
     function($) {
 
 
