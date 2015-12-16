@@ -33,7 +33,8 @@ define('apiClient', ['SHARED/jquery'],
                     type: method,
                     cache: false,
                     dataType: 'json',
-                    data: JSON.stringify(body),
+                    contentType: 'application/json; charset=UTF-8',
+                    data: body,
                     error: function(jqXHR) {
                         //TODO manage error
                         console.log("Ajax error " + jqXHR.status);
