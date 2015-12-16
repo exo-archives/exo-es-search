@@ -34,9 +34,6 @@ public class OperationResource  implements Serializable {
   private String entityId;
   private String operation;
 
-  public OperationResource() {
-  }
-
   public OperationResource(String entityType, String entityId, String operation) {
     this.entityType = entityType;
     this.entityId = entityId;
