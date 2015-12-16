@@ -3,7 +3,7 @@
  */
 
 //export module
-define('indexingConnectorResource', ['jquery'],
+define('indexingConnectorResource', ['SHARED/jquery'],
     function($) {
 
         var AnIndexingConnectorResources = function AnIndexingConnectorResources() {

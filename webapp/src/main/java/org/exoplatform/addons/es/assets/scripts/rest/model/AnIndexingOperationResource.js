@@ -1,7 +1,7 @@
 
 
 //export module
-define('operationEnum', ['jquery'],
+define('operationEnum', ['SHARED/jquery'],
     function($) {
 
         var OperationEnum = function OperationEnum() {
