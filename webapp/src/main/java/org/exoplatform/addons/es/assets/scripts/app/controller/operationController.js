@@ -2,35 +2,62 @@
  * Created by TClement on 12/15/15.
  */
 
-define('operationController', ['SHARED/jquery', 'indexingManagementApi', 'indexingOperationResource'],
+define('operationController', ['SHARED/jquery', 'indexingManagementApi', 'indexingOperationResource', 'statController'],
     function($, indexingManagementApi, indexingOperationResource) {
+
+        //Service
+        var myIndexingManagementApi = new indexingManagementApi();
+        //Controller
+        var myStatController = new statController();
 
         var operationController = function operationController() {
             var self = this;
-
-            //Get the Indexing management REST Service API
-            var myIndexingManagementApi = new indexingManagementApi();
 
             self.init = function() {
 
                 //Init the Operation list
                 self.updateOperationList();
-                initBinding();
+                initUiListener();
 
             }
 
             self.updateOperationList = function() {
-                myIndexingManagementApi.getOperations(null, 0, 10, false, fillOperationTable);
-            }
-
-            self.deleteOperation = function(indexingOperationId) {
-
-                myIndexingManagementApi.deleteOperation(indexingOperationId, afterSentDeletingOperation);
+                updateOperationTable();
             }
 
         }
 
-        //Update UI Component
+        // Listener
+
+        function initUiListener() {
+            addDeleteOperationUiListener();
+        }
+
+        function addDeleteOperationUiListener() {
+            //Deleting queue operation Event
+            $(document).on('click.btn-operation-delete', '.btn-operation-delete', function () {
+
+                //Get operation Id
+                var jOperation = $(this);
+                var jOperationId = jOperation.attr('data-operationId');
+
+                //Trigger the deleting operation
+                deleteOperation(jOperationId);
+            });
+        }
+
+
+        // Action
+
+        function updateOperationTable() {
+            myIndexingManagementApi.getOperations(null, 0, 10, false, fillOperationTable);
+        }
+
+        function deleteOperation(indexingOperationId) {
+            myIndexingManagementApi.deleteOperation(indexingOperationId, broadcastDeletedOperation);
+        }
+
+        //Callback function
 
         function fillOperationTable(json) {
 
@@ -39,11 +66,11 @@ define('operationController', ['SHARED/jquery', 'indexingManagementApi', 'indexi
             for(var i = 0; i < json.resources.length; i++) {
 
                 html += "<tr>" +
-                "    <th scope='row'>{{operation.id}}</th>" +
-                "    <td>{{operation.entityType}}</td>" +
-                "    <td>{{operation.entityId}}</td>" +
-                "    <td>{{operation.operation}}</td>" +
-                "    <td>{{operation.timestamp.time}}</td>" +
+                "    <th scope='row'>" + json.resources[i].id + "</th>" +
+                "    <td>" + json.resources[i].entityType + "</td>" +
+                "    <td>" + json.resources[i].entityId + "</td>" +
+                "    <td>" + json.resources[i].operation + "</td>" +
+                "    <td>" + json.resources[i].timestamp + "</td>" +
                 "    <td>" +
                 "        <button type='button'" +
                 "                data-operationId=''" +
@@ -59,24 +86,10 @@ define('operationController', ['SHARED/jquery', 'indexingManagementApi', 'indexi
 
         }
 
-        function initBinding() {
-
-            //Deleting queue operation Event
-            $(document).on('click.btn-operation-delete', '.btn-operation-delete', function () {
-
-                //Get operation Id
-                var jOperation = $(this);
-                var jOperationId = jOperation.attr('data-operationId');
-
-                //Trigger the deleting operation
-                self.deleteOperation(jOperationId);
-            });
-
-        }
-
-        function afterSentDeletingOperation() {
+        function broadcastDeletedOperation() {
             //Here I call all UI component that need to be refresh after sending a deleting operation
-            console.log('refresh UI component after Sent Deleting Operation');
+            updateOperationTable();
+            myStatController.updateStatNbOperation();
         }
 
         return operationController;
