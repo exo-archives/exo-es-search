@@ -2,13 +2,12 @@
  * Created by TClement on 12/15/15.
  */
 
-define('operationController', ['SHARED/jquery', 'indexingManagementApi', 'indexingOperationResource', 'statController'],
-    function($, indexingManagementApi, indexingOperationResource) {
+define('operationController', ['SHARED/jquery', 'indexingManagementApi', 'appBroadcaster'],
+    function($, indexingManagementApi, appBroadcaster) {
 
         //Service
         var myIndexingManagementApi = new indexingManagementApi();
-        //Controller
-        var myStatController = new statController();
+        var myAppBroadcaster = new appBroadcaster();
 
         var operationController = function operationController() {
             var self = this;
@@ -54,10 +53,10 @@ define('operationController', ['SHARED/jquery', 'indexingManagementApi', 'indexi
         }
 
         function deleteOperation(indexingOperationId) {
-            myIndexingManagementApi.deleteOperation(indexingOperationId, broadcastDeletedOperation);
+            myIndexingManagementApi.deleteOperation(indexingOperationId, appBroadcaster.onDeleteOperation);
         }
 
-        //Callback function
+        // UI Function
 
         function fillOperationTable(json) {
 
@@ -84,12 +83,6 @@ define('operationController', ['SHARED/jquery', 'indexingManagementApi', 'indexi
             //Update the table
             $('#indexingOperationTable tbody').html(html);
 
-        }
-
-        function broadcastDeletedOperation() {
-            //Here I call all UI component that need to be refresh after sending a deleting operation
-            updateOperationTable();
-            myStatController.updateStatNbOperation();
         }
 
         return operationController;

@@ -2,13 +2,12 @@
  * Created by TClement on 12/15/15.
  */
 
-define('statController', ['SHARED/jquery', 'indexingManagementApi'],
-    function($, indexingManagementApi) {
+define('statController', ['SHARED/jquery', 'indexingManagementApi', 'appBroadcaster'],
+    function($, indexingManagementApi, appBroadcaster) {
 
         //Service
         var myIndexingManagementApi = new indexingManagementApi();
-        //Controller
-        //Resource
+        var myAppBroadcaster = new appBroadcaster();
 
         var statController = function statController() {
             var self = this;
@@ -41,7 +40,6 @@ define('statController', ['SHARED/jquery', 'indexingManagementApi'],
 
         }
 
-        //Listener
 
         // Action
 
@@ -58,7 +56,7 @@ define('statController', ['SHARED/jquery', 'indexingManagementApi'],
             updateStatNbError($.parseJSON("{'size': 0}"));
         }
 
-        // Callback Function
+        // UI Function
 
         function updateStatNbConnectorValue(json) {
             $('#statNbConnector').text(json.size);
