@@ -5,11 +5,13 @@
 define('statController', ['SHARED/jquery', 'indexingManagementApi'],
     function($, indexingManagementApi) {
 
+        //Service
+        var myIndexingManagementApi = new indexingManagementApi();
+        //Controller
+        //Resource
+
         var statController = function statController() {
             var self = this;
-
-            //Get the Indexing management REST Service API
-            var myIndexingManagementApi = new indexingManagementApi();
 
             self.init = function() {
 
@@ -23,37 +25,51 @@ define('statController', ['SHARED/jquery', 'indexingManagementApi'],
                     self.updateStatNbOperation();
                 }, 5000);
 
-                //TODO Set refresh interval for errors stats to 5 seconds
-
             }
 
             self.updateStatNbConnector = function() {
-                myIndexingManagementApi.getConnectors(null, true, updateStatNbConnectorValue);
+                updateStatNbConnectorValue()
             }
 
             self.updateStatNbOperation = function() {
-                myIndexingManagementApi.getOperations(null, 0, 0, true, updateStatNbOperationValue);
+                updateStatNbOperationValue()
             }
 
             self.updateStatNbError = function() {
-                //TODO when Error management will be implemented
-                updateStatNbError(0);
+                updateStatNbErrorValue()
             }
 
-            //Update UI Component
+        }
 
-            function updateStatNbConnectorValue(json) {
-                $('#statNbConnector').text(json.size);
-            }
+        //Listener
 
-            function updateStatNbOperationValue(json) {
-                $('#statNbOperation').text(json.size);
-            }
+        // Action
 
-            function updateStatNbError(json) {
-                $('#statNbError').text(json.size);
-            }
+         function updateStatNbConnectorValue() {
+            myIndexingManagementApi.getConnectors(null, true, updateStatNbConnectorValue);
+        }
 
+        function updateStatNbOperationValue() {
+            myIndexingManagementApi.getOperations(null, 0, 0, true, updateStatNbOperationValue);
+        }
+
+         function updateStatNbErrorValue() {
+            //TODO when Error management will be implemented
+            updateStatNbError($.parseJSON("{'size': 0}"));
+        }
+
+        // Callback Function
+
+        function updateStatNbConnectorValue(json) {
+            $('#statNbConnector').text(json.size);
+        }
+
+        function updateStatNbOperationValue(json) {
+            $('#statNbOperation').text(json.size);
+        }
+
+        function updateStatNbError(json) {
+            $('#statNbError').text(json.size);
         }
 
         return statController;
