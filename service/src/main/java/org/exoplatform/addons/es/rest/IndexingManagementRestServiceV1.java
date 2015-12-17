@@ -105,7 +105,7 @@ public class IndexingManagementRestServiceV1 implements ResourceContainer {
 
     //Manage return size parameter
     if (returnSize) {
-      int connectorNb = indexingService.getNumberOperations().intValue();
+      int connectorNb = indexingOperationProcessor.getConnectors().size();
       connectorData = new CollectionSizeResource<>(connectors, connectorNb);
     }
     else {
