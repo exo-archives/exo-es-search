@@ -2,20 +2,20 @@
  * Created by TClement on 12/15/15.
  */
 
-define('connectorController', ['SHARED/jquery', 'indexingManagementApi', 'operationEnum', 'indexingOperationResource', 'operationController', 'statController'],
-    function($, indexingManagementApi, operationEnum, indexingOperationResource) {
+define('connectorController', ['SHARED/jquery', 'indexingManagementApi', 'appBroadcaster', 'indexingOperationResource', 'operationEnum'],
+    function($, indexingManagementApi, appBroadcaster, indexingOperationResource, operationEnum) {
 
         //Service
         var myIndexingManagementApi = new indexingManagementApi();
-        //Controller
-        var myStatController = new statController();
-        var myOperationController = new operationController();
+        var myAppBroadcaster;
 
 
         var connectorController = function connectorController() {
             var self = this;
 
-            self.init = function() {
+            self.init = function(appBroadcaster) {
+
+                myAppBroadcaster = appBroadcaster;
 
                 //Init the connector list
                 self.updateConnectorList();
@@ -63,10 +63,10 @@ define('connectorController', ['SHARED/jquery', 'indexingManagementApi', 'operat
             indexingOperation.setEntityType(connectorType);
             indexingOperation.setOperation(new operationEnum().REINDEX);
 
-            myIndexingManagementApi.addOperation(indexingOperation, afterSentReindexingOperation);
+            myIndexingManagementApi.addOperation(indexingOperation, myAppBroadcaster.onReindexConnector);
         }
 
-        //Callback function
+        // UI function
 
         function fillConnectorTable(json) {
 
@@ -97,13 +97,6 @@ define('connectorController', ['SHARED/jquery', 'indexingManagementApi', 'operat
             //Update the table
             $('#indexingConnectorTable tbody').html(html);
 
-        }
-
-        function broadcastReindexConnector() {
-            //Here I call all UI component that need to be refresh after sending a reindexing operation
-            updateConnectorTable();
-            myStatController.updateStatNbOperation();
-            myOperationController.updateOperationList();
         }
 
         return connectorController;

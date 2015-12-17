@@ -1,23 +1,25 @@
 
-require(['SHARED/jquery', 'statController', 'connectorController', 'operationController'],
-    function($, statController, connectorController, operationController){
+require(['SHARED/jquery', 'statController', 'connectorController', 'operationController', 'appBroadcaster'],
+    function($, statController, connectorController, operationController, appBroadcaster){
 
-        //Get the Services
+        //Controller
         var myStatController = new statController();
         var myConnectorController = new connectorController();
         var myOperationController = new operationController();
+        //Event broadcaster
+        var myAppBroadcaster = new appBroadcaster();
 
         $(document).ready(
             function($) {
 
                 //Init Stats
-                myStatController.init();
+                myStatController.init(myAppBroadcaster);
 
                 //Init Connector list
-                myConnectorController.init();
+                myConnectorController.init(myAppBroadcaster);
 
                 //Init Operation list
-                myOperationController.init();
+                myOperationController.init(myAppBroadcaster);
 
             }
         );

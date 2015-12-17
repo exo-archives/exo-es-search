@@ -2,18 +2,19 @@
  * Created by TClement on 12/15/15.
  */
 
-define('statController', ['SHARED/jquery', 'indexingManagementApi'],
-    function($, indexingManagementApi) {
+define('statController', ['SHARED/jquery', 'indexingManagementApi', 'appBroadcaster'],
+    function($, indexingManagementApi, appBroadcaster) {
 
         //Service
         var myIndexingManagementApi = new indexingManagementApi();
-        //Controller
-        //Resource
+        var myAppBroadcaster;
 
         var statController = function statController() {
             var self = this;
 
-            self.init = function() {
+            self.init = function(appBroadcaster) {
+
+                myAppBroadcaster = appBroadcaster;
 
                 //Init stats value
                 self.updateStatNbConnector();
@@ -41,35 +42,34 @@ define('statController', ['SHARED/jquery', 'indexingManagementApi'],
 
         }
 
-        //Listener
 
         // Action
 
-         function updateStatNbConnectorValue() {
-            myIndexingManagementApi.getConnectors(null, true, updateStatNbConnectorValue);
+        function updateStatNbConnectorValue() {
+            myIndexingManagementApi.getConnectors(null, true, updateStatNbConnectorUi);
         }
 
         function updateStatNbOperationValue() {
-            myIndexingManagementApi.getOperations(null, 0, 0, true, updateStatNbOperationValue);
+            myIndexingManagementApi.getOperations(null, 0, 0, true, updateStatNbOperationUi);
         }
 
-         function updateStatNbErrorValue() {
+        function updateStatNbErrorValue() {
             //TODO when Error management will be implemented
-            updateStatNbError($.parseJSON("{'size': 0}"));
+            updateStatNbErrorUi(null);
         }
 
-        // Callback Function
+        // UI Function
 
-        function updateStatNbConnectorValue(json) {
+        function updateStatNbConnectorUi(json) {
             $('#statNbConnector').text(json.size);
         }
 
-        function updateStatNbOperationValue(json) {
+        function updateStatNbOperationUi(json) {
             $('#statNbOperation').text(json.size);
         }
 
-        function updateStatNbError(json) {
-            $('#statNbError').text(json.size);
+        function updateStatNbErrorUi(json) {
+            $('#statNbError').text('NA');
         }
 
         return statController;

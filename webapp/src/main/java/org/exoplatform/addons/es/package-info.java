@@ -24,6 +24,7 @@
     @Script(id = "statController" , value = "scripts/app/controller/statController.js", depends = {"indexingManagementApi"}),
     @Script(id = "connectorController" , value = "scripts/app/controller/connectorController.js", depends = {"indexingManagementApi","indexingOperationResource"}),
     @Script(id = "operationController" , value = "scripts/app/controller/operationController.js", depends = {"indexingManagementApi", "indexingOperationResource"}),
+    @Script(id = "appBroadcaster" , value = "scripts/app/broadcaster.js", depends = {"statController","connectorController","operationController"}),
     @Script(id = "main" , value = "scripts/app/main.js", depends = {"statController","connectorController","operationController"})
 })
 @Less({
