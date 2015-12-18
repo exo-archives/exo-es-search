@@ -24,8 +24,13 @@ define('operationController', ['SHARED/jquery', 'indexingManagementApi', 'appBro
                 myAppBroadcaster = appBroadcaster;
 
                 //Init the Operation list
-                self.refereshOperationList();
+                self.refreshOperationList();
                 initUiListener();
+
+                //Set refresh interval for operations list to 5 seconds
+                setInterval(function(){
+                    self.refreshOperationList();
+                }, 5000);
 
             }
 
@@ -34,7 +39,7 @@ define('operationController', ['SHARED/jquery', 'indexingManagementApi', 'appBro
              *
              * @return void
              */
-            self.refereshOperationList = function() {
+            self.refreshOperationList = function() {
                 updateOperationTable();
             }
 
