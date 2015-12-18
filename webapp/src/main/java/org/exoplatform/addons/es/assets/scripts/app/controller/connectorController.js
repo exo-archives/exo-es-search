@@ -61,6 +61,8 @@ define('connectorController', ['SHARED/jquery', 'indexingManagementApi', 'appBro
             //Construct the indexingOperation
             var indexingOperation = new indexingOperationResource();
             indexingOperation.setEntityType(connectorType);
+            //TODO remove this workaround for ID is null returned by Rest Service
+            indexingOperation.setEntityId('1');
             indexingOperation.setOperation(new operationEnum().REINDEX);
 
             myIndexingManagementApi.addOperation(indexingOperation, myAppBroadcaster.onReindexConnector);
