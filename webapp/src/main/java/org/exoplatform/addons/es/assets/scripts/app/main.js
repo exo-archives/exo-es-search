@@ -9,6 +9,10 @@ require(['SHARED/jquery', 'statController', 'connectorController', 'operationCon
         //Event broadcaster
         var myAppBroadcaster = new appBroadcaster();
 
+        /**
+         * Initiliaz all the controller when the doc is ready
+         *
+         */
         $(document).ready(
             function($) {
 

@@ -7,34 +7,54 @@ define('connectorController', ['SHARED/jquery', 'indexingManagementApi', 'appBro
 
         //Service
         var myIndexingManagementApi = new indexingManagementApi();
+        //Event broadcaster
         var myAppBroadcaster;
 
 
         var connectorController = function connectorController() {
             var self = this;
 
+            /**
+             * Initialize the Connector Controller
+             *
+             * @param {broadcaster} appBroadcaster the appBroadcaster responsible to spread the event to other controller
+             * @return void
+             */
             self.init = function(appBroadcaster) {
 
                 myAppBroadcaster = appBroadcaster;
 
                 //Init the connector list
-                self.updateConnectorList();
+                self.refreshConnectorList();
                 initUiListener();
 
             }
 
-            self.updateConnectorList = function() {
+            /**
+             * Refresh the list of Indexing connectors
+             *
+             * @return void
+             */
+            self.refreshConnectorList = function() {
                 updateConnectorTable();
             }
 
         }
 
-        //Listener
-
+        /**
+         * Initialize the listener on UI events (such as onClick, onHover, ...)
+         *
+         * @return void
+         */
         function initUiListener() {
             addReindexConnectorUiListener();
         }
 
+        /**
+         * Declare the event listener handling the click on reindex connector button
+         *
+         * @return void
+         */
         function addReindexConnectorUiListener() {
 
             //Reindex connector Event
@@ -50,12 +70,21 @@ define('connectorController', ['SHARED/jquery', 'indexingManagementApi', 'appBro
 
         }
 
-        // Action
-
+        /**
+         * Update the table of list of connectors with latest value
+         *
+         * @return void
+         */
         function updateConnectorTable() {
             myIndexingManagementApi.getConnectors(null, false, fillConnectorTable);
         }
 
+        /**
+         * Reindex a connector using the Indexing Management Api
+         *
+         * @param {String} connectorType the type of the connector to reindex
+         * @return void
+         */
         function reindexConnector(connectorType) {
 
             //Construct the indexingOperation
@@ -68,8 +97,12 @@ define('connectorController', ['SHARED/jquery', 'indexingManagementApi', 'appBro
             myIndexingManagementApi.addOperation(indexingOperation, myAppBroadcaster.onReindexConnector);
         }
 
-        // UI function
-
+        /**
+         * Manipulate the DOM to fill the Indexing Connector table
+         *
+         * @param {IndexingConnectorArray} json a JSON array of Indexing Connector
+         * @return void
+         */
         function fillConnectorTable(json) {
 
             //Loop on connectors to add one line per connector in the table

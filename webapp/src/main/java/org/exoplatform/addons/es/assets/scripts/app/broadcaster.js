@@ -15,14 +15,14 @@ define('appBroadcaster', ['SHARED/jquery', 'operationController', 'statControlle
             var self = this;
 
             self.onReindexConnector = function() {
-                myConnectorController.updateConnectorList();
-                myStatController.updateStatNbOperation();
-                myOperationController.updateOperationList();
+                myConnectorController.refreshConnectorList();
+                myStatController.refreshStatNbOperation();
+                myOperationController.refereshOperationList();
             }
 
             self.onDeleteOperation = function() {
-                myOperationController.updateOperationList();
-                myStatController.updateStatNbOperation();
+                myOperationController.refereshOperationList();
+                myStatController.refreshStatNbOperation();
             }
 
         }

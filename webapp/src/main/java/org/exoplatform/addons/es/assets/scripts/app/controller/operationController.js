@@ -7,33 +7,54 @@ define('operationController', ['SHARED/jquery', 'indexingManagementApi', 'appBro
 
         //Service
         var myIndexingManagementApi = new indexingManagementApi();
+        //Event broadcaster
         var myAppBroadcaster;
 
         var operationController = function operationController() {
             var self = this;
 
+            /**
+             * Initialize the Operation Controller
+             *
+             * @param {broadcaster} appBroadcaster the appBroadcaster responsible to spread the event to other controller
+             * @return void
+             */
             self.init = function(appBroadcaster) {
 
                 myAppBroadcaster = appBroadcaster;
 
                 //Init the Operation list
-                self.updateOperationList();
+                self.refereshOperationList();
                 initUiListener();
 
             }
 
-            self.updateOperationList = function() {
+            /**
+             * Refresh the list of Indexing operations
+             *
+             * @return void
+             */
+            self.refereshOperationList = function() {
                 updateOperationTable();
             }
 
         }
 
-        // Listener
 
+        /**
+         * Initialize the listener on UI events (such as onClick, onHover, ...)
+         *
+         * @return void
+         */
         function initUiListener() {
             addDeleteOperationUiListener();
         }
 
+        /**
+         * Add the event listener handling the click on delete operation button
+         *
+         * @return void
+         */
         function addDeleteOperationUiListener() {
             //Deleting queue operation Event
             $(document).on('click.btn-operation-delete', '.btn-operation-delete', function () {
@@ -47,19 +68,31 @@ define('operationController', ['SHARED/jquery', 'indexingManagementApi', 'appBro
             });
         }
 
-
-        // Action
-
+        /**
+         * Update the table of list of operations with latest value
+         *
+         * @return void
+         */
         function updateOperationTable() {
             myIndexingManagementApi.getOperations(null, 0, 10, false, fillOperationTable);
         }
 
+        /**
+         * Delete an operation using the Indexing Management Api
+         *
+         * @param {String} indexingOperationId the id of the operation to delete
+         * @return void
+         */
         function deleteOperation(indexingOperationId) {
             myIndexingManagementApi.deleteOperation(indexingOperationId, myAppBroadcaster.onDeleteOperation);
         }
 
-        // UI Function
-
+        /**
+         * Manipulate the DOM to fill the Indexing Operation table
+         *
+         * @param {IndexingOperationArray} json a JSON array of Indexing Operation
+         * @return void
+         */
         function fillOperationTable(json) {
 
             //Loop on operations to add one line per Operation in the table
