@@ -7,12 +7,14 @@ define('operationController', ['SHARED/jquery', 'indexingManagementApi', 'appBro
 
         //Service
         var myIndexingManagementApi = new indexingManagementApi();
-        var myAppBroadcaster = new appBroadcaster();
+        var myAppBroadcaster;
 
         var operationController = function operationController() {
             var self = this;
 
-            self.init = function() {
+            self.init = function(appBroadcaster) {
+
+                myAppBroadcaster = appBroadcaster;
 
                 //Init the Operation list
                 self.updateOperationList();
@@ -53,7 +55,7 @@ define('operationController', ['SHARED/jquery', 'indexingManagementApi', 'appBro
         }
 
         function deleteOperation(indexingOperationId) {
-            myIndexingManagementApi.deleteOperation(indexingOperationId, appBroadcaster.onDeleteOperation);
+            myIndexingManagementApi.deleteOperation(indexingOperationId, myAppBroadcaster.onDeleteOperation);
         }
 
         // UI Function

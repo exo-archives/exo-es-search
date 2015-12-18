@@ -2,18 +2,20 @@
  * Created by TClement on 12/15/15.
  */
 
-define('connectorController', ['SHARED/jquery', 'indexingManagementApi', 'appBroadcaster'],
-    function($, indexingManagementApi, appBroadcaster) {
+define('connectorController', ['SHARED/jquery', 'indexingManagementApi', 'appBroadcaster', 'indexingOperationResource', 'operationEnum'],
+    function($, indexingManagementApi, appBroadcaster, indexingOperationResource, operationEnum) {
 
         //Service
         var myIndexingManagementApi = new indexingManagementApi();
-        var myAppBroadcaster = new appBroadcaster();
+        var myAppBroadcaster;
 
 
         var connectorController = function connectorController() {
             var self = this;
 
-            self.init = function() {
+            self.init = function(appBroadcaster) {
+
+                myAppBroadcaster = appBroadcaster;
 
                 //Init the connector list
                 self.updateConnectorList();
@@ -61,7 +63,7 @@ define('connectorController', ['SHARED/jquery', 'indexingManagementApi', 'appBro
             indexingOperation.setEntityType(connectorType);
             indexingOperation.setOperation(new operationEnum().REINDEX);
 
-            myIndexingManagementApi.addOperation(indexingOperation, appBroadcaster.onReindexConnector);
+            myIndexingManagementApi.addOperation(indexingOperation, myAppBroadcaster.onReindexConnector);
         }
 
         // UI function

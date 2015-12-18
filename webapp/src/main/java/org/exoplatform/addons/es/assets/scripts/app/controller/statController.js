@@ -7,12 +7,14 @@ define('statController', ['SHARED/jquery', 'indexingManagementApi', 'appBroadcas
 
         //Service
         var myIndexingManagementApi = new indexingManagementApi();
-        var myAppBroadcaster = new appBroadcaster();
+        var myAppBroadcaster;
 
         var statController = function statController() {
             var self = this;
 
-            self.init = function() {
+            self.init = function(appBroadcaster) {
+
+                myAppBroadcaster = appBroadcaster;
 
                 //Init stats value
                 self.updateStatNbConnector();
@@ -43,31 +45,31 @@ define('statController', ['SHARED/jquery', 'indexingManagementApi', 'appBroadcas
 
         // Action
 
-         function updateStatNbConnectorValue() {
-            myIndexingManagementApi.getConnectors(null, true, updateStatNbConnectorValue);
+        function updateStatNbConnectorValue() {
+            myIndexingManagementApi.getConnectors(null, true, updateStatNbConnectorUi);
         }
 
         function updateStatNbOperationValue() {
-            myIndexingManagementApi.getOperations(null, 0, 0, true, updateStatNbOperationValue);
+            myIndexingManagementApi.getOperations(null, 0, 0, true, updateStatNbOperationUi);
         }
 
-         function updateStatNbErrorValue() {
+        function updateStatNbErrorValue() {
             //TODO when Error management will be implemented
-            updateStatNbError($.parseJSON("{'size': 0}"));
+            updateStatNbErrorUi(null);
         }
 
         // UI Function
 
-        function updateStatNbConnectorValue(json) {
+        function updateStatNbConnectorUi(json) {
             $('#statNbConnector').text(json.size);
         }
 
-        function updateStatNbOperationValue(json) {
+        function updateStatNbOperationUi(json) {
             $('#statNbOperation').text(json.size);
         }
 
-        function updateStatNbError(json) {
-            $('#statNbError').text(json.size);
+        function updateStatNbErrorUi(json) {
+            $('#statNbError').text('NA');
         }
 
         return statController;
