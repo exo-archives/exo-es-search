@@ -1,6 +1,8 @@
 
-
-//export module
+/**
+ * Module representing an Indexing Operation Enum.
+ * @exports operationEnum
+ */
 define('operationEnum', ['SHARED/jquery'],
     function($) {
 
@@ -45,7 +47,10 @@ define('operationEnum', ['SHARED/jquery'],
 );
 
 
-//export module
+/**
+ * Module representing an Indexing Operation Resource.
+ * @exports indexingOperationResource
+ */
 define('indexingOperationResource', ['SHARED/jquery'],
     function($) {
 

@@ -1,7 +1,10 @@
 /**
  * Created by TClement on 12/17/15.
  */
-
+/**
+ * Module responsible to broadcast events to the controllers.
+ * @exports appBroadcaster
+ */
 define('appBroadcaster', ['SHARED/jquery', 'operationController', 'statController', 'connectorController'],
     function($, operationController, statController, connectorController) {
 

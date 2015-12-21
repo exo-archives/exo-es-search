@@ -1,7 +1,10 @@
 /**
  * Created by TClement on 12/15/15.
  */
-
+/**
+ * Module handling the connector list section.
+ * @exports connectorController
+ */
 define('connectorController', ['SHARED/jquery', 'indexingManagementApi', 'appBroadcaster', 'indexingOperationResource', 'operationEnum'],
     function($, indexingManagementApi, appBroadcaster, indexingOperationResource, operationEnum) {
 

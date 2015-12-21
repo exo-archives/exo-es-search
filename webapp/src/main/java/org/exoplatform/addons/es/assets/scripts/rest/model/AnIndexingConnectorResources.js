@@ -2,7 +2,10 @@
  * @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavascriptClientCodegen", date = "2015-12-09T15:57:02.471+07:00")
  */
 
-//export module
+/**
+ * Module representing an Indexing Connector Resource.
+ * @exports indexingConnectorResource
+ */
 define('indexingConnectorResource', ['SHARED/jquery'],
     function($) {
 

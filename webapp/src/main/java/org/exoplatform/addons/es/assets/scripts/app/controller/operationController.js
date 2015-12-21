@@ -1,7 +1,10 @@
 /**
  * Created by TClement on 12/15/15.
  */
-
+/**
+ * Module handling the operation list section.
+ * @exports operationController
+ */
 define('operationController', ['SHARED/jquery', 'indexingManagementApi', 'appBroadcaster'],
     function($, indexingManagementApi, appBroadcaster) {
 

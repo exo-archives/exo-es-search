@@ -1,7 +1,10 @@
 /**
  * Created by TClement on 12/15/15.
  */
-
+/**
+ * Module handling the stats section (number of connectors/operations/errors).
+ * @exports statController
+ */
 define('statController', ['SHARED/jquery', 'indexingManagementApi', 'appBroadcaster'],
     function($, indexingManagementApi, appBroadcaster) {
 

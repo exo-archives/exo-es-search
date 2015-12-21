@@ -1,4 +1,6 @@
-
+/**
+ * Module responsible to initialise the application.
+ */
 require(['SHARED/jquery', 'statController', 'connectorController', 'operationController', 'appBroadcaster'],
     function($, statController, connectorController, operationController, appBroadcaster){
 
@@ -10,7 +12,7 @@ require(['SHARED/jquery', 'statController', 'connectorController', 'operationCon
         var myAppBroadcaster = new appBroadcaster();
 
         /**
-         * Initiliaz all the controller when the doc is ready
+         * Initiliaze all the controller when the doc is ready
          *
          */
         $(document).ready(
