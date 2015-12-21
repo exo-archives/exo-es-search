@@ -20,12 +20,12 @@
     @Script(id = "apiClient", value = "scripts/rest/client/ApiClient.js"),
     @Script(id = "indexingOperationResource", value = "scripts/rest/model/AnIndexingOperationResource.js"),
     @Script(id = "indexingConnectorResources", value = "scripts/rest/model/AnIndexingConnectorResources.js"),
-    @Script(id = "indexingManagementApi" , value = "scripts/rest/api/VindexingManagementApi.js", depends = {"apiClient"}),
-    @Script(id = "statController" , value = "scripts/app/controller/statController.js", depends = {"indexingManagementApi"}),
-    @Script(id = "connectorController" , value = "scripts/app/controller/connectorController.js", depends = {"indexingManagementApi","indexingOperationResource"}),
-    @Script(id = "operationController" , value = "scripts/app/controller/operationController.js", depends = {"indexingManagementApi", "indexingOperationResource"}),
-    @Script(id = "appBroadcaster" , value = "scripts/app/broadcaster.js", depends = {"statController","connectorController","operationController"}),
-    @Script(id = "main" , value = "scripts/app/main.js", depends = {"statController","connectorController","operationController"})
+    @Script(id = "indexingManagementApi" , value = "scripts/rest/api/VindexingManagementApi.js"),
+    @Script(id = "statController" , value = "scripts/app/controller/statController.js"),
+    @Script(id = "connectorController" , value = "scripts/app/controller/connectorController.js"),
+    @Script(id = "operationController" , value = "scripts/app/controller/operationController.js"),
+    @Script(id = "appBroadcaster" , value = "scripts/app/broadcaster.js"),
+    @Script(id = "main" , value = "scripts/app/main.js")
 })
 @Less({
     @Stylesheet(id = "indexingManagement-less", value = "styles/indexingManagement.less")
