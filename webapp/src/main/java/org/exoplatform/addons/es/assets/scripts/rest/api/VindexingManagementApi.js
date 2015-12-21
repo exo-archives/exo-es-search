@@ -24,7 +24,7 @@ define('indexingManagementApi', ['SHARED/jquery', 'apiClient'],
                 var postBinaryBody = null;
 
                 // create path and map variables
-                var basePath = 'http://localhost:8080/rest/private/';
+                var basePath = '/rest/private/';
                 // if basePath ends with a /, remove it as path starts with a leading /
                 if (basePath.substring(basePath.length-1, basePath.length)=='/') {
                     basePath = basePath.substring(0, basePath.length-1);
@@ -83,7 +83,7 @@ define('indexingManagementApi', ['SHARED/jquery', 'apiClient'],
                 }
 
                 // create path and map variables
-                var basePath = 'http://localhost:8080/rest/private/';
+                var basePath = '/rest/private/';
                 // if basePath ends with a /, remove it as path starts with a leading /
                 if (basePath.substring(basePath.length-1, basePath.length)=='/') {
                     basePath = basePath.substring(0, basePath.length-1);
@@ -148,7 +148,7 @@ define('indexingManagementApi', ['SHARED/jquery', 'apiClient'],
                 }
 
                 // create path and map variables
-                var basePath = 'http://localhost:8080/rest/private/';
+                var basePath = '/rest/private/';
                 // if basePath ends with a /, remove it as path starts with a leading /
                 if (basePath.substring(basePath.length-1, basePath.length)=='/') {
                     basePath = basePath.substring(0, basePath.length-1);
@@ -199,7 +199,7 @@ define('indexingManagementApi', ['SHARED/jquery', 'apiClient'],
                 var postBinaryBody = null;
 
                 // create path and map variables
-                var basePath = 'http://localhost:8080/rest/private/';
+                var basePath = '/rest/private/';
                 // if basePath ends with a /, remove it as path starts with a leading /
                 if (basePath.substring(basePath.length-1, basePath.length)=='/') {
                     basePath = basePath.substring(0, basePath.length-1);
@@ -261,7 +261,7 @@ define('indexingManagementApi', ['SHARED/jquery', 'apiClient'],
                 }
 
                 // create path and map variables
-                var basePath = 'http://localhost:8080/rest/private/';
+                var basePath = '/rest/private/';
                 // if basePath ends with a /, remove it as path starts with a leading /
                 if (basePath.substring(basePath.length-1, basePath.length)=='/') {
                     basePath = basePath.substring(0, basePath.length-1);
@@ -307,7 +307,7 @@ define('indexingManagementApi', ['SHARED/jquery', 'apiClient'],
                 var postBinaryBody = null;
 
                 // create path and map variables
-                var basePath = 'http://localhost:8080/rest/private/';
+                var basePath = '/rest/private/';
                 // if basePath ends with a /, remove it as path starts with a leading /
                 if (basePath.substring(basePath.length-1, basePath.length)=='/') {
                     basePath = basePath.substring(0, basePath.length-1);
@@ -362,7 +362,7 @@ define('indexingManagementApi', ['SHARED/jquery', 'apiClient'],
                 }
 
                 // create path and map variables
-                var basePath = 'http://localhost:8080/rest/private/';
+                var basePath = '/rest/private/';
                 // if basePath ends with a /, remove it as path starts with a leading /
                 if (basePath.substring(basePath.length-1, basePath.length)=='/') {
                     basePath = basePath.substring(0, basePath.length-1);
@@ -419,7 +419,7 @@ define('indexingManagementApi', ['SHARED/jquery', 'apiClient'],
                 }
 
                 // create path and map variables
-                var basePath = 'http://localhost:8080/rest/private/';
+                var basePath = '/rest/private/';
                 // if basePath ends with a /, remove it as path starts with a leading /
                 if (basePath.substring(basePath.length-1, basePath.length)=='/') {
                     basePath = basePath.substring(0, basePath.length-1);
