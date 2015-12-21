@@ -328,15 +328,19 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
   protected String getSitesFilter(Collection<String> sitesCollection) {
     if ((sitesCollection != null) && (sitesCollection.size()>0)) {
-      String sites = StringUtils.join(sitesCollection.toArray(new String[sitesCollection.size()]), "|");
+      List<String> sites = new ArrayList<>();
+      for (String site : sitesCollection) {
+        sites.add("\"" + site + "\"");
+      }
+      String sitesList = "["+StringUtils.join(sites,",")+"]";
       return "{\n" +
           "  \"not\": {\n" +
           "    \"exists\" : { \"field\" : \"sites\" }\n" +
           "  }\n" +
           "},\n" +
           "{\n" +
-          "  \"regexp\" : { \n" +
-          "    \"sites\" : \"" + sites + "\"\n" +
+          "  \"terms\" : { \n" +
+          "    \"sites\" : " + sitesList + "\n" +
           "  }\n" +
           "}";
     }
