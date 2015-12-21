@@ -57,6 +57,12 @@
       <version>${logback.version}</version>
       <scope>test</scope>
     </dependency>
+    <!-- Swagger -->
+    <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-jaxrs</artifactId>
+      <version>1.5.0</version>
+    </dependency>
     <!-- TEST -->
     <dependency>
       <groupId>junit</groupId>
@@ -143,6 +149,49 @@
           <!-- db.changelog file -->
           <changeLogFile>${project.basedir}/src/main/resources/db/changelog/exo-search.db.changelog-1.0.0.xml</changeLogFile>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.github.kongchen</groupId>
+        <artifactId>swagger-maven-plugin</artifactId>
+        <version>3.1.2</version>
+        <configuration>
+          <apiSources>
+            <apiSource>
+              <springmvc>false</springmvc>
+              <locations>org.exoplatform.addons.es.rest</locations>
+              <schemes>http,https</schemes>
+              <host>localhost:8080</host>
+              <basePath>/rest/private/v1/indexingManagement</basePath>
+              <info>
+                <title>Indexing Management</title>
+                <version>v1</version>
+                <description>Indexing Management REST API documentation</description>
+                <termsOfService>
+                  https://github.com/exo-addons/exo-es-search
+                </termsOfService>
+                <contact>
+                  <name>eXo Platform</name>
+                  <url>http://www.exoplatform.org</url>
+                  <email>exo-engineering@exoplatform.com</email>
+                </contact>
+                <license>
+                  <url>http://www.gnu.org/licenses</url>
+                  <name>GNU Affero General Public License</name>
+                </license>
+              </info>
+              <outputFormats>json,yaml</outputFormats>
+              <swaggerDirectory>${basedir}/target/generated/swagger</swaggerDirectory>
+            </apiSource>
+          </apiSources>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>compile</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

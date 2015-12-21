@@ -14,24 +14,52 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with this program. If not, see http://www.gnu.org/licenses/ .
 */
-package org.exoplatform.addons.es.dao;
+package org.exoplatform.addons.es.rest.resource;
 
-import org.exoplatform.addons.es.domain.IndexingOperation;
-import org.exoplatform.commons.api.persistence.GenericDAO;
-
-import java.util.List;
+import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * Created by The eXo Platform SAS
  * Author : Thibault Clement
  * tclement@exoplatform.com
- * 7/29/15
+ * 12/4/15
  */
-public interface IndexingOperationDAO extends GenericDAO<IndexingOperation, Long> {
+public class CollectionResource<T> implements Serializable {
 
-  List<IndexingOperation> findAllFirst(Integer maxResults);
-  void deleteAllIndexingOperationsHavingIdLessThanOrEqual(long id);
+  public final static int QUERY_LIMIT = 100;
 
-  List<IndexingOperation> findAll(int offset, int limit);
+  private int offset = 0;
+  private int limit = QUERY_LIMIT;
+
+  private Collection<T> resources;
+
+  public CollectionResource(Collection<T> resources) {
+    this.resources = resources;
+  }
+
+  public int getOffset() {
+    return offset;
+  }
+
+  public void setOffset(int offset) {
+    this.offset = offset;
+  }
+
+  public int getLimit() {
+    return limit;
+  }
+
+  public void setLimit(int limit) {
+    this.limit = limit;
+  }
+
+  public Collection<T> getResources() {
+    return resources;
+  }
+
+  public void setResources(Collection<T> resources) {
+    this.resources = resources;
+  }
 }
 

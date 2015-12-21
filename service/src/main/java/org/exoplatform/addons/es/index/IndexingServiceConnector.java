@@ -1,9 +1,10 @@
 package org.exoplatform.addons.es.index;
 
-import java.util.List;
-
 import org.exoplatform.addons.es.domain.Document;
 import org.exoplatform.container.component.BaseComponentPlugin;
+
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
@@ -11,9 +12,10 @@ import org.exoplatform.container.component.BaseComponentPlugin;
  * tclement@exoplatform.com
  * 7/22/15
  */
-public abstract class IndexingServiceConnector extends BaseComponentPlugin {
+public abstract class IndexingServiceConnector extends BaseComponentPlugin implements Serializable {
 
   private String type;
+  private boolean enable = true;
 
   /**
    * Transform an entity to Document in order to be indexed
@@ -39,6 +41,8 @@ public abstract class IndexingServiceConnector extends BaseComponentPlugin {
    */
   public abstract String delete (String id);
 
+  public abstract List<String> getAllIds(int offset, int limit);
+
   public String getType() {
     return type;
   }
@@ -47,5 +51,11 @@ public abstract class IndexingServiceConnector extends BaseComponentPlugin {
     this.type = type;
   }
 
-  public abstract List<String> getAllIds(int offset, int limit);
+  public boolean isEnable() {
+    return enable;
+  }
+
+  public void setEnable(boolean enable) {
+    this.enable = enable;
+  }
 }
