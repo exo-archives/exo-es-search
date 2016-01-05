@@ -53,7 +53,8 @@ public class IndexingOperation implements Serializable {
   @Column(name = "OPERATION_TYPE")
   private String operation;
 
-  //The timestamp is only inserted in DB for information
+  //The timestamp is managed by the DB and cannot be set or get
+  //It's only use for querying timestamp based indexing operations
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "OPERATION_TIMESTAMP", insertable = false, updatable = false)
   private Date timestamp;

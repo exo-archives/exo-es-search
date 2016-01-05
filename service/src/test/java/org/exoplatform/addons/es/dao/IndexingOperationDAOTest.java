@@ -16,20 +16,21 @@
 */
 package org.exoplatform.addons.es.dao;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.exoplatform.addons.es.domain.IndexingOperation;
+import org.exoplatform.addons.es.domain.OperationType;
+import org.exoplatform.commons.persistence.impl.EntityManagerService;
+import org.exoplatform.container.PortalContainer;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import org.exoplatform.addons.es.domain.IndexingOperation;
-import org.exoplatform.addons.es.domain.OperationType;
-import org.exoplatform.container.PortalContainer;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * Created by The eXo Platform SAS
@@ -53,7 +54,7 @@ public class IndexingOperationDAOTest extends AbstractDAOTest {
   }
 
   @Test
-  public void testIndexingQueueCreation() {
+  public void testIndexingQueueCreation() throws IllegalAccessException, NoSuchFieldException {
 
     //Given
     List<IndexingOperation> indexingOperations = indexingOperationDAO.findAll();
@@ -67,6 +68,10 @@ public class IndexingOperationDAOTest extends AbstractDAOTest {
 
     //Then
     assertEquals(indexingOperationDAO.findAll().size(), 1);
+    Field privateField = IndexingOperation.class.getDeclaredField("timestamp");
+    privateField.setAccessible(true);
+    Date timestamp = (Date) privateField.get(indexingOperation);
+    assertNull(timestamp);
   }
 
   @Test
@@ -76,6 +81,10 @@ public class IndexingOperationDAOTest extends AbstractDAOTest {
     indexingOperation1.setEntityType("blog");
     indexingOperation1.setOperation(OperationType.INIT);
     indexingOperationDAO.create(indexingOperation1);
+    PortalContainer container = PortalContainer.getInstance();
+    entityMgrService = container.getComponentInstanceOfType(EntityManagerService.class);
+    entityMgrService.getEntityManager().flush();
+    entityMgrService.getEntityManager().refresh(indexingOperation1);
     //When
     indexingOperation1 = indexingOperationDAO.find(indexingOperation1.getId());
     //Then
