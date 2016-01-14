@@ -36,6 +36,7 @@ public class Document {
   private Date lastUpdatedDate;
   private String[] permissions;
   private Map<String, String> fields;
+  private String[] sites;
 
   public Document() {
   }
@@ -47,6 +48,17 @@ public class Document {
     this.lastUpdatedDate = lastUpdatedDate;
     this.permissions = permissions;
     this.fields = fields;
+    this.sites = null;
+  }
+
+  public Document(String type, String id, String url, Date lastUpdatedDate, String[] permissions, Map<String, String> fields, String[] sites) {
+    this.type = type;
+    this.id = id;
+    this.url = url;
+    this.lastUpdatedDate = lastUpdatedDate;
+    this.permissions = permissions;
+    this.fields = fields;
+    this.sites = sites;
   }
 
   public String getType() {
@@ -97,13 +109,26 @@ public class Document {
     this.fields = fields;
   }
 
+  public String[] getSites() {
+    return sites;
+  }
+
+  public void setSites(String[] sites) {
+    this.sites = sites;
+  }
+
   public String toJSON() {
     String json;
     JSONObject obj = new JSONObject();
     if (getPermissions() != null) {
       JSONArray permissionsJSON = new JSONArray();
-      permissionsJSON.addAll(getPermissions() != null ? Arrays.asList(getPermissions()) : Collections.EMPTY_LIST);
+      permissionsJSON.addAll(Arrays.asList(getPermissions()));
       obj.put("permissions", permissionsJSON);
+    }
+    if (getSites() != null) {
+      JSONArray sitesJSON = new JSONArray();
+      sitesJSON.addAll(Arrays.asList(getSites()));
+      obj.put("sites", sitesJSON);
     }
     if (getUrl() != null) obj.put("url", getUrl());
     if (getLastUpdatedDate() != null) obj.put("lastUpdatedDate", getLastUpdatedDate().getTime());

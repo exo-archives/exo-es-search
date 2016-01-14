@@ -148,7 +148,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
     indexingOperationProcessor.process();
     admin().indices().prepareRefresh().execute().actionGet();
     //When
-    Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getSites(), 0, 20, null, null);
+    Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getIntranetSiteInACollection(), 0, 20, null, null);
     //Then
     assertThat(pages.size(), is(1));
   }
@@ -162,7 +162,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
     indexingOperationProcessor.process();
     admin().indices().prepareRefresh().execute().actionGet();
     //When
-    Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getSites(), 0, 20, null, null);
+    Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getIntranetSiteInACollection(), 0, 20, null, null);
     //Then
     assertThat(pages.size(), is(0));
   }
@@ -175,7 +175,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
     indexingOperationProcessor.process();
     admin().indices().prepareRefresh().execute().actionGet();
     //When
-    Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getSites(), 0, 20, null, null);
+    Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getIntranetSiteInACollection(), 0, 20, null, null);
     //Then
     assertThat(pages.size(), is(1));
   }
@@ -183,13 +183,13 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
   private Document getSiteDocument(String siteName) {
     Document document = new Document();
     document.addField("title", "A test document");
-    if (siteName != null) document.addField("sites", siteName);
+    if (siteName != null) document.setSites(new String[]{siteName});
     document.setPermissions(new String[]{USERNAME});
     document.setId("1");
     return document;
   }
 
-  private Collection<String> getSites() {
+  private Collection<String> getIntranetSiteInACollection() {
     Collection<String> sites = new ArrayList<>();
     sites.add("intranet");
     return sites;
