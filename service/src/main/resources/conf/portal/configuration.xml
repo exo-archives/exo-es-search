@@ -94,7 +94,7 @@
       <init-params>
         <properties-param>
           <name>job.info</name>
-          <description>details of the execution of the email reminder job</description>
+          <description>details of the execution of the bulk indexing job</description>
           <property name="jobName" value="ESBulkIndexer"/>
           <property name="groupName" value="ElasticSearch"/>
           <property name="job" value="org.exoplatform.addons.es.job.BulkIndexingJob"/>
