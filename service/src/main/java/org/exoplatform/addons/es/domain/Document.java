@@ -34,14 +34,36 @@ public class Document {
   private String id;
   private String url;
   private Date lastUpdatedDate;
-  private String[] permissions;
+  private Set<String> permissions;
   private Map<String, String> fields;
   private String[] sites;
 
   public Document() {
   }
 
+  @Deprecated
   public Document(String type, String id, String url, Date lastUpdatedDate, String[] permissions, Map<String, String> fields) {
+    this.type = type;
+    this.id = id;
+    this.url = url;
+    this.lastUpdatedDate = lastUpdatedDate;
+    this.permissions = new HashSet<>(Arrays.asList(permissions));
+    this.fields = fields;
+    this.sites = null;
+  }
+
+  @Deprecated
+  public Document(String type, String id, String url, Date lastUpdatedDate, String[] permissions, Map<String, String> fields, String[] sites) {
+    this.type = type;
+    this.id = id;
+    this.url = url;
+    this.lastUpdatedDate = lastUpdatedDate;
+    this.permissions = new HashSet<>(Arrays.asList(permissions));
+    this.fields = fields;
+    this.sites = sites;
+  }
+
+  public Document(String type, String id, String url, Date lastUpdatedDate, Set<String> permissions, Map<String, String> fields) {
     this.type = type;
     this.id = id;
     this.url = url;
@@ -51,7 +73,7 @@ public class Document {
     this.sites = null;
   }
 
-  public Document(String type, String id, String url, Date lastUpdatedDate, String[] permissions, Map<String, String> fields, String[] sites) {
+  public Document(String type, String id, String url, Date lastUpdatedDate, Set<String> permissions, Map<String, String> fields, String[] sites) {
     this.type = type;
     this.id = id;
     this.url = url;
@@ -59,6 +81,12 @@ public class Document {
     this.permissions = permissions;
     this.fields = fields;
     this.sites = sites;
+  }
+
+  public Document(String type, String id, Date lastUpdatedDate) {
+    this.type = type;
+    this.id = id;
+    this.lastUpdatedDate = lastUpdatedDate;
   }
 
   public String getType() {
@@ -93,11 +121,16 @@ public class Document {
     this.lastUpdatedDate = lastUpdatedDate;
   }
 
-  public String[] getPermissions() {
+  public Set<String> getPermissions() {
     return permissions;
   }
 
+  @Deprecated
   public void setPermissions(String[] permissions) {
+    this.permissions = new HashSet<>(Arrays.asList(permissions));
+  }
+
+  public void setPermissions(Set<String> permissions) {
     this.permissions = permissions;
   }
 
@@ -122,7 +155,7 @@ public class Document {
     JSONObject obj = new JSONObject();
     if (getPermissions() != null) {
       JSONArray permissionsJSON = new JSONArray();
-      permissionsJSON.addAll(Arrays.asList(getPermissions()));
+      permissionsJSON.addAll(getPermissions());
       obj.put("permissions", permissionsJSON);
     }
     if (getSites() != null) {

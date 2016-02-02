@@ -30,6 +30,8 @@ public class ElasticSearchingClient extends ElasticClient {
     }
   }
 
+
+
   public String sendRequest(String esQuery, String index, String type) {
     long startTime = System.currentTimeMillis();
     StringBuilder url = new StringBuilder();
@@ -62,7 +64,7 @@ public class ElasticSearchingClient extends ElasticClient {
   protected String getEsPasswordProperty() {
     return PropertyManager.getProperty(ES_SEARCH_CLIENT_PROPERTY_PASSWORD);
   }
-  
+
   @Override
   protected ClientConnectionManager getClientConnectionManager() {
     return new ThreadSafeClientConnManager();

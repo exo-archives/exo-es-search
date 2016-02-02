@@ -16,17 +16,8 @@
  */
 package org.exoplatform.addons.es.client;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TimeZone;
-
+import org.exoplatform.addons.es.domain.Document;
+import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -39,8 +30,14 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import org.exoplatform.addons.es.domain.Document;
-import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by The eXo Platform SAS Author : Thibault Clement
@@ -160,7 +157,7 @@ public class ElasticContentRequestBuilderTest {
     when(document.getLastUpdatedDate()).thenReturn(sdf.parse("19/01/1989"));
     when(document.getId()).thenReturn("1");
     when(document.getUrl()).thenReturn("MyUrlBaby");
-    when(document.getPermissions()).thenReturn(new String[] { "vizir", "goleador" });
+    when(document.getPermissions()).thenReturn(new HashSet<String>(Arrays.asList("vizir", "goleador" )));
     Map<String, String> fields = new HashMap<>();
     fields.put("quote", "I've missed more than 9000 shots in my career. I've lost almost 300 games. "
         + "26 times, I've been trusted to take the game winning shot and missed. I've failed over and over "

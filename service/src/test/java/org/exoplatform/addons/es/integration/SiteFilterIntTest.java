@@ -49,10 +49,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.mock;
@@ -184,7 +181,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
     Document document = new Document();
     document.addField("title", "A test document");
     if (siteName != null) document.setSites(new String[]{siteName});
-    document.setPermissions(new String[]{USERNAME});
+    document.setPermissions(new HashSet<String>(Arrays.asList(USERNAME)));
     document.setId("1");
     return document;
   }

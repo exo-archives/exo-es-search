@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -125,7 +126,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     dao.create(new IndexingOperation("1", "wiki", OperationType.CREATE));
     Document document = new Document();
     document.addField("title", "RDBMS Guidelines");
-    document.setPermissions(new String[] { "Alice" });
+    document.setPermissions(new HashSet<String>(Arrays.asList("Alice")));
     document.setId("1");
     when(wikiConnector.create("1")).thenReturn(document);
     indexingOperationProcessor.process();
@@ -143,7 +144,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     dao.create(new IndexingOperation("1", "wiki", OperationType.CREATE));
     Document document = new Document();
     document.addField("title", "RDBMS Guidelines");
-    document.setPermissions(new String[] { "Bob" });
+    document.setPermissions(new HashSet<String>(Arrays.asList("Bob")));
     document.setId("1");
     when(wikiConnector.create("1")).thenReturn(document);
     indexingOperationProcessor.process();
@@ -161,7 +162,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     dao.create(new IndexingOperation("1", "wiki", OperationType.CREATE));
     Document document = new Document();
     document.addField("title", "RDBMS Guidelines");
-    document.setPermissions(new String[] { "Bob", "Alice", "publisher:/developers" });
+    document.setPermissions(new HashSet<String>(Arrays.asList("Bob", "Alice", "publisher:/developers")));
     document.setId("1");
     when(wikiConnector.create("1")).thenReturn(document);
     indexingOperationProcessor.process();
@@ -204,7 +205,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     dao.create(new IndexingOperation("1", "wiki", OperationType.CREATE));
     Document document = new Document();
     document.addField("title", "RDBMS Guidelines");
-    document.setPermissions(new String[] { permission });
+    document.setPermissions(new HashSet<String>(Arrays.asList(permission)));
     document.setId("1");
     when(wikiConnector.create("1")).thenReturn(document);
     indexingOperationProcessor.process();
@@ -242,7 +243,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     dao.create(new IndexingOperation("1", "wiki", OperationType.CREATE));
     Document document = new Document();
     document.addField("title", "RDBMS Guidelines");
-    document.setPermissions(new String[] { permission });
+    document.setPermissions(new HashSet<String>(Arrays.asList(permission)));
     document.setId("1");
     when(wikiConnector.create("1")).thenReturn(document);
     indexingOperationProcessor.process();
@@ -260,7 +261,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     dao.create(new IndexingOperation("1", "wiki", OperationType.CREATE));
     Document document = new Document();
     document.addField("title", "RDBMS Guidelines");
-    document.setPermissions(permissions);
+    document.setPermissions(new HashSet<String>(Arrays.asList(permissions)));
     document.setId("1");
     when(wikiConnector.create("1")).thenReturn(document);
     indexingOperationProcessor.process();
