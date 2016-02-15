@@ -194,8 +194,8 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
     for(Object jsonHit : jsonHits) {
       JSONObject hitSource = (JSONObject) ((JSONObject) jsonHit).get("_source");
-      String title = (String) hitSource.get(titleElasticFieldName);
-      String url = (String) hitSource.get("url");
+      String title = getTitleFromJsonResult(hitSource);
+      String url = getUrlFromJsonResult(hitSource);
       Long lastUpdatedDate = (Long) hitSource.get("lastUpdatedDate");
       if (lastUpdatedDate == null) lastUpdatedDate = new Date().getTime();
       Double score = (Double) ((JSONObject) jsonHit).get("_score");
@@ -227,6 +227,14 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
     return results;
 
+  }
+
+  protected String getUrlFromJsonResult(JSONObject hitSource) {
+    return (String) hitSource.get("url");
+  }
+
+  protected String getTitleFromJsonResult(JSONObject hitSource) {
+    return (String) hitSource.get(titleElasticFieldName);
   }
 
   protected String getAdditionalFilters(List<ElasticSearchFilter> filters) {
