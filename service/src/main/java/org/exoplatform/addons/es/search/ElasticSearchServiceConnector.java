@@ -75,7 +75,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
                                          int offset, int limit, String sort, String order) {
     String esQuery = buildQuery(query, sites, offset, limit, sort, order);
     String jsonResponse = this.client.sendRequest(esQuery, this.index, this.type);
-    return buildResult(jsonResponse);
+    return buildResult(jsonResponse, context);
 
   }
 
@@ -101,7 +101,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
                                          int offset, int limit, String sort, String order) {
     String esQuery = buildFilteredQuery(query, sites, filters, offset, limit, sort, order);
     String jsonResponse = this.client.sendRequest(esQuery, this.index, this.type);
-    return buildResult(jsonResponse);
+    return buildResult(jsonResponse, context);
 
   }
 
@@ -174,7 +174,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     return esQuery.toString();
   }
 
-  protected Collection<SearchResult> buildResult(String jsonResponse) {
+  protected Collection<SearchResult> buildResult(String jsonResponse, SearchContext context) {
 
     LOG.debug("Search Query response from ES : {} ", jsonResponse);
 
@@ -195,7 +195,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     for(Object jsonHit : jsonHits) {
       JSONObject hitSource = (JSONObject) ((JSONObject) jsonHit).get("_source");
       String title = getTitleFromJsonResult(hitSource);
-      String url = getUrlFromJsonResult(hitSource);
+      String url = getUrlFromJsonResult(hitSource, context);
       Long lastUpdatedDate = (Long) hitSource.get("lastUpdatedDate");
       if (lastUpdatedDate == null) lastUpdatedDate = new Date().getTime();
       Double score = (Double) ((JSONObject) jsonHit).get("_score");
@@ -229,7 +229,7 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
 
   }
 
-  protected String getUrlFromJsonResult(JSONObject hitSource) {
+  protected String getUrlFromJsonResult(JSONObject hitSource, SearchContext context) {
     return (String) hitSource.get("url");
   }
 
