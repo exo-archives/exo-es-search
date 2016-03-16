@@ -23,8 +23,8 @@
             
 <page-set>
    <page>
-      <name>indexingmanagement</name>
-      <title>Indexing Management</title>
+      <name>searchIndexing</name>
+      <title>Search Indexing</title>
       <access-permissions>*:/platform/administrators</access-permissions>
       <edit-permission>*:/platform/administrators</edit-permission>
       <show-max-window>false</show-max-window>

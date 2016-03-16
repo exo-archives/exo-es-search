@@ -27,10 +27,10 @@
   <priority>1</priority>
   <page-nodes>
     <node>
-      <uri>indexingmanagement</uri>
-      <name>indexingmanagement</name>
-      <label>ES Indexing Management</label>
-      <page-reference>portal::intranet::indexingmanagement</page-reference>
+      <uri>searchIndexing</uri>
+      <name>searchIndexing</name>
+      <label>Search Indexing</label>
+      <page-reference>group::/platform/administrators::searchIndexing</page-reference>
     </node>
   </page-nodes>
 </node-navigation>

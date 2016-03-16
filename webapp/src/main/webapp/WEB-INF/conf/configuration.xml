@@ -12,28 +12,42 @@
       <init-params>
         <value-param>
           <name>override</name>
-          <value>false</value>
+          <value>true</value>
         </value-param>
         <object-param>
-          <name>portal.configuration</name>
+          <name>group.configuration</name>
           <description>description</description>
           <object type="org.exoplatform.portal.config.NewPortalConfig">
             <field name="predefinedOwner">
               <collection type="java.util.HashSet">
                 <value>
-                  <string>intranet</string>
+                  <string>/platform/administrators</string>
                 </value>
               </collection>
             </field>
             <field name="ownerType">
-              <string>portal</string>
+              <string>group</string>
             </field>
             <field name="templateLocation">
-              <string>war:/conf/exo-es-search-addon/</string>
+              <string>war:/conf/exo-es-search-addon/portal</string>
             </field>
-            <field name="importMode"><string>merge</string></field>
           </object>
         </object-param>
+      </init-params>
+    </component-plugin>
+  </external-component-plugins>
+
+  <external-component-plugins>
+    <target-component>org.exoplatform.platform.common.service.MenuConfiguratorService</target-component>
+    <component-plugin>
+      <name>Indexing Management MenuConfigurationService Plugin</name>
+      <set-method>addNavigation</set-method>
+      <type>org.exoplatform.platform.common.service.plugin.MenuConfiguratorAddNodePlugin</type>
+      <init-params>
+        <value-param>
+          <name>extended.setup.navigation.file</name>
+          <value>war:/conf/exo-es-search-addon/setup-navigation.xml</value>
+        </value-param>
       </init-params>
     </component-plugin>
   </external-component-plugins>
