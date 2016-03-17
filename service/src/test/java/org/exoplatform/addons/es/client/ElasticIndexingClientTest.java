@@ -93,10 +93,10 @@ public class ElasticIndexingClientTest {
     //Given
     initClientMock(999, "", 200, "Success");
     //When
-    elasticIndexingClient.sendDeleteTypeRequest("index", "type");
+    elasticIndexingClient.sendDeleteAllDocsOfTypeRequest("index", "type");
     //Then
     verify(httpClient).execute(httpDeleteRequestCaptor.capture());
-    assertEquals("http://127.0.0.1:9200/index/type", httpDeleteRequestCaptor.getValue().getURI().toString());
+    assertEquals("http://127.0.0.1:9200/index/type/_query?q=*", httpDeleteRequestCaptor.getValue().getURI().toString());
   }
 
   @Test
@@ -125,8 +125,8 @@ public class ElasticIndexingClientTest {
         "\"items\":[" +
         "{\"index\":{\"_index\":\"test\",\"_type\":\"type1\",\"_id\":\"1\",\"_version\":3,\"status\":200}}," +
         "{\"delete\":{\"_index\":\"test\",\"_type\":\"type1\",\"_id\":\"2\",\"_version\":1,\"status\":404,\"found\":false}}," +
-        "{\"create\":{\"_index\":\"test\",\"_type\":\"type1\",\"_id\":\"3\",\"status\":409,\"error\":\"DocumentAlreadyExistsException[[test][4] [type1][3]: document already exists]\"}}," +
-        "{\"update\":{\"_index\":\"index1\",\"_type\":\"type1\",\"_id\":\"1\",\"status\":404,\"error\":\"DocumentMissingException[[index1][-1] [type1][1]: document missing]\"}}" +
+        "{\"create\":{\"_index\":\"test\",\"_type\":\"type1\",\"_id\":\"3\",\"status\":409,\"error\":{\"reason\":\"DocumentAlreadyExistsException[[test][4] [type1][3]: document already exists]\"}}}," +
+        "{\"update\":{\"_index\":\"index1\",\"_type\":\"type1\",\"_id\":\"1\",\"status\":404,\"error\":{\"reason\":\"DocumentMissingException[[index1][-1] [type1][1]: document missing]\"}}}" +
         "]}";
     initClientMock(999, "", 200, response);
     when(auditTrail.isFullLogEnabled()).thenReturn(true);
@@ -171,7 +171,7 @@ public class ElasticIndexingClientTest {
     String response = "{\"error\": \"TypeMissingException[[_all] type[[unknownType]] missing: No index has the type.]\",\"status\": 404}";
     initClientMock(999, "", 404, response);
     //When
-    elasticIndexingClient.sendDeleteTypeRequest("profile", "profile");
+    elasticIndexingClient.sendDeleteAllDocsOfTypeRequest("profile", "profile");
     //Then
     verify(auditTrail).audit(eq("delete_type"), isNull(String.class), eq("profile"), eq("profile"), eq(HttpStatus.SC_NOT_FOUND), eq("{\"error\": \"TypeMissingException[[_all] type[[unknownType]] missing: No index has the type.]\",\"status\": 404}"), anyLong());
     verifyNoMoreInteractions(auditTrail);

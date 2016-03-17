@@ -16,12 +16,7 @@
 */
 package org.exoplatform.addons.es.integration;
 
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.node.internal.InternalNode;
-import org.elasticsearch.plugins.PluginsService;
-import org.elasticsearch.rest.RestController;
+import org.apache.commons.codec.binary.Base64;
 import org.exoplatform.addons.es.search.ElasticSearchServiceConnector;
 import org.exoplatform.commons.api.search.data.SearchResult;
 import org.exoplatform.container.xml.InitParams;
@@ -36,24 +31,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by The eXo Platform SAS
- * Author : Thibault Clement
- * tclement@exoplatform.com
- * 10/1/15
- */
-public class ElasticIndexingAttachmentIntegrationTest extends AbstractIntegrationTest {
+import static org.junit.Assert.*;
 
-  //"Some people want it to happen, some wish it would happen, others make it happen." sentence encoded in base 64
+/**
+ *
+ */
+public class ElasticIndexingAttachmentIntegrationTest extends BaseIntegrationTest {
+
   private final static String MC23Quotes =
-      "U29tZSBwZW9wbGUgd2FudCBpdCB0byBoYXBwZW4sIHNvbWUgd2lzaCBpdCB3b3VsZCBoYXBwZW4sIG90aGVycyBtYWtlIGl0IGhhcHBlbi4=";
+      "Some people want it to happen, some wish it would happen, others make it happen.";
 
   private ElasticSearchServiceConnector elasticSearchServiceConnector;
 
   @Before
   public void initServices() {
-    Identity identity = new Identity("TCL");
-    identity.setMemberships(Collections.singletonList(new MembershipEntry("BasketballPlayer")));
+    super.setup();
+
+    Identity identity = new Identity("TCL", Collections.singletonList(new MembershipEntry("BasketballPlayer")));
     ConversationState.setCurrent(new ConversationState(identity));
     elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorParams(), elasticSearchingClient);
   }
@@ -65,73 +59,61 @@ public class ElasticIndexingAttachmentIntegrationTest extends AbstractIntegratio
     constructorParams.setProperty("searchType", "attachment");
     constructorParams.setProperty("displayName", "attachment");
     constructorParams.setProperty("index", "test");
-    constructorParams.setProperty("searchFields", "file,title");
+    constructorParams.setProperty("searchFields", "file.content,title");
     params.addParam(constructorParams);
     return params;
-  }
-
-  /**
-   * Configuration of the ES integration tests with
-   */
-  @Override
-  protected Settings nodeSettings(int nodeOrdinal) {
-    return ImmutableSettings.settingsBuilder()
-        .put(super.nodeSettings(nodeOrdinal))
-        .put(RestController.HTTP_JSON_ENABLE, true)
-        .put(InternalNode.HTTP_ENABLED, true)
-        .put("network.host", "127.0.0.1")
-        .put("path.data", "target/data")
-        .put("plugins." + PluginsService.LOAD_PLUGIN_FROM_CLASSPATH, true)
-        .build();
   }
 
   @Test
   public void testCreateNewAttachmentType() {
     //Given
-    assertFalse(typeExists("attachment"));
     elasticIndexingClient.sendCreateIndexRequest("test", "");
+    assertFalse(typeExists("test", "attachment"));
     //When
     elasticIndexingClient.sendCreateTypeRequest("test", "attachment", getAttachmentMapping());
     //Then
-    assertTrue(typeExists("attachment"));
+    assertTrue(typeExists("test", "attachment"));
 
   }
 
   @Test
   public void testIndexAttachment() {
     //Given
-    createAttachmentTypeInTestIndex();
-    assertEquals(0,elasticDocumentNumber());
+    elasticIndexingClient.sendCreateIndexRequest("test", "");
+    elasticIndexingClient.sendCreateTypeRequest("test", "attachment", getAttachmentMapping());
+    assertEquals(0, documentNumber());
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"attachment\", \"_id\" : \"1\" } }\n" +
         "{ " +
         "\"title\" : \"Sample CV in English\"," +
-        "\"file\" : \" " + MC23Quotes + " \"" +
+        "\"file\" : \"" + new String(Base64.encodeBase64(MC23Quotes.getBytes())) + "\"" +
         " }\n";
 
     //When
     elasticIndexingClient.sendCUDRequest(bulkRequest);
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
+
 
     //Then
-    assertEquals(1,elasticDocumentNumber());
+    assertEquals(1, documentNumber());
 
   }
 
   @Test
   public void testSearchAttachment() {
     //Given
-    createAttachmentTypeInTestIndex();
-    assertEquals(0,elasticDocumentNumber());
+    elasticIndexingClient.sendCreateIndexRequest("test", "");
+    elasticIndexingClient.sendCreateTypeRequest("test", "attachment", getAttachmentMapping());
+    assertEquals(0, documentNumber());
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"attachment\", \"_id\" : \"1\" } }\n" +
         "{ " +
         "\"title\" : \"Michael Jordan quotes\", " +
-        "\"file\" : \""+ MC23Quotes + "\", " +
+        "\"file\" : \""+ new String(Base64.encodeBase64(MC23Quotes.getBytes())) + "\", " +
         "\"permissions\" : [\"TCL\"]" +
-        " }\n";
+            " }\n";
 
     //When
     elasticIndexingClient.sendCUDRequest(bulkRequest);
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
     List<SearchResult> searchResults = new ArrayList<>(elasticSearchServiceConnector.search(null,
         "people",
         null,
@@ -141,13 +123,11 @@ public class ElasticIndexingAttachmentIntegrationTest extends AbstractIntegratio
         null));
 
     //Then
+    assertEquals(1, documentNumber());
+    assertNotNull(searchResults);
+    assertEquals(1, searchResults.size());
     assertEquals("... Some <strong>people</strong> want it to happen, some wish it would happen, others make it happen.\n", searchResults.get(0).getExcerpt());
 
-  }
-
-  private void createAttachmentTypeInTestIndex() {
-    CreateIndexRequestBuilder cirb = admin().indices().prepareCreate("test").addMapping("attachment", getAttachmentMapping());
-    cirb.execute().actionGet();
   }
 
   private String getAttachmentMapping() {
@@ -156,7 +136,7 @@ public class ElasticIndexingAttachmentIntegrationTest extends AbstractIntegratio
         "        \"type\" : \"attachment\",\n" +
         "        \"fields\" : {\n" +
         "          \"title\" : { \"store\" : \"yes\" },\n" +
-        "          \"file\" : { \"term_vector\":\"with_positions_offsets\", \"store\":\"yes\" }\n" +
+        "          \"content\" : { \"term_vector\":\"with_positions_offsets\", \"store\":\"yes\" }\n" +
         "        }\n" +
         "      },\n" +
         "      \"permissions\" : {\"type\" : \"string\", \"index\" : \"not_analyzed\" }\n" +

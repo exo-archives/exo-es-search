@@ -22,40 +22,36 @@
     <url>https://github.com/exo-addons/exo-es-search</url>
   </scm>
   <properties>
+    <!-- maven-compiler-plugin -->
+    <maven.compiler.target>1.7</maven.compiler.target>
+    <maven.compiler.source>1.7</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <org.exoplatform.platform.version>4.3.x-SNAPSHOT</org.exoplatform.platform.version>
     <juzu.version>1.1.0</juzu.version>
     <org.antlr.version>3.4</org.antlr.version>
-    <org.elasticsearch.version>1.7.2</org.elasticsearch.version>
+    <org.elasticsearch.version>2.3.2</org.elasticsearch.version>
+    <com.googlecode.json-simple.version>1.1.1</com.googlecode.json-simple.version>
+    <commons-lang3.version>3.1</commons-lang3.version>
+    <swagger.version>1.5.0</swagger.version>
     <!-- Issue with the PLF pom parent that trigger lucene 3.6.2 needed by JCR (Only working with impl version < 0.20.6) -->
-    <lucene.version>4.10.4</lucene.version>
+    <lucene.version>5.5.0</lucene.version>
     <!-- Tests -->
+    <junit.version>4.11</junit.version>
     <mockito.version>2.0.13-beta</mockito.version>
     <httpclient.version>4.1.2</httpclient.version>
     <hamcrest.version>1.3</hamcrest.version>
     <hsqldb.version>2.3.2</hsqldb.version>
     <logback.version>1.1.3</logback.version>
-    <version.liquibase.plugin>3.4.1</version.liquibase.plugin>
+    <liquibase.version>3.4.2</liquibase.version>
+    <jta.version>1.1</jta.version>
     <!-- ES Tests -->
-    <elasticsearch-mapper-attachments.version>2.7.1</elasticsearch-mapper-attachments.version>
-    <randomizedtesting-runner.version>2.1.14</randomizedtesting-runner.version>
+    <elasticsearch-mapper-attachments.version>2.3.2</elasticsearch-mapper-attachments.version>
+    <elasticsearch-delete-by-query.version>2.3.2</elasticsearch-delete-by-query.version>
+    <randomizedtesting-runner.version>2.3.2</randomizedtesting-runner.version>
+    <org.elasticsearch.test.jna.version>4.1.0</org.elasticsearch.test.jna.version>
   </properties>
   <dependencyManagement>
     <dependencies>
-      <!-- Import versions from platform project -->
-      <dependency>
-        <groupId>org.exoplatform.platform</groupId>
-        <artifactId>platform</artifactId>
-        <version>${org.exoplatform.platform.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-        <exclusions>
-          <exclusion>
-            <artifactId>lucene-core</artifactId>
-            <groupId>org.apache.lucene</groupId>
-          </exclusion>
-        </exclusions>
-      </dependency>
       <!-- exo-es-search project -->
       <dependency>
         <groupId>org.exoplatform.addons.es</groupId>
@@ -75,7 +71,7 @@
         <plugin>
           <groupId>org.liquibase</groupId>
           <artifactId>liquibase-maven-plugin</artifactId>
-          <version>${version.liquibase.plugin}</version>
+          <version>${liquibase.version}</version>
           <configuration>
             <!-- $ mvn liquibase:update -->
             <driver>org.hsqldb.jdbcDriver</driver>

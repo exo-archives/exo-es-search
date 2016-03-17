@@ -16,7 +16,6 @@
 */
 package org.exoplatform.addons.es.integration;
 
-import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
@@ -40,10 +39,7 @@ import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.MembershipEntry;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -52,6 +48,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -61,8 +58,7 @@ import static org.mockito.Mockito.when;
  * tclement@exoplatform.com
  * 10/2/15
  */
-@ThreadLeakScope(ThreadLeakScope.Scope.NONE)
-public class SiteFilterIntTest extends AbstractIntegrationTest {
+public class SiteFilterIntTest extends BaseIntegrationTest {
 
   private static final String USERNAME = "thib";
 
@@ -87,12 +83,18 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
 
   @AfterClass
   public static void stopDB () throws LiquibaseException, SQLException {
-    liquibase.rollback(1000, null);
-    conn.close();
+    if(liquibase != null) {
+      liquibase.rollback(1000, null);
+    }
+    if(conn != null) {
+      conn.close();
+    }
   }
 
   @Before
   public void initServices() {
+    super.setup();
+
     //Indexing Connector
     testConnector = mock(ElasticIndexingServiceConnector.class);
     when(testConnector.getType()).thenReturn("test");
@@ -143,7 +145,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
     dao.create(new IndexingOperation("1", "test", OperationType.CREATE));
     when(testConnector.create("1")).thenReturn(getSiteDocument("intranet"));
     indexingOperationProcessor.process();
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
     //When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getIntranetSiteInACollection(), 0, 20, null, null);
     //Then
@@ -157,7 +159,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
 
     when(testConnector.create("1")).thenReturn(getSiteDocument("OtherSite"));
     indexingOperationProcessor.process();
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
     //When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getIntranetSiteInACollection(), 0, 20, null, null);
     //Then
@@ -170,7 +172,7 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
     dao.create(new IndexingOperation("1", "test", OperationType.CREATE));
     when(testConnector.create("1")).thenReturn(getSiteDocument(null));
     indexingOperationProcessor.process();
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
     //When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getIntranetSiteInACollection(), 0, 20, null, null);
     //Then

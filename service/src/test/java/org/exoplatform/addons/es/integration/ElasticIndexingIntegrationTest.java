@@ -25,7 +25,11 @@ TO FIX IT WE NEED TO BE ABLE TO START AN EMBEDDED ES
 
  */
 
+import static org.junit.Assert.*;
+
 import org.junit.Test;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by The eXo Platform SAS
@@ -33,35 +37,35 @@ import org.junit.Test;
  * tclement@exoplatform.com
  * 8/20/15
  */
-public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
+public class ElasticIndexingIntegrationTest extends BaseIntegrationTest {
 
   @Test
-  public void testCreateNewIndex() {
+  public void testCreateNewIndex() throws ExecutionException, InterruptedException {
     //Given
-    assertFalse(indexExists("blog"));
+    assertFalse(node.client().admin().indices().prepareExists("blog").execute().actionGet().isExists());
     //When
     elasticIndexingClient.sendCreateIndexRequest("blog", "");
     //Then
-    assertTrue(indexExists("blog"));
+    assertTrue(node.client().admin().indices().prepareExists("blog").execute().actionGet().isExists());
 
   }
 
   @Test
-  public void testCreateNewType() {
+  public void testCreateNewType() throws ExecutionException, InterruptedException {
     //Given
-    assertFalse(typeExists("post"));
     elasticIndexingClient.sendCreateIndexRequest("blog", "");
+    assertFalse(typeExists("blog", "post"));
     //When
     elasticIndexingClient.sendCreateTypeRequest("blog", "post", "{\"post\" : {}}");
     //Then
-    assertTrue(typeExists("post"));
+    assertTrue(typeExists("blog", "post"));
 
   }
 
   @Test
   public void testIndexingDocument() {
     //Given
-    assertEquals(0,elasticDocumentNumber());
+    assertEquals(0, documentNumber());
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" } }\n" +
         "{ \"field1\" : \"value1\" }\n" +
         "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"2\" } }\n" +
@@ -73,10 +77,10 @@ public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
     elasticIndexingClient.sendCUDRequest(bulkRequest);
     //Elasticsearch has near real-time search: document changes are not visible to search immediately,
     // but will become visible within 1 second
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
 
     //Then
-    assertEquals(3,elasticDocumentNumber());
+    assertEquals(3, documentNumber());
 
   }
 
@@ -90,16 +94,16 @@ public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
         "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"3\" } }\n" +
         "{ \"field1\" : \"value3\" }\n";
     elasticIndexingClient.sendCUDRequest(bulkRequest);
-    admin().indices().prepareRefresh().execute().actionGet();
-    assertTrue(typeExists("type1"));
-    assertEquals(3, typeDocumentNumber("type1"));
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
+    assertTrue(typeExists("test", "type1"));
+    assertEquals(3, documentNumber("type1"));
 
     //When
-    elasticIndexingClient.sendDeleteTypeRequest("test", "type1");
-    admin().indices().prepareRefresh().execute().actionGet();
+    elasticIndexingClient.sendDeleteAllDocsOfTypeRequest("test", "type1");
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
 
     //Then
-    assertFalse(typeExists("type1"));
+    assertEquals(0, documentNumber("type1"));
   }
 }
 

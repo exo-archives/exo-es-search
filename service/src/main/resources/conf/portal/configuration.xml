@@ -60,14 +60,6 @@
     <type>org.exoplatform.addons.es.dao.impl.IndexingOperationDAOImpl</type>
   </component>
 
-  <component>
-    <type>org.exoplatform.addons.es.rest.IndexingManagementRestService</type>
-  </component>
-
-  <component>
-    <type>org.exoplatform.addons.es.rest.IndexingManagementRestServiceV1</type>
-  </component>
-
   <external-component-plugins>
     <target-component>org.exoplatform.commons.api.persistence.DataInitializer</target-component>
     <component-plugin>

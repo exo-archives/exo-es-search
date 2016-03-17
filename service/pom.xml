@@ -7,47 +7,64 @@
     <version>1.0.x-SNAPSHOT</version>
   </parent>
   <artifactId>exo-es-search-service</artifactId>
+
+  <properties>
+    <org.elasticsearch.test.guava.version>18.0</org.elasticsearch.test.guava.version>
+    <org.elasticsearch.test.jodatime.version>2.8.2</org.elasticsearch.test.jodatime.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${org.elasticsearch.test.guava.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>joda-time</groupId>
+        <artifactId>joda-time</artifactId>
+        <version>${org.elasticsearch.test.jodatime.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <!-- PLF dependencies -->
     <dependency>
       <groupId>org.exoplatform.commons</groupId>
-      <artifactId>commons-api</artifactId>
+      <artifactId>commons-component-common</artifactId>
+      <version>${org.exoplatform.platform.version}</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
           <artifactId>lucene-spellchecker</artifactId>
           <groupId>org.apache.lucene</groupId>
         </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.exoplatform.commons</groupId>
-      <artifactId>commons-component-common</artifactId>
-      <scope>provided</scope>
-      <exclusions>
         <exclusion>
-          <artifactId>lucene-spellchecker</artifactId>
-          <groupId>org.apache.lucene</groupId>
+          <artifactId>exo.jcr.component.core</artifactId>
+          <groupId>org.exoplatform.jcr</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>exo.jcr.component.ext</artifactId>
+          <groupId>org.exoplatform.jcr</groupId>
         </exclusion>
       </exclusions>
     </dependency>
     <!-- Others dependencies -->
     <dependency>
-      <groupId>com.googlecode.json-simple</groupId>
-      <artifactId>json-simple</artifactId>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons-lang3.version}</version>
     </dependency>
     <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>${com.googlecode.json-simple.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
       <version>${httpclient.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
@@ -59,12 +76,25 @@
     <dependency>
       <groupId>io.swagger</groupId>
       <artifactId>swagger-jaxrs</artifactId>
-      <version>1.5.0</version>
+      <version>${swagger.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>annotations</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!-- TEST -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
+      <version>${junit.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.transaction</groupId>
+      <artifactId>jta</artifactId>
+      <version>${jta.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -76,6 +106,7 @@
     <dependency>
       <groupId>org.liquibase</groupId>
       <artifactId>liquibase-core</artifactId>
+      <version>${liquibase.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -92,45 +123,27 @@
     </dependency>
     <!-- ES Test -->
     <dependency>
-      <groupId>com.carrotsearch.randomizedtesting</groupId>
-      <artifactId>randomizedtesting-runner</artifactId>
-      <version>${randomizedtesting-runner.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-test-framework</artifactId>
-      <version>${lucene.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.elasticsearch</groupId>
       <artifactId>elasticsearch</artifactId>
       <version>${org.elasticsearch.version}</version>
-      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.elasticsearch</groupId>
-      <artifactId>elasticsearch</artifactId>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna</artifactId>
+      <version>${org.elasticsearch.test.jna.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-expressions</artifactId>
-      <version>${lucene.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.elasticsearch</groupId>
-      <artifactId>elasticsearch-mapper-attachments</artifactId>
+      <groupId>org.elasticsearch.plugin</groupId>
+      <artifactId>mapper-attachments</artifactId>
       <version>${elasticsearch-mapper-attachments.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.asquera.elasticsearch</groupId>
-      <artifactId>elasticsearch-http-basic</artifactId>
-      <version>1.5.1</version>
+      <groupId>org.elasticsearch.plugin</groupId>
+      <artifactId>delete-by-query</artifactId>
+      <version>${elasticsearch-delete-by-query.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -149,47 +162,13 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>com.github.kongchen</groupId>
-        <artifactId>swagger-maven-plugin</artifactId>
-        <version>3.1.2</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <apiSources>
-            <apiSource>
-              <springmvc>false</springmvc>
-              <locations>org.exoplatform.addons.es.rest</locations>
-              <schemes>http,https</schemes>
-              <host>localhost:8080</host>
-              <basePath>/rest/private/v1/indexingManagement</basePath>
-              <info>
-                <title>Indexing Management</title>
-                <version>v1</version>
-                <description>Indexing Management REST API documentation</description>
-                <termsOfService>
-                  https://github.com/exo-addons/exo-es-search
-                </termsOfService>
-                <contact>
-                  <name>eXo Platform</name>
-                  <url>http://www.exoplatform.org</url>
-                  <email>exo-engineering@exoplatform.com</email>
-                </contact>
-                <license>
-                  <url>http://www.gnu.org/licenses</url>
-                  <name>GNU Affero General Public License</name>
-                </license>
-              </info>
-              <outputFormats>json,yaml</outputFormats>
-              <swaggerDirectory>${basedir}/target/generated/swagger</swaggerDirectory>
-            </apiSource>
-          </apiSources>
+          <systemPropertyVariables>
+            <tests.security.manager>false</tests.security.manager>
+          </systemPropertyVariables>
         </configuration>
-        <executions>
-          <execution>
-            <phase>compile</phase>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>

@@ -111,12 +111,11 @@ public class ElasticIndexingClient extends ElasticClient {
   }
 
   /**
-   * Send request to ES to delete a type it's the same that deleting all
-   * document from a given type
+   * Send request to ES to delete all documents of the given type
    */
-  public void sendDeleteTypeRequest(String index, String type) {
+  public void sendDeleteAllDocsOfTypeRequest(String index, String type) {
     long startTime = System.currentTimeMillis();
-    ElasticResponse response = sendHttpDeleteRequest(urlClient + "/" + index + "/" + type);
+    ElasticResponse response = sendHttpDeleteRequest(urlClient + "/" + index + "/" + type + "/_query?q=*");
     auditTrail.audit(ElasticIndexingAuditTrail.DELETE_TYPE,
                      null,
                      index,
@@ -178,7 +177,7 @@ public class ElasticIndexingClient extends ElasticClient {
         String type = operationDetails.get("_type") == null ? null : (String) operationDetails.get("_type");
         String id = operationDetails.get("_id") == null ? null : (String) operationDetails.get("_id");
         Long status = operationDetails.get("status") == null ? null : (Long) operationDetails.get("status");
-        String error = operationDetails.get("error") == null ? null : (String) operationDetails.get("error");
+        String error = operationDetails.get("error") == null ? null : (String) ((JSONObject) operationDetails.get("error")).get("reason");
         Integer httpStatusCode = status == null ? null : status.intValue();
         if (ElasticIndexingAuditTrail.isError(httpStatusCode)) {
           auditTrail.logRejectedDocumentBulkOperation(operationName, id, index, type, httpStatusCode, error, executionTime);

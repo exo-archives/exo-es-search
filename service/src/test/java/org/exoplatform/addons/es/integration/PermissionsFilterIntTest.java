@@ -1,4 +1,4 @@
-package org.exoplatform.addons.es.search;
+package org.exoplatform.addons.es.integration;
 
 import liquibase.Liquibase;
 import liquibase.database.Database;
@@ -15,7 +15,7 @@ import org.exoplatform.addons.es.domain.IndexingOperation;
 import org.exoplatform.addons.es.domain.OperationType;
 import org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor;
 import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
-import org.exoplatform.addons.es.integration.AbstractIntegrationTest;
+import org.exoplatform.addons.es.search.ElasticSearchServiceConnector;
 import org.exoplatform.commons.api.search.data.SearchResult;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -44,14 +45,14 @@ import static org.mockito.Mockito.when;
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
  * 9/9/15
  */
-public class PermissionsFilterIntTest extends AbstractIntegrationTest {
+public class PermissionsFilterIntTest extends BaseIntegrationTest {
   private static Connection               conn;
 
   private static Liquibase                liquibase;
 
   private ElasticIndexingOperationProcessor      indexingOperationProcessor;
 
-  private ElasticSearchServiceConnector   elasticSearchServiceConnector;
+  private ElasticSearchServiceConnector elasticSearchServiceConnector;
 
   private IndexingOperationDAO            dao;
 
@@ -71,12 +72,18 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
 
   @AfterClass
   public static void stopDB() throws LiquibaseException, SQLException {
-    liquibase.rollback(1000, null);
-    conn.close();
+    if(liquibase != null) {
+      liquibase.rollback(1000, null);
+    }
+    if(conn != null) {
+      conn.close();
+    }
   }
 
   @Before
   public void initServices() {
+    super.setup();
+
     // Indexing Connector
     wikiConnector = mock(ElasticIndexingServiceConnector.class);
     when(wikiConnector.getType()).thenReturn("wiki");
@@ -130,7 +137,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     document.setId("1");
     when(wikiConnector.create("1")).thenReturn(document);
     indexingOperationProcessor.process();
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
     // When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "RDBMS", null, 0, 20, null, null);
     // Then
@@ -148,7 +155,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     document.setId("1");
     when(wikiConnector.create("1")).thenReturn(document);
     indexingOperationProcessor.process();
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
     // When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "RDBMS", null, 0, 20, null, null);
     // Then
@@ -166,7 +173,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     document.setId("1");
     when(wikiConnector.create("1")).thenReturn(document);
     indexingOperationProcessor.process();
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
     // When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "RDBMS", null, 0, 20, null, null);
     // Then
@@ -209,7 +216,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     document.setId("1");
     when(wikiConnector.create("1")).thenReturn(document);
     indexingOperationProcessor.process();
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
     // When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "RDBMS", null, 0, 20, null, null);
     // Then
@@ -247,7 +254,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     document.setId("1");
     when(wikiConnector.create("1")).thenReturn(document);
     indexingOperationProcessor.process();
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
     // When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "RDBMS", null, 0, 20, null, null);
     // Then
@@ -265,7 +272,7 @@ public class PermissionsFilterIntTest extends AbstractIntegrationTest {
     document.setId("1");
     when(wikiConnector.create("1")).thenReturn(document);
     indexingOperationProcessor.process();
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
     // When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "RDBMS", null, 0, 20, null, null);
     // Then

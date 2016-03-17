@@ -31,18 +31,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * Created by The eXo Platform SAS Author : Thibault Clement
  * tclement@exoplatform.com 9/11/15
  */
-public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
+public class ElasticSearchingIntegrationTest extends BaseIntegrationTest {
 
   ElasticSearchServiceConnector elasticSearchServiceConnector;
 
   @Before
   public void initServices() {
-    Identity identity = new Identity("BCH");
-    identity.setMemberships(Collections.singletonList(new MembershipEntry("Admin")));
+    Identity identity = new Identity("BCH", Collections.singletonList(new MembershipEntry("Admin")));
     ConversationState.setCurrent(new ConversationState(identity));
     elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorParams(), elasticSearchingClient);
   }
@@ -51,11 +52,11 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
   public void testSearchingDocument() {
 
     // Given
-    assertEquals(0, elasticDocumentNumber());
+    assertEquals(0, documentNumber());
 
     String mapping = "{ \"properties\" : " + "   {\"permissions\" : "
         + "       {\"type\" : \"string\", \"index\" : \"not_analyzed\"}" + "   }" + "}";
-    CreateIndexRequestBuilder cirb = admin().indices().prepareCreate("test").addMapping("type1", mapping);
+    CreateIndexRequestBuilder cirb = node.client().admin().indices().prepareCreate("test").addMapping("type1", mapping);
     cirb.execute().actionGet();
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" } }\n"
         + "{ \"field1\" : \"value1\", \"permissions\" : [\"BCH\"] }\n"
@@ -67,7 +68,7 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
     // Elasticsearch has near real-time search: document changes are not visible
     // to search immediately,
     // but will become visible within 1 second
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
 
     // When
     List<SearchResult> searchResults = new ArrayList<>(elasticSearchServiceConnector.search(null,
@@ -87,10 +88,10 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
   public void testExcerpt() throws InterruptedException {
 
     // Given
-    assertEquals(0, elasticDocumentNumber());
+    assertEquals(0, documentNumber());
     String mapping = "{ \"properties\" : " + "   {\"permissions\" : "
         + "       {\"type\" : \"string\", \"index\" : \"not_analyzed\"}" + "   }" + "}";
-    CreateIndexRequestBuilder cirb = admin().indices().prepareCreate("test").addMapping("type1", mapping);
+    CreateIndexRequestBuilder cirb = node.client().admin().indices().prepareCreate("test").addMapping("type1", mapping);
     cirb.execute().actionGet();
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" } }\n"
         + "{ \"field1\" : \"value1\", \"permissions\" : [\"BCH\"] }\n"
@@ -102,7 +103,7 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
     // Elasticsearch has near real-time search: document changes are not visible
     // to search immediately,
     // but will become visible within 1 second
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
 
     // When
     List<SearchResult> searchResults = new ArrayList<>(elasticSearchServiceConnector.search(null,
@@ -122,23 +123,23 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
   public void testSearchingDocument_NoTypeSpecify() {
 
     // Given
-    assertEquals(0, elasticDocumentNumber());
+    assertEquals(0, documentNumber());
 
     elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorWithoutTypeParams(), elasticSearchingClient);
 
     //Create two types
     String mapping = "{ \"properties\" : " + "   {\"permissions\" : "
         + "       {\"type\" : \"string\", \"index\" : \"not_analyzed\"}" + "   }" + "}";
-    CreateIndexRequestBuilder cirb = admin().indices().prepareCreate("test");
+    CreateIndexRequestBuilder cirb = node.client().admin().indices().prepareCreate("test");
     cirb.execute().actionGet();
 
-    admin().indices()
+    node.client().admin().indices()
         .preparePutMapping("test")
         .setType("type1")
         .setSource(mapping)
         .execute().actionGet();
 
-    admin().indices()
+    node.client().admin().indices()
         .preparePutMapping("test")
         .setType("type2")
         .setSource(mapping)
@@ -154,7 +155,7 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
     // Elasticsearch has near real-time search: document changes are not visible
     // to search immediately,
     // but will become visible within 1 second
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
 
     // When
     List<SearchResult> searchResults = new ArrayList<>(elasticSearchServiceConnector.search(null,
@@ -175,7 +176,7 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
   public void testSearchingDocument_NoIndexSpecify() {
 
     // Given
-    assertEquals(0, elasticDocumentNumber());
+    assertEquals(0, documentNumber());
 
     elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorWithoutIndexParams(), elasticSearchingClient);
 
@@ -183,9 +184,9 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
     String mapping = "{ \"properties\" : " + "   {\"permissions\" : "
         + "       {\"type\" : \"string\", \"index\" : \"not_analyzed\"}" + "   }" + "}";
 
-    CreateIndexRequestBuilder cirb = admin().indices().prepareCreate("test").addMapping("type1", mapping);
+    CreateIndexRequestBuilder cirb = node.client().admin().indices().prepareCreate("test").addMapping("type1", mapping);
     cirb.execute().actionGet();
-    CreateIndexRequestBuilder cirb2 = admin().indices().prepareCreate("test2").addMapping("type1", mapping);
+    CreateIndexRequestBuilder cirb2 = node.client().admin().indices().prepareCreate("test2").addMapping("type1", mapping);
     cirb2.execute().actionGet();
 
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" } }\n"
@@ -198,7 +199,7 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
     // Elasticsearch has near real-time search: document changes are not visible
     // to search immediately,
     // but will become visible within 1 second
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
 
     // When
     List<SearchResult> searchResults = new ArrayList<>(elasticSearchServiceConnector.search(null,
@@ -219,7 +220,7 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
   public void testSearchingDocument_NoIndexAndTypeSpecify() {
 
     // Given
-    assertEquals(0, elasticDocumentNumber());
+    assertEquals(0, documentNumber());
 
     elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorWithoutIndexAndTypeParams(), elasticSearchingClient);
 
@@ -227,9 +228,9 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
     String mapping = "{ \"properties\" : " + "   {\"permissions\" : "
         + "       {\"type\" : \"string\", \"index\" : \"not_analyzed\"}" + "   }" + "}";
 
-    CreateIndexRequestBuilder cirb = admin().indices().prepareCreate("test").addMapping("type1", mapping);
+    CreateIndexRequestBuilder cirb = node.client().admin().indices().prepareCreate("test").addMapping("type1", mapping);
     cirb.execute().actionGet();
-    CreateIndexRequestBuilder cirb2 = admin().indices().prepareCreate("test2").addMapping("type2", mapping);
+    CreateIndexRequestBuilder cirb2 = node.client().admin().indices().prepareCreate("test2").addMapping("type2", mapping);
     cirb2.execute().actionGet();
 
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" } }\n"
@@ -242,7 +243,7 @@ public class ElasticSearchingIntegrationTest extends AbstractIntegrationTest {
     // Elasticsearch has near real-time search: document changes are not visible
     // to search immediately,
     // but will become visible within 1 second
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
 
     // When
     List<SearchResult> searchResults = new ArrayList<>(elasticSearchServiceConnector.search(null,
