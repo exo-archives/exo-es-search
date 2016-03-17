@@ -17,11 +17,8 @@
 package org.exoplatform.addons.es.integration;
 
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
-import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.node.internal.InternalNode;
-import org.elasticsearch.plugins.PluginsService;
-import org.elasticsearch.rest.RestController;
+import org.elasticsearch.node.Node;
 import org.exoplatform.addons.es.client.ElasticClientAuthenticationException;
 import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
 import org.exoplatform.addons.es.client.ElasticIndexingClient;
@@ -217,13 +214,12 @@ public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrati
    */
   @Override
   protected Settings nodeSettings(int nodeOrdinal) {
-    return ImmutableSettings.settingsBuilder()
+    return Settings.builder()
         .put(super.nodeSettings(nodeOrdinal))
-        .put(RestController.HTTP_JSON_ENABLE, true)
-        .put(InternalNode.HTTP_ENABLED, true)
+        .put(Node.HTTP_ENABLED, true)
         .put("network.host", "127.0.0.1")
         .put("path.data", "target/data")
-        .put("plugins." + PluginsService.LOAD_PLUGIN_FROM_CLASSPATH, true)
+        .put("plugins.load_classpath_plugins", true)
         .put("http.basic.enabled", true)
         .put("http.basic.ipwhitelist", false)
         .put("http.basic.user", ES_USERNAME)

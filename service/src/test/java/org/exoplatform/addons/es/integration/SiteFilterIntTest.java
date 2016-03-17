@@ -40,10 +40,7 @@ import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.MembershipEntry;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
 import java.sql.Connection;

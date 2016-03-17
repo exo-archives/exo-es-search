@@ -17,11 +17,8 @@
 package org.exoplatform.addons.es.integration;
 
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
-import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.node.internal.InternalNode;
-import org.elasticsearch.plugins.PluginsService;
-import org.elasticsearch.rest.RestController;
+import org.elasticsearch.node.Node;
 import org.exoplatform.addons.es.search.ElasticSearchServiceConnector;
 import org.exoplatform.commons.api.search.data.SearchResult;
 import org.exoplatform.container.xml.InitParams;
@@ -75,13 +72,12 @@ public class ElasticIndexingAttachmentIntegrationTest extends AbstractIntegratio
    */
   @Override
   protected Settings nodeSettings(int nodeOrdinal) {
-    return ImmutableSettings.settingsBuilder()
+    return Settings.builder()
         .put(super.nodeSettings(nodeOrdinal))
-        .put(RestController.HTTP_JSON_ENABLE, true)
-        .put(InternalNode.HTTP_ENABLED, true)
+        .put(Node.HTTP_ENABLED, true)
         .put("network.host", "127.0.0.1")
         .put("path.data", "target/data")
-        .put("plugins." + PluginsService.LOAD_PLUGIN_FROM_CLASSPATH, true)
+        .put("plugins.load_classpath_plugins", true)
         .build();
   }
 

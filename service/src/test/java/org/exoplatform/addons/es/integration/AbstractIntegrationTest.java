@@ -17,13 +17,11 @@
 package org.exoplatform.addons.es.integration;
 
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
+import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.count.CountResponse;
-import org.elasticsearch.common.lang3.StringUtils;
-import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.node.internal.InternalNode;
-import org.elasticsearch.rest.RestController;
-import org.elasticsearch.test.ElasticsearchIntegrationTest;
+import org.elasticsearch.node.Node;
+import org.elasticsearch.test.ESIntegTestCase;
 import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
 import org.exoplatform.addons.es.client.ElasticIndexingClient;
 import org.exoplatform.addons.es.client.ElasticSearchingClient;
@@ -38,8 +36,8 @@ import static org.elasticsearch.index.query.QueryBuilders.termQuery;
  * tclement@exoplatform.com 9/11/15
  */
 @ThreadLeakScope(ThreadLeakScope.Scope.NONE)
-@ElasticsearchIntegrationTest.ClusterScope(numDataNodes = 0)
-public class AbstractIntegrationTest extends ElasticsearchIntegrationTest {
+@ESIntegTestCase.ClusterScope(numDataNodes = 0)
+public class AbstractIntegrationTest extends ESIntegTestCase {
 
   protected ElasticIndexingClient elasticIndexingClient;
   protected ElasticSearchingClient elasticSearchingClient;
@@ -50,10 +48,9 @@ public class AbstractIntegrationTest extends ElasticsearchIntegrationTest {
    */
   @Override
   protected Settings nodeSettings(int nodeOrdinal) {
-    return ImmutableSettings.settingsBuilder()
+    return Settings.builder()
                             .put(super.nodeSettings(nodeOrdinal))
-                            .put(RestController.HTTP_JSON_ENABLE, true)
-                            .put(InternalNode.HTTP_ENABLED, true)
+                            .put(Node.HTTP_ENABLED, true)
                             .put("network.host", "127.0.0.1")
                             .put("path.data", "target/data")
                             .build();

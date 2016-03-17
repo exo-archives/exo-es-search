@@ -11,25 +11,60 @@
     <!-- PLF dependencies -->
     <dependency>
       <groupId>org.exoplatform.commons</groupId>
-      <artifactId>commons-api</artifactId>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>lucene-spellchecker</artifactId>
-          <groupId>org.apache.lucene</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.exoplatform.commons</groupId>
       <artifactId>commons-component-common</artifactId>
       <scope>provided</scope>
+      <!--
       <exclusions>
         <exclusion>
           <artifactId>lucene-spellchecker</artifactId>
           <groupId>org.apache.lucene</groupId>
         </exclusion>
+        <exclusion>
+          <artifactId>exo.jcr.component.core</artifactId>
+          <groupId>org.exoplatform.jcr</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>exo.jcr.component.ext</artifactId>
+          <groupId>org.exoplatform.jcr</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>chromattic.apt</artifactId>
+          <groupId>org.chromattic</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>chromattic.core</artifactId>
+          <groupId>org.chromattic</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>exo.portal.webui.core</artifactId>
+          <groupId>org.gatein.portal</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>exo.portal.webui.portal</artifactId>
+          <groupId>org.gatein.portal</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>commons-webui-component</artifactId>
+          <groupId>org.exoplatform.commons</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>picocontainer</artifactId>
+          <groupId>picocontainer</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jcl-over-slf4j</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>xstream</artifactId>
+          <groupId>com.thoughtworks.xstream</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>xpp3</artifactId>
+          <groupId>org.ogce</groupId>
+        </exclusion>
       </exclusions>
+      -->
     </dependency>
     <!-- Others dependencies -->
     <dependency>
@@ -60,12 +95,28 @@
       <groupId>io.swagger</groupId>
       <artifactId>swagger-jaxrs</artifactId>
       <version>1.5.0</version>
+      <!--
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>annotations</artifactId>
+        </exclusion>
+      </exclusions>
+      -->
     </dependency>
     <!-- TEST -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
+      <!--
+      <exclusions>
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-core</artifactId>
+        </exclusion>
+      </exclusions>
+      -->
     </dependency>
     <dependency>
       <groupId>org.hsqldb</groupId>
@@ -89,6 +140,14 @@
       <artifactId>mockito-core</artifactId>
       <version>${mockito.version}</version>
       <scope>test</scope>
+      <!--
+      <exclusions>
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-core</artifactId>
+        </exclusion>
+      </exclusions>
+      -->
     </dependency>
     <!-- ES Test -->
     <dependency>
@@ -113,6 +172,7 @@
     <dependency>
       <groupId>org.elasticsearch</groupId>
       <artifactId>elasticsearch</artifactId>
+      <version>${org.elasticsearch.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -122,10 +182,30 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.elasticsearch</groupId>
-      <artifactId>elasticsearch-mapper-attachments</artifactId>
+      <groupId>org.elasticsearch.plugin</groupId>
+      <artifactId>mapper-attachments</artifactId>
       <version>${elasticsearch-mapper-attachments.version}</version>
       <scope>test</scope>
+      <!--
+      <exclusions>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm-debug-all</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.geronimo.specs</groupId>
+          <artifactId>geronimo-stax-api_1.0_spec</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcprov-jdk15</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcmail-jdk15</artifactId>
+        </exclusion>
+      </exclusions>
+      -->
     </dependency>
     <dependency>
       <groupId>com.asquera.elasticsearch</groupId>
