@@ -7,6 +7,20 @@
     <version>1.0.x-SNAPSHOT</version>
   </parent>
   <artifactId>exo-es-search-service</artifactId>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>18.0</version>
+      </dependency>
+      <dependency>
+        <groupId>joda-time</groupId>
+        <artifactId>joda-time</artifactId>
+        <version>2.8.2</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <!-- PLF dependencies -->
     <dependency>
@@ -35,16 +49,28 @@
           <groupId>org.chromattic</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>exo.portal.webui.core</artifactId>
-          <groupId>org.gatein.portal</groupId>
+          <artifactId>chromattic.ext</artifactId>
+          <groupId>org.chromattic</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>exo.portal.webui.portal</artifactId>
-          <groupId>org.gatein.portal</groupId>
+          <artifactId>mop-core</artifactId>
+          <groupId>org.gatein.mop</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>commons-webui-component</artifactId>
-          <groupId>org.exoplatform.commons</groupId>
+          <artifactId>shindig-common</artifactId>
+          <groupId>org.gatein.shindig</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>shindig-gadgets</artifactId>
+          <groupId>org.gatein.shindig</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>google-oauth-client</artifactId>
+          <groupId>com.google.oauth-client</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>exo.portal.component.web.oauth-common</artifactId>
+          <groupId>org.gatein.portal</groupId>
         </exclusion>
         <exclusion>
           <artifactId>picocontainer</artifactId>
@@ -142,6 +168,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-test-framework</artifactId>
+      <version>${lucene.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.elasticsearch</groupId>
       <artifactId>elasticsearch</artifactId>
       <version>${org.elasticsearch.version}</version>
@@ -155,11 +187,16 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>com.github.spullara.mustache.java</groupId>
+      <artifactId>compiler</artifactId>
+      <version>0.8.18</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.elasticsearch.plugin</groupId>
       <artifactId>mapper-attachments</artifactId>
       <version>${elasticsearch-mapper-attachments.version}</version>
       <scope>test</scope>
-      <!--
       <exclusions>
         <exclusion>
           <groupId>org.ow2.asm</groupId>
@@ -177,8 +214,11 @@
           <groupId>org.bouncycastle</groupId>
           <artifactId>bcmail-jdk15</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>stax</groupId>
+          <artifactId>stax-api</artifactId>
+        </exclusion>
       </exclusions>
-      -->
     </dependency>
     <dependency>
       <groupId>com.asquera.elasticsearch</groupId>
@@ -199,6 +239,15 @@
         <configuration>
           <!-- db.changelog file -->
           <changeLogFile>${project.basedir}/src/main/resources/db/changelog/exo-search.db.changelog-1.0.0.xml</changeLogFile>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <tests.security.manager>false</tests.security.manager>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
     </plugins>

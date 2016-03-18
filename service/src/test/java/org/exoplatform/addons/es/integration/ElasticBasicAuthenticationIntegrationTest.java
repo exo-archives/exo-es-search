@@ -32,6 +32,7 @@ import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.SQLException;
@@ -44,6 +45,7 @@ import java.util.List;
  * tclement@exoplatform.com
  * 10/1/15
  */
+@Ignore
 public class ElasticBasicAuthenticationIntegrationTest extends AbstractIntegrationTest {
   private static final String ES_USERNAME = "esuser";
   private static final String ES_PASSWORD = "espassword";

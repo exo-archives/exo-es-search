@@ -27,6 +27,7 @@ import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.MembershipEntry;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ import java.util.List;
  * tclement@exoplatform.com
  * 10/1/15
  */
+@Ignore
 public class ElasticIndexingAttachmentIntegrationTest extends AbstractIntegrationTest {
 
   //"Some people want it to happen, some wish it would happen, others make it happen." sentence encoded in base 64

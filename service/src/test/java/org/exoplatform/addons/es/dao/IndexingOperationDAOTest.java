@@ -22,6 +22,7 @@ import org.exoplatform.commons.persistence.impl.EntityManagerService;
 import org.exoplatform.container.PortalContainer;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
@@ -38,6 +39,7 @@ import static org.junit.Assert.assertNull;
  * tclement@exoplatform.com
  * 8/20/15
  */
+@Ignore
 public class IndexingOperationDAOTest extends AbstractDAOTest {
 
   private IndexingOperationDAO indexingOperationDAO;

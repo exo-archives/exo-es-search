@@ -41,6 +41,7 @@ import static org.mockito.Mockito.when;
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
  * 9/9/15
  */
+@Ignore
 public class PermissionsFilterIntTest extends AbstractIntegrationTest {
   private static Connection               conn;
 

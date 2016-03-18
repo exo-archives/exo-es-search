@@ -58,6 +58,7 @@ import static org.mockito.Mockito.when;
  * tclement@exoplatform.com
  * 10/2/15
  */
+@Ignore
 @ThreadLeakScope(ThreadLeakScope.Scope.NONE)
 public class SiteFilterIntTest extends AbstractIntegrationTest {
 

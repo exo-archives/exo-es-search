@@ -25,6 +25,7 @@ TO FIX IT WE NEED TO BE ABLE TO START AN EMBEDDED ES
 
  */
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -33,6 +34,7 @@ import org.junit.Test;
  * tclement@exoplatform.com
  * 8/20/15
  */
+@Ignore
 public class ElasticIndexingIntegrationTest extends AbstractIntegrationTest {
 
   @Test
