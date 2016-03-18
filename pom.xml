@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <artifactId>addons-parent-pom</artifactId>
-    <groupId>org.exoplatform.addons</groupId>
-    <version>6</version>
-  </parent>
   <groupId>org.exoplatform.addons.es</groupId>
   <artifactId>exo-es-search</artifactId>
   <version>1.0.x-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
     <module>service</module>
+    <module>rest</module>
     <module>webapp</module>
     <module>packaging</module>
   </modules>
@@ -22,6 +18,9 @@
     <url>https://github.com/exo-addons/exo-es-search</url>
   </scm>
   <properties>
+    <!-- maven-compiler-plugin -->
+    <maven.compiler.target>1.7</maven.compiler.target>
+    <maven.compiler.source>1.7</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <org.exoplatform.platform.version>4.3.1-M06</org.exoplatform.platform.version>
     <juzu.version>1.1.0</juzu.version>
