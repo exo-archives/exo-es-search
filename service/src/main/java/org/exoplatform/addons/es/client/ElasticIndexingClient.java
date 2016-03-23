@@ -178,7 +178,7 @@ public class ElasticIndexingClient extends ElasticClient {
         String type = operationDetails.get("_type") == null ? null : (String) operationDetails.get("_type");
         String id = operationDetails.get("_id") == null ? null : (String) operationDetails.get("_id");
         Long status = operationDetails.get("status") == null ? null : (Long) operationDetails.get("status");
-        String error = operationDetails.get("error") == null ? null : (String) operationDetails.get("error");
+        String error = operationDetails.get("error") == null ? null : (String) ((JSONObject) operationDetails.get("error")).get("reason");
         Integer httpStatusCode = status == null ? null : status.intValue();
         if (ElasticIndexingAuditTrail.isError(httpStatusCode)) {
           auditTrail.logRejectedDocumentBulkOperation(operationName, id, index, type, httpStatusCode, error, executionTime);

@@ -48,7 +48,9 @@ import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 
 /**
  * Created by The eXo Platform SAS Author : eXoPlatform exo@exoplatform.com
@@ -56,12 +58,12 @@ import org.junit.Before;
  */
 public class BaseIntegrationTest {
   private static final Log LOGGER = ExoLogger.getExoLogger(BaseIntegrationTest.class);
-  protected Node node;
+  protected static Node node;
 
-  private boolean propertiesSet;
+  private static boolean propertiesSet;
 
-  protected ElasticIndexingClient elasticIndexingClient;
-  protected ElasticSearchingClient elasticSearchingClient;
+  protected static ElasticIndexingClient elasticIndexingClient;
+  protected static ElasticSearchingClient elasticSearchingClient;
 
   /**
    * Port used for embedded Elasticsearch.
@@ -73,8 +75,8 @@ public class BaseIntegrationTest {
    */
   private static Integer esPort = null;
 
-  @Before
-  public void setUp() {
+  @BeforeClass
+  public static void setUp() {
     startEmbeddedES();
     // If the test is executed standalone, the properties are not present at the
     // beginning
@@ -84,7 +86,7 @@ public class BaseIntegrationTest {
     // If another test ran before and set the properties, we must not remove the
     // properties
     // If we do, we'll get the same exception.
-    this.propertiesSet = StringUtils.isBlank(System.getProperty("exo.es.index.server.url"));
+    propertiesSet = StringUtils.isBlank(System.getProperty("exo.es.index.server.url"));
     PropertyManager.setProperty("exo.es.index.server.url", "http://localhost:" + esPort);
     PropertyManager.setProperty("exo.es.search.server.url", "http://localhost:" + esPort);
 
@@ -95,14 +97,14 @@ public class BaseIntegrationTest {
     //deleteAllDocumentsInES();
   }
 
-  @After
-  public void cleanUrlProperties() {
+  @AfterClass
+  public static void cleanUrlProperties() {
     // Close ES Node
     LOGGER.info("Embedded ES instance - Stopping");
     node.close();
     LOGGER.info("Embedded ES instance - Stopped");
 
-    if (this.propertiesSet) {
+    if (propertiesSet) {
       System.clearProperty("exo.es.index.server.url");
       System.clearProperty("exo.es.indexing.batch.number");
       System.clearProperty("exo.es.indexing.replica.number.default");
@@ -119,7 +121,7 @@ public class BaseIntegrationTest {
   /**
    * Start an Elasticsearch instance
    */
-  private void startEmbeddedES() {
+  private static void startEmbeddedES() {
     if(esPort == null) {
       try {
         esPort = getAvailablePort();
@@ -134,10 +136,8 @@ public class BaseIntegrationTest {
             .put(Node.HTTP_ENABLED, true)
             .put("network.host", "127.0.0.1")
             .put("http.port", esPort)
-            .put("path.home", "/tmp/toto")
-            .put("path.data", "/tmp/toto")
-            .put("path.work", "/tmp/toto")
-            .put("path.logs", "/tmp/toto")
+            .put("path.home", "target/es")
+            .put("path.data", "target/es")
             .put("plugins.load_classpath_plugins", true);
     node = nodeBuilder().local(true).settings(elasticsearchSettings.build()).node();
     node.client().admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
@@ -159,7 +159,7 @@ public class BaseIntegrationTest {
    * @return
    * @throws IOException
    */
-  private int getAvailablePort() throws IOException {
+  private static int getAvailablePort() throws IOException {
     ServerSocket ss = null;
     DatagramSocket ds = null;
     try {
