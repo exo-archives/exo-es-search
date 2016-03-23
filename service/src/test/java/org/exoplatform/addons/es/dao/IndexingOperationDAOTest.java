@@ -39,7 +39,6 @@ import static org.junit.Assert.assertNull;
  * tclement@exoplatform.com
  * 8/20/15
  */
-@Ignore
 public class IndexingOperationDAOTest extends AbstractDAOTest {
 
   private IndexingOperationDAO indexingOperationDAO;

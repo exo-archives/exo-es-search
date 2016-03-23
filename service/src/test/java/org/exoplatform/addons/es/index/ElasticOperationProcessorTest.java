@@ -27,6 +27,7 @@ import org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor;
 import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;

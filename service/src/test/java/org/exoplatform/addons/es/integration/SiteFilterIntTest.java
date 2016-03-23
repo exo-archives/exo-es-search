@@ -16,7 +16,6 @@
 */
 package org.exoplatform.addons.es.integration;
 
-import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
@@ -58,9 +57,7 @@ import static org.mockito.Mockito.when;
  * tclement@exoplatform.com
  * 10/2/15
  */
-@Ignore
-@ThreadLeakScope(ThreadLeakScope.Scope.NONE)
-public class SiteFilterIntTest extends AbstractIntegrationTest {
+public class SiteFilterIntTest extends BaseIntegrationTest {
 
   private static final String USERNAME = "thib";
 
@@ -136,43 +133,46 @@ public class SiteFilterIntTest extends AbstractIntegrationTest {
   }
 
   @Test
+  @Ignore
   public void test_searchIntranetSite_returnsIntranetDocument() throws IOException, InterruptedException {
     //Given
     dao.create(new IndexingOperation("1", "test", OperationType.CREATE));
     when(testConnector.create("1")).thenReturn(getSiteDocument("intranet"));
     indexingOperationProcessor.process();
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
     //When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getIntranetSiteInACollection(), 0, 20, null, null);
     //Then
-    assertThat(pages.size(), is(1));
+    Assert.assertThat(pages.size(), is(1));
   }
 
   @Test
+  @Ignore
   public void test_searchIntranetSite_returnsNoDocumentAttachToOtherSite() throws IOException, InterruptedException {
     //Given
     dao.create(new IndexingOperation("1", "test", OperationType.CREATE));
 
     when(testConnector.create("1")).thenReturn(getSiteDocument("OtherSite"));
     indexingOperationProcessor.process();
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
     //When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getIntranetSiteInACollection(), 0, 20, null, null);
     //Then
-    assertThat(pages.size(), is(0));
+    Assert.assertThat(pages.size(), is(0));
   }
 
   @Test
+  @Ignore
   public void test_searchIntranetSite_returnsDocumentNoAttachToSite() throws IOException, InterruptedException {
     //Given
     dao.create(new IndexingOperation("1", "test", OperationType.CREATE));
     when(testConnector.create("1")).thenReturn(getSiteDocument(null));
     indexingOperationProcessor.process();
-    admin().indices().prepareRefresh().execute().actionGet();
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
     //When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getIntranetSiteInACollection(), 0, 20, null, null);
     //Then
-    assertThat(pages.size(), is(1));
+    Assert.assertThat(pages.size(), is(1));
   }
 
   private Document getSiteDocument(String siteName) {
