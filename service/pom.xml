@@ -22,12 +22,31 @@
       <groupId>org.exoplatform.commons</groupId>
       <artifactId>commons-component-common</artifactId>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>lucene-spellchecker</artifactId>
+          <groupId>org.apache.lucene</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>exo.jcr.component.core</artifactId>
+          <groupId>org.exoplatform.jcr</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>exo.jcr.component.ext</artifactId>
+          <groupId>org.exoplatform.jcr</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!-- Others dependencies -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>1.1.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
@@ -46,6 +65,12 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
       <version>4.11</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.transaction</groupId>
+      <artifactId>jta</artifactId>
+      <version>1.1</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.hsqldb</groupId>
