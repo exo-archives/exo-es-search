@@ -35,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
@@ -74,6 +75,9 @@ public class ElasticContentRequestBuilderTest {
     JSONObject settings = (JSONObject) parsedRequest.get("settings");
     assertThat((String) settings.get("number_of_replicas"), is("2"));
     assertThat((String) settings.get("number_of_shards"), is("3"));
+    assertNotNull(settings.get("analysis"));
+    assertNotNull(((JSONObject) settings.get("analysis")).get("analyzer"));
+    assertNotNull(((JSONObject) ((JSONObject) settings.get("analysis")).get("analyzer")).get("default"));
   }
 
   @Test

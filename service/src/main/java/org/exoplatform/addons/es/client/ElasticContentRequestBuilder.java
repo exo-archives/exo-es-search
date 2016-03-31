@@ -20,6 +20,7 @@ import org.exoplatform.addons.es.domain.Document;
 import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.util.HashMap;
@@ -48,10 +49,26 @@ public class ElasticContentRequestBuilder {
     indexProperties.put("number_of_shards", String.valueOf(connector.getShards()));
     indexProperties.put("number_of_replicas", String.valueOf(connector.getReplicas()));
 
+
     JSONObject indexSettings = new JSONObject();
     for (String setting: indexProperties.keySet()) {
       indexSettings.put(setting, indexProperties.get(setting));
     }
+
+    // define default analyzer with lowercase and asciifolding filters
+    JSONArray filters = new JSONArray();
+    filters.add("standard");
+    filters.add("lowercase");
+    filters.add("asciifolding");
+    JSONObject defaultAnalyzer = new JSONObject();
+    defaultAnalyzer.put("filter", filters);
+    defaultAnalyzer.put("tokenizer", "standard");
+    JSONObject analyzer = new JSONObject();
+    analyzer.put("default", defaultAnalyzer);
+    JSONObject analysis = new JSONObject();
+    analysis.put("analyzer", analyzer);
+    indexSettings.put("analysis", analysis);
+
     JSONObject indexJSON = new JSONObject();
     indexJSON.put("settings", indexSettings);
 
