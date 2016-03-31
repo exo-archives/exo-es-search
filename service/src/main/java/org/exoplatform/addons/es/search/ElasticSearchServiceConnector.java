@@ -42,6 +42,12 @@ import java.util.*;
  */
 public class ElasticSearchServiceConnector extends SearchServiceConnector {
   private static final Log LOG = ExoLogger.getLogger(ElasticSearchServiceConnector.class);
+
+  public static final String HIGHLIGHT_FRAGMENT_SIZE_PARAM_NAME = "highlightFragmentSize";
+  public static final int HIGHLIGHT_FRAGMENT_SIZE_DEFAULT_VALUE = 150;
+  public static final String HIGHLIGHT_FRAGMENT_NUMBER_PARAM_NAME = "highlightFragmentNumber";
+  public static final int HIGHLIGHT_FRAGMENT_NUMBER_DEFAULT_VALUE = 3;
+
   private final ElasticSearchingClient client;
 
   //ES connector information
@@ -50,6 +56,9 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
   //Type is optional: if null, search on all the index
   private String type;
   private List<String> searchFields;
+
+  public int highlightFragmentSize;
+  public int highlightFragmentNumber;
 
   //SearchResult information
   private String img;
@@ -65,6 +74,37 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     this.type = param.getProperty("type");
     if (StringUtils.isNotBlank(param.getProperty("titleField"))) this.titleElasticFieldName = param.getProperty("titleField");
     this.searchFields = new ArrayList<>(Arrays.asList(param.getProperty("searchFields").split(",")));
+
+    // highlight fragment size
+    String highlightFragmentSizeParamValue = param.getProperty(HIGHLIGHT_FRAGMENT_SIZE_PARAM_NAME);
+    if(highlightFragmentSizeParamValue != null) {
+      try {
+        this.highlightFragmentSize = Integer.valueOf(highlightFragmentSizeParamValue);
+      } catch (NumberFormatException e) {
+        this.highlightFragmentSize = HIGHLIGHT_FRAGMENT_SIZE_DEFAULT_VALUE;
+        LOG.warn("Value of param highlightFragmentSize of search connector " + this.getClass().getName()
+                + " is not a valid number (" + highlightFragmentSizeParamValue + "), default value will be used ("
+                + HIGHLIGHT_FRAGMENT_SIZE_DEFAULT_VALUE + ")");
+      }
+    } else {
+      this.highlightFragmentSize = HIGHLIGHT_FRAGMENT_SIZE_DEFAULT_VALUE;
+    }
+
+    // highlight fragment number
+    String highlightFragmentNumberParamValue = param.getProperty(HIGHLIGHT_FRAGMENT_NUMBER_PARAM_NAME);
+    if(highlightFragmentNumberParamValue != null) {
+      try {
+        this.highlightFragmentNumber = Integer.valueOf(highlightFragmentNumberParamValue);
+      } catch (NumberFormatException e) {
+        this.highlightFragmentNumber = HIGHLIGHT_FRAGMENT_NUMBER_DEFAULT_VALUE;
+        LOG.warn("Value of param highlightFragmentNumber of search connector " + this.getClass().getName()
+                + " is not a valid number (" + highlightFragmentNumberParamValue + "), default value will be used ("
+                + HIGHLIGHT_FRAGMENT_NUMBER_DEFAULT_VALUE + ")");
+      }
+    } else {
+      this.highlightFragmentNumber = HIGHLIGHT_FRAGMENT_NUMBER_DEFAULT_VALUE;
+    }
+
     //Indicate in which order element will be displayed
     sortMapping.put("relevancy", "_score");
     sortMapping.put("date", "lastUpdatedDate");
@@ -159,7 +199,9 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     esQuery.append("       \"post_tags\" : [\"</strong>\"],\n");
     esQuery.append("       \"fields\" : {\n");
     for (int i=0; i<this.searchFields.size(); i++) {
-      esQuery.append("         \""+searchFields.get(i)+"\" : {\"fragment_size\" : 150, \"number_of_fragments\" : 3}");
+      esQuery.append("         \""+searchFields.get(i)+"\" : {\n")
+              .append("          \"fragment_size\" : " + this.highlightFragmentSize + ",\n")
+              .append("          \"number_of_fragments\" : " + this.highlightFragmentNumber + "}");
       if (i<this.searchFields.size()-1) {
         esQuery.append(",");
       }

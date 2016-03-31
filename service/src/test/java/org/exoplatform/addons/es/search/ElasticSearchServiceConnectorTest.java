@@ -27,28 +27,28 @@ public class ElasticSearchServiceConnectorTest {
   @Mock
   private ElasticSearchingClient elasticSearchingClient;
   
-    @Test
-    public void testMembership() throws ParseException {
-        //Given
-        setCurrentIdentity();
-        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
-        //When
-        String query = connector.buildQuery("My Wiki", null, 0, 20, "name", "asc");
-        //Then
-        assertThat(query, containsString("\"term\" : { \"permissions\" : \"BCH\" }"));
-        assertThat(query, containsString("\"regexp\" : { \"permissions\" : \".*:Admin\" }"));
-    }
+  @Test
+  public void testMembership() throws ParseException {
+      //Given
+      setCurrentIdentity();
+      ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
+      //When
+      String query = connector.buildQuery("My Wiki", null, 0, 20, "name", "asc");
+      //Then
+      assertThat(query, containsString("\"term\" : { \"permissions\" : \"BCH\" }"));
+      assertThat(query, containsString("\"regexp\" : { \"permissions\" : \".*:Admin\" }"));
+  }
 
-    @Test
-    public void testSortIsRelevancyByDefault() {
-        //Given
-        setCurrentIdentity();
-        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
-        //When
-        String query = connector.buildQuery("My Wiki", null, 0, 20, null, null);
-        //Then
-        assertThat(query, containsString("{ \"_score\" : {\"order\" : \"desc\"}}"));
-    }
+  @Test
+  public void testSortIsRelevancyByDefault() {
+      //Given
+      setCurrentIdentity();
+      ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
+      //When
+      String query = connector.buildQuery("My Wiki", null, 0, 20, null, null);
+      //Then
+      assertThat(query, containsString("{ \"_score\" : {\"order\" : \"desc\"}}"));
+  }
 
   @Test
   public void testSortRelevancyIsEqual_score() {
@@ -72,28 +72,40 @@ public class ElasticSearchServiceConnectorTest {
     assertThat(query, containsString("{ \"lastUpdatedDate\" : {\"order\" : \"desc\"}}"));
   }
 
-    @Test
-    public void testOrderIsDescByDefault() {
-        //Given
-        setCurrentIdentity();
-        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
-        //When
-        String query = connector.buildQuery("My Wiki", null, 0, 20, "name", null);
-        //Then
-        assertThat(query, containsString("\"sort\""));
-        assertThat(query, containsString("{\"order\" : \"desc\"}"));
-    }
+  @Test
+  public void testOrderIsDescByDefault() {
+      //Given
+      setCurrentIdentity();
+      ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
+      //When
+      String query = connector.buildQuery("My Wiki", null, 0, 20, "name", null);
+      //Then
+      assertThat(query, containsString("\"sort\""));
+      assertThat(query, containsString("{\"order\" : \"desc\"}"));
+  }
 
-    @Test
-    public void testScoresAreTracked() {
-        //Given
-        setCurrentIdentity();
-        ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
-        //When
-        String query = connector.buildQuery("My Wiki", null, 0, 20, "name", "asc");
-        //Then
-        assertThat(query, containsString("\"track_scores\": true"));
-    }
+  @Test
+  public void testScoresAreTracked() {
+      //Given
+      setCurrentIdentity();
+      ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
+      //When
+      String query = connector.buildQuery("My Wiki", null, 0, 20, "name", "asc");
+      //Then
+      assertThat(query, containsString("\"track_scores\": true"));
+  }
+
+  @Test
+  public void testHighlightParamsAreSetByDefault() {
+    //Given
+    setCurrentIdentity();
+    ElasticSearchServiceConnector connector = new ElasticSearchServiceConnector(getInitParams(), elasticSearchingClient);
+    //When
+    String query = connector.buildQuery("My Wiki", null, 0, 20, null, null);
+    //Then
+    assertThat(query, containsString("\"fragment_size\" : " + ElasticSearchServiceConnector.HIGHLIGHT_FRAGMENT_SIZE_DEFAULT_VALUE + ","));
+    assertThat(query, containsString("\"number_of_fragments\" : " + ElasticSearchServiceConnector.HIGHLIGHT_FRAGMENT_NUMBER_DEFAULT_VALUE + "}"));
+  }
 
     @Test(expected = IllegalStateException.class)
     public void testSearchWithoutIdentity() {
