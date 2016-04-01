@@ -17,7 +17,7 @@
   </modules>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <platform.version>4.3.x-SNAPSHOT</platform.version>
+    <org.exoplatform.platform.version>4.3.x-SNAPSHOT</org.exoplatform.platform.version>
     <juzu.version>1.1.0</juzu.version>
     <org.antlr.version>3.4</org.antlr.version>
     <org.elasticsearch.version>1.7.2</org.elasticsearch.version>
@@ -40,7 +40,7 @@
       <dependency>
         <groupId>org.exoplatform.platform</groupId>
         <artifactId>platform</artifactId>
-        <version>${platform.version}</version>
+        <version>${org.exoplatform.platform.version}</version>
         <type>pom</type>
         <scope>import</scope>
         <exclusions>
