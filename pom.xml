@@ -8,7 +8,7 @@
   </parent>
   <groupId>org.exoplatform.addons.es</groupId>
   <artifactId>exo-es-search</artifactId>
-  <version>1.0.x-SNAPSHOT</version>
+  <version>1.0.0-M01</version>
   <packaging>pom</packaging>
   <modules>
     <module>service</module>
@@ -18,7 +18,7 @@
   <scm>
     <connection>scm:git:git://github.com/exo-addons/exo-es-search.git</connection>
     <developerConnection>scm:git:git@github.com:exo-addons/exo-es-search.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>1.0.0-M01</tag>
     <url>https://github.com/exo-addons/exo-es-search</url>
   </scm>
   <properties>
