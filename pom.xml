@@ -15,6 +15,12 @@
     <module>webapp</module>
     <module>packaging</module>
   </modules>
+  <scm>
+    <connection>scm:git:git://github.com/exo-addons/exo-es-search.git</connection>
+    <developerConnection>scm:git:git@github.com:exo-addons/exo-es-search.git</developerConnection>
+    <tag>HEAD</tag>
+    <url>https://github.com/exo-addons/exo-es-search</url>
+  </scm>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <org.exoplatform.platform.version>4.3.1-M06</org.exoplatform.platform.version>
