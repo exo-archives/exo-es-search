@@ -18,7 +18,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <platform.version>4.3.x-SNAPSHOT</platform.version>
-    <juzu.version>1.1.0-M1</juzu.version>
+    <juzu.version>1.1.0</juzu.version>
     <org.antlr.version>3.4</org.antlr.version>
     <org.elasticsearch.version>1.7.2</org.elasticsearch.version>
     <!-- Issue with the PLF pom parent that trigger lucene 3.6.2 needed by JCR (Only working with impl version < 0.20.6) -->
