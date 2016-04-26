@@ -7,12 +7,31 @@
     <version>1.0.x-SNAPSHOT</version>
   </parent>
   <artifactId>exo-es-search-service</artifactId>
+
+  <properties>
+    <org.elasticsearch.test.jna.version>4.1.0</org.elasticsearch.test.jna.version>
+    <org.elasticsearch.test.guava.version>18.0</org.elasticsearch.test.guava.version>
+    <org.elasticsearch.test.jodatime.version>2.8.2</org.elasticsearch.test.jodatime.version>
+  </properties>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>4.1.0</version>
+        <version>${org.elasticsearch.test.jna.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${org.elasticsearch.test.guava.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>joda-time</groupId>
+        <artifactId>joda-time</artifactId>
+        <version>${org.elasticsearch.test.jodatime.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
