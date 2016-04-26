@@ -34,6 +34,7 @@ import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.cluster.metadata.AliasOrIndex;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
 
 import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
@@ -189,5 +190,17 @@ public class BaseIntegrationTest {
       node.client().admin().indices().prepareDelete(alias).execute().actionGet();
     }
     node.client().admin().indices().prepareRefresh().execute().actionGet();
+  }
+
+  protected boolean typeExists(String index, String type) {
+    return node.client().admin().indices().prepareTypesExists(index).setTypes(type).execute().actionGet().isExists();
+  }
+
+  protected long documentNumber() {
+    return node.client().prepareCount().execute().actionGet().getCount();
+  }
+
+  protected long documentNumber(String type) {
+    return node.client().prepareCount("_all").setQuery(QueryBuilders.termQuery("_type", type)).execute().actionGet().getCount();
   }
 }

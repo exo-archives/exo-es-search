@@ -110,17 +110,5 @@ public class ElasticIndexingIntegrationTest extends BaseIntegrationTest {
     //Then
     assertFalse(typeExists("test", "type1"));
   }
-
-  private boolean typeExists(String index, String type) {
-    return node.client().admin().indices().prepareTypesExists(index).setTypes(type).execute().actionGet().isExists();
-  }
-
-  private long documentNumber() {
-    return node.client().prepareCount().execute().actionGet().getCount();
-  }
-
-  private long documentNumber(String type) {
-    return node.client().prepareCount("_all").setQuery(QueryBuilders.termQuery("_type", type)).execute().actionGet().getCount();
-  }
 }
 
