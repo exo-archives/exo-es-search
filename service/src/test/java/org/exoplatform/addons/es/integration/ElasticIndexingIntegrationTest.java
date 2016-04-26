@@ -28,6 +28,7 @@ TO FIX IT WE NEED TO BE ABLE TO START AN EMBEDDED ES
 import static org.junit.Assert.*;
 
 import org.elasticsearch.index.query.QueryBuilders;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -55,8 +56,8 @@ public class ElasticIndexingIntegrationTest extends BaseIntegrationTest {
   @Test
   public void testCreateNewType() throws ExecutionException, InterruptedException {
     //Given
-    assertFalse(typeExists("blog", "post"));
     elasticIndexingClient.sendCreateIndexRequest("blog", "");
+    assertFalse(typeExists("blog", "post"));
     //When
     elasticIndexingClient.sendCreateTypeRequest("blog", "post", "{\"post\" : {}}");
     //Then

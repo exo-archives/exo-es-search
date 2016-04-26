@@ -92,6 +92,8 @@ public class SiteFilterIntTest extends BaseIntegrationTest {
 
   @Before
   public void initServices() {
+    super.setup();
+
     //Indexing Connector
     testConnector = mock(ElasticIndexingServiceConnector.class);
     when(testConnector.getType()).thenReturn("test");
@@ -137,7 +139,6 @@ public class SiteFilterIntTest extends BaseIntegrationTest {
   }
 
   @Test
-  @Ignore
   public void test_searchIntranetSite_returnsIntranetDocument() throws IOException, InterruptedException {
     //Given
     dao.create(new IndexingOperation("1", "test", OperationType.CREATE));
@@ -151,7 +152,6 @@ public class SiteFilterIntTest extends BaseIntegrationTest {
   }
 
   @Test
-  @Ignore
   public void test_searchIntranetSite_returnsNoDocumentAttachToOtherSite() throws IOException, InterruptedException {
     //Given
     dao.create(new IndexingOperation("1", "test", OperationType.CREATE));
@@ -166,7 +166,6 @@ public class SiteFilterIntTest extends BaseIntegrationTest {
   }
 
   @Test
-  @Ignore
   public void test_searchIntranetSite_returnsDocumentNoAttachToSite() throws IOException, InterruptedException {
     //Given
     dao.create(new IndexingOperation("1", "test", OperationType.CREATE));

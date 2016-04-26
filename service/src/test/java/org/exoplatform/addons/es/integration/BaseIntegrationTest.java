@@ -22,18 +22,16 @@ package org.exoplatform.addons.es.integration;
 import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
 import static org.junit.Assert.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Date;
+import java.util.SortedMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.admin.cluster.node.info.NodeInfo;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoRequest;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
+import org.elasticsearch.cluster.metadata.AliasOrIndex;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.node.Node;
@@ -41,13 +39,9 @@ import org.elasticsearch.node.Node;
 import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
 import org.exoplatform.addons.es.client.ElasticIndexingClient;
 import org.exoplatform.addons.es.client.ElasticSearchingClient;
-import org.exoplatform.addons.es.dao.IndexingOperationDAO;
-import org.exoplatform.addons.es.index.IndexingOperationProcessor;
-import org.exoplatform.addons.es.index.IndexingService;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -92,9 +86,12 @@ public class BaseIntegrationTest {
 
     elasticIndexingClient = new ElasticIndexingClient(new ElasticIndexingAuditTrail());
     elasticSearchingClient = new ElasticSearchingClient(new ElasticIndexingAuditTrail());
+  }
 
-    // Init data
-    //deleteAllDocumentsInES();
+  @Before
+  public void setup() {
+    // Reset data
+    deleteAllIndexesInES();
   }
 
   @AfterClass
@@ -185,4 +182,12 @@ public class BaseIntegrationTest {
     }
   }
 
+  protected void deleteAllIndexesInES() {
+    SortedMap<String, AliasOrIndex> aliasAndIndexLookup = node.client().admin().cluster()
+            .prepareState().execute().actionGet().getState().getMetaData().getAliasAndIndexLookup();
+    for (String alias: aliasAndIndexLookup.keySet()) {
+      node.client().admin().indices().prepareDelete(alias).execute().actionGet();
+    }
+    node.client().admin().indices().prepareRefresh().execute().actionGet();
+  }
 }
