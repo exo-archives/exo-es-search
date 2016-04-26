@@ -82,8 +82,12 @@ public class SiteFilterIntTest extends BaseIntegrationTest {
 
   @AfterClass
   public static void stopDB () throws LiquibaseException, SQLException {
-    liquibase.rollback(1000, null);
-    conn.close();
+    if(liquibase != null) {
+      liquibase.rollback(1000, null);
+    }
+    if(conn != null) {
+      conn.close();
+    }
   }
 
   @Before

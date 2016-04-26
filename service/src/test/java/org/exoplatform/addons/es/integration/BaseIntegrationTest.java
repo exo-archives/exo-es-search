@@ -100,9 +100,11 @@ public class BaseIntegrationTest {
   @AfterClass
   public static void cleanUrlProperties() {
     // Close ES Node
-    LOGGER.info("Embedded ES instance - Stopping");
-    node.close();
-    LOGGER.info("Embedded ES instance - Stopped");
+    if(node != null) {
+      LOGGER.info("Embedded ES instance - Stopping");
+      node.close();
+      LOGGER.info("Embedded ES instance - Stopped");
+    }
 
     if (propertiesSet) {
       System.clearProperty("exo.es.index.server.url");
