@@ -65,7 +65,6 @@ public class ElasticIndexingIntegrationTest extends BaseIntegrationTest {
   }
 
   @Test
-  @Ignore
   public void testIndexingDocument() {
     //Given
     assertEquals(0, documentNumber());
