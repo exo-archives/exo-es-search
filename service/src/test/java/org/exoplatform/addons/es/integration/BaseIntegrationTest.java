@@ -19,24 +19,28 @@
 
 package org.exoplatform.addons.es.integration;
 
-import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
+import java.util.Collections;
 import java.util.SortedMap;
 
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.Version;
 import org.elasticsearch.action.admin.cluster.node.info.NodeInfo;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoRequest;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.cluster.metadata.AliasOrIndex;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.env.Environment;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.mapper.attachments.MapperAttachmentsPlugin;
 import org.elasticsearch.node.Node;
 
+import org.elasticsearch.plugins.Plugin;
 import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
 import org.exoplatform.addons.es.client.ElasticIndexingClient;
 import org.exoplatform.addons.es.client.ElasticSearchingClient;
@@ -136,10 +140,15 @@ public class BaseIntegrationTest {
             .put(Node.HTTP_ENABLED, true)
             .put("network.host", "127.0.0.1")
             .put("http.port", esPort)
+            .put("name", "esEmbeddedForTests" + esPort)
             .put("path.home", "target/es")
             .put("path.data", "target/es")
             .put("plugins.load_classpath_plugins", true);
-    node = nodeBuilder().local(true).settings(elasticsearchSettings.build()).node();
+
+    Environment environment = new Environment(elasticsearchSettings.build());
+    node = new EmbeddedNode(environment, Version.CURRENT, Collections.<Class<? extends Plugin>>singletonList(MapperAttachmentsPlugin.class));
+    node.start();
+    //node = nodeBuilder().local(true).settings(elasticsearchSettings.build()).node();
     node.client().admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
     assertNotNull(node);
     assertFalse(node.isClosed());
