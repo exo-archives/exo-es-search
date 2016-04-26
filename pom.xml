@@ -30,9 +30,9 @@
     <org.exoplatform.platform.version>4.3.1-M06</org.exoplatform.platform.version>
     <juzu.version>1.1.0</juzu.version>
     <org.antlr.version>3.4</org.antlr.version>
-    <org.elasticsearch.version>2.2.1</org.elasticsearch.version>
+    <org.elasticsearch.version>2.3.1</org.elasticsearch.version>
     <!-- Issue with the PLF pom parent that trigger lucene 3.6.2 needed by JCR (Only working with impl version < 0.20.6) -->
-    <lucene.version>5.4.1</lucene.version>
+    <lucene.version>5.5.0</lucene.version>
     <!-- Tests -->
     <mockito.version>2.0.13-beta</mockito.version>
     <httpclient.version>4.1.2</httpclient.version>
@@ -41,8 +41,8 @@
     <logback.version>1.1.3</logback.version>
     <version.liquibase.plugin>3.4.1</version.liquibase.plugin>
     <!-- ES Tests -->
-    <elasticsearch-mapper-attachments.version>2.2.1</elasticsearch-mapper-attachments.version>
-    <randomizedtesting-runner.version>2.3.1</randomizedtesting-runner.version>
+    <elasticsearch-mapper-attachments.version>2.3.1</elasticsearch-mapper-attachments.version>
+    <randomizedtesting-runner.version>2.3.2</randomizedtesting-runner.version>
   </properties>
   <dependencyManagement>
     <dependencies>
