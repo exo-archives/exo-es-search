@@ -134,6 +134,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.elasticsearch.plugin</groupId>
+      <artifactId>delete-by-query</artifactId>
+      <version>${elasticsearch-delete-by-query.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.asquera.elasticsearch</groupId>
       <artifactId>elasticsearch-http-basic</artifactId>
       <version>1.5.1</version>

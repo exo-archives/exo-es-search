@@ -111,12 +111,11 @@ public class ElasticIndexingClient extends ElasticClient {
   }
 
   /**
-   * Send request to ES to delete a type it's the same that deleting all
-   * document from a given type
+   * Send request to ES to delete all documents of the given type
    */
-  public void sendDeleteTypeRequest(String index, String type) {
+  public void sendDeleteAllDocsOfTypeRequest(String index, String type) {
     long startTime = System.currentTimeMillis();
-    ElasticResponse response = sendHttpDeleteRequest(urlClient + "/" + index + "/" + type);
+    ElasticResponse response = sendHttpDeleteRequest(urlClient + "/" + index + "/" + type + "/_query?q=*");
     auditTrail.audit(ElasticIndexingAuditTrail.DELETE_TYPE,
                      null,
                      index,

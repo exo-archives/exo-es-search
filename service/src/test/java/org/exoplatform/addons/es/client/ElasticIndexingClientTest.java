@@ -30,7 +30,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.*;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
@@ -94,10 +93,10 @@ public class ElasticIndexingClientTest {
     //Given
     initClientMock(999, "", 200, "Success");
     //When
-    elasticIndexingClient.sendDeleteTypeRequest("index", "type");
+    elasticIndexingClient.sendDeleteAllDocsOfTypeRequest("index", "type");
     //Then
     verify(httpClient).execute(httpDeleteRequestCaptor.capture());
-    assertEquals("http://127.0.0.1:9200/index/type", httpDeleteRequestCaptor.getValue().getURI().toString());
+    assertEquals("http://127.0.0.1:9200/index/type/_query?q=*", httpDeleteRequestCaptor.getValue().getURI().toString());
   }
 
   @Test
@@ -172,7 +171,7 @@ public class ElasticIndexingClientTest {
     String response = "{\"error\": \"TypeMissingException[[_all] type[[unknownType]] missing: No index has the type.]\",\"status\": 404}";
     initClientMock(999, "", 404, response);
     //When
-    elasticIndexingClient.sendDeleteTypeRequest("profile", "profile");
+    elasticIndexingClient.sendDeleteAllDocsOfTypeRequest("profile", "profile");
     //Then
     verify(auditTrail).audit(eq("delete_type"), isNull(String.class), eq("profile"), eq("profile"), eq(HttpStatus.SC_NOT_FOUND), eq("{\"error\": \"TypeMissingException[[_all] type[[unknownType]] missing: No index has the type.]\",\"status\": 404}"), anyLong());
     verifyNoMoreInteractions(auditTrail);

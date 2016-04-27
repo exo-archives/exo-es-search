@@ -27,7 +27,6 @@ import org.exoplatform.addons.es.index.impl.ElasticIndexingOperationProcessor;
 import org.exoplatform.addons.es.index.impl.ElasticIndexingServiceConnector;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -185,11 +184,8 @@ public class ElasticOperationProcessorTest {
         elasticIndexingServiceConnector.getType(),
         elasticIndexingServiceConnector.getMapping());
     //Then Operation X
-    orderClient.verify(elasticIndexingClient).sendDeleteTypeRequest(elasticIndexingServiceConnector.getIndex(),
-        elasticIndexingServiceConnector.getType());
-    orderClient.verify(elasticIndexingClient).sendCreateTypeRequest(elasticIndexingServiceConnector.getIndex(),
-        elasticIndexingServiceConnector.getType(),
-        elasticIndexingServiceConnector.getMapping());
+    orderClient.verify(elasticIndexingClient).sendDeleteAllDocsOfTypeRequest(elasticIndexingServiceConnector.getIndex(),
+            elasticIndexingServiceConnector.getType());
     //Then Operation D, C and U
     orderClient.verify(elasticIndexingClient).sendCUDRequest(anyString());
     //Then no more interaction with client
@@ -269,11 +265,8 @@ public class ElasticOperationProcessorTest {
     //Then
     InOrder orderClient = inOrder(elasticIndexingClient);
     //Remove and recreate type request
-    orderClient.verify(elasticIndexingClient).sendDeleteTypeRequest(elasticIndexingServiceConnector.getIndex(),
-        elasticIndexingServiceConnector.getType());
-    orderClient.verify(elasticIndexingClient).sendCreateTypeRequest(elasticIndexingServiceConnector.getIndex(),
-        elasticIndexingServiceConnector.getType(),
-        elasticIndexingServiceConnector.getMapping());
+    orderClient.verify(elasticIndexingClient).sendDeleteAllDocsOfTypeRequest(elasticIndexingServiceConnector.getIndex(),
+            elasticIndexingServiceConnector.getType());
     //No CUD request
     verifyNoMoreInteractions(elasticIndexingClient);
   }
@@ -371,11 +364,8 @@ public class ElasticOperationProcessorTest {
     //Then
     InOrder orderClient = inOrder(elasticIndexingClient);
     //Remove and recreate type request
-    orderClient.verify(elasticIndexingClient).sendDeleteTypeRequest(elasticIndexingServiceConnector.getIndex(),
-        elasticIndexingServiceConnector.getType());
-    orderClient.verify(elasticIndexingClient).sendCreateTypeRequest(elasticIndexingServiceConnector.getIndex(),
-            elasticIndexingServiceConnector.getType(),
-            elasticIndexingServiceConnector.getMapping());
+    orderClient.verify(elasticIndexingClient).sendDeleteAllDocsOfTypeRequest(elasticIndexingServiceConnector.getIndex(),
+            elasticIndexingServiceConnector.getType());
     //Create and Delete requests should be build
     verify(elasticContentRequestBuilder, times(1)).getCreateDocumentRequestContent(elasticIndexingServiceConnector, "1");
     verify(elasticContentRequestBuilder, times(1)).getDeleteDocumentRequestContent(elasticIndexingServiceConnector, "1");
@@ -438,11 +428,8 @@ public class ElasticOperationProcessorTest {
     //Then
     InOrder orderClient = inOrder(elasticIndexingClient);
     //Remove and recreate type request
-    orderClient.verify(elasticIndexingClient).sendDeleteTypeRequest(elasticIndexingServiceConnector.getIndex(),
-        elasticIndexingServiceConnector.getType());
-    orderClient.verify(elasticIndexingClient).sendCreateTypeRequest(elasticIndexingServiceConnector.getIndex(),
-        elasticIndexingServiceConnector.getType(),
-        elasticIndexingServiceConnector.getMapping());
+    orderClient.verify(elasticIndexingClient).sendDeleteAllDocsOfTypeRequest(elasticIndexingServiceConnector.getIndex(),
+            elasticIndexingServiceConnector.getType());
     //No CUD operation
     verifyNoMoreInteractions(elasticIndexingClient);
   }

@@ -27,9 +27,6 @@ TO FIX IT WE NEED TO BE ABLE TO START AN EMBEDDED ES
 
 import static org.junit.Assert.*;
 
-import org.elasticsearch.index.query.QueryBuilders;
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutionException;
@@ -88,9 +85,7 @@ public class ElasticIndexingIntegrationTest extends BaseIntegrationTest {
   }
 
   @Test
-  @Ignore
   public void testDeleteType() {
-    System.out.println(">>>>>>>>>>>>>> testDeleteType");
     //Given
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" } }\n" +
         "{ \"field1\" : \"value1\" }\n" +
@@ -104,11 +99,11 @@ public class ElasticIndexingIntegrationTest extends BaseIntegrationTest {
     assertEquals(3, documentNumber("type1"));
 
     //When
-    elasticIndexingClient.sendDeleteTypeRequest("test", "type1");
+    elasticIndexingClient.sendDeleteAllDocsOfTypeRequest("test", "type1");
     node.client().admin().indices().prepareRefresh().execute().actionGet();
 
     //Then
-    assertFalse(typeExists("test", "type1"));
+    assertEquals(0, documentNumber("type1"));
   }
 }
 

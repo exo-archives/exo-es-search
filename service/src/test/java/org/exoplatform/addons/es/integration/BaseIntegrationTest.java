@@ -24,6 +24,8 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.SortedMap;
 
@@ -40,6 +42,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.mapper.attachments.MapperAttachmentsPlugin;
 import org.elasticsearch.node.Node;
 
+import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
 import org.elasticsearch.plugins.Plugin;
 import org.exoplatform.addons.es.client.ElasticIndexingAuditTrail;
 import org.exoplatform.addons.es.client.ElasticIndexingClient;
@@ -146,7 +149,9 @@ public class BaseIntegrationTest {
             .put("plugins.load_classpath_plugins", true);
 
     Environment environment = new Environment(elasticsearchSettings.build());
-    node = new EmbeddedNode(environment, Version.CURRENT, Collections.<Class<? extends Plugin>>singletonList(MapperAttachmentsPlugin.class));
+    Collection plugins = new ArrayList<>();
+    Collections.<Class<? extends Plugin>>addAll(plugins, MapperAttachmentsPlugin.class, DeleteByQueryPlugin.class);
+    node = new EmbeddedNode(environment, Version.CURRENT, plugins);
     node.start();
     //node = nodeBuilder().local(true).settings(elasticsearchSettings.build()).node();
     node.client().admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();

@@ -272,8 +272,7 @@ public class ElasticIndexingOperationProcessor extends IndexingOperationProcesso
     // log in Audit Trail
     auditTrail.audit(ElasticIndexingAuditTrail.DELETE_ALL, null, null, connector.getType(), null, null, 0);
     // Call ES
-    elasticIndexingClient.sendDeleteTypeRequest(connector.getIndex(), connector.getType());
-    elasticIndexingClient.sendCreateTypeRequest(connector.getIndex(), connector.getType(), connector.getMapping());
+    elasticIndexingClient.sendDeleteAllDocsOfTypeRequest(connector.getIndex(), connector.getType());
     // Remove all useless CUD operation that was plan before this delete all
     deleteOperationsForTypesBefore(new OperationType[] { OperationType.CREATE, OperationType.UPDATE, OperationType.DELETE },
                                    indexingQueueSorted,
