@@ -163,8 +163,8 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
     esQuery.append("     ],\n");
     esQuery.append("     \"_source\": [" + getSourceFields() + "],");
     esQuery.append("     \"query\": {\n");
-    esQuery.append("        \"filtered\" : {\n");
-    esQuery.append("            \"query\" : {\n");
+    esQuery.append("        \"bool\" : {\n");
+    esQuery.append("            \"must\" : {\n");
     esQuery.append("                \"query_string\" : {\n");
     esQuery.append("                    \"fields\" : [" + getFields() + "],\n");
     esQuery.append("                    \"query\" : \"" + query + "\"\n");
