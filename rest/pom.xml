@@ -15,6 +15,7 @@
     <dependency>
       <groupId>org.exoplatform.commons</groupId>
       <artifactId>commons-component-common</artifactId>
+      <version>${org.exoplatform.platform.version}</version>
       <scope>provided</scope>
     </dependency>
     <!-- Swagger -->

@@ -16,6 +16,7 @@
 */
 package org.exoplatform.addons.es.integration;
 
+import org.apache.commons.codec.binary.Base64;
 import org.exoplatform.addons.es.search.ElasticSearchServiceConnector;
 import org.exoplatform.commons.api.search.data.SearchResult;
 import org.exoplatform.container.xml.InitParams;
@@ -24,7 +25,6 @@ import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.MembershipEntry;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -38,9 +38,8 @@ import static org.junit.Assert.*;
  */
 public class ElasticIndexingAttachmentIntegrationTest extends BaseIntegrationTest {
 
-  //"Some people want it to happen, some wish it would happen, others make it happen." sentence encoded in base 64
   private final static String MC23Quotes =
-      "U29tZSBwZW9wbGUgd2FudCBpdCB0byBoYXBwZW4sIHNvbWUgd2lzaCBpdCB3b3VsZCBoYXBwZW4sIG90aGVycyBtYWtlIGl0IGhhcHBlbi4=";
+      "Some people want it to happen, some wish it would happen, others make it happen.";
 
   private ElasticSearchServiceConnector elasticSearchServiceConnector;
 
@@ -61,7 +60,7 @@ public class ElasticIndexingAttachmentIntegrationTest extends BaseIntegrationTes
     constructorParams.setProperty("searchType", "attachment");
     constructorParams.setProperty("displayName", "attachment");
     constructorParams.setProperty("index", "test");
-    constructorParams.setProperty("searchFields", "content,title");
+    constructorParams.setProperty("searchFields", "file.content,title");
     params.addParam(constructorParams);
     return params;
   }
@@ -87,7 +86,7 @@ public class ElasticIndexingAttachmentIntegrationTest extends BaseIntegrationTes
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"attachment\", \"_id\" : \"1\" } }\n" +
         "{ " +
         "\"title\" : \"Sample CV in English\"," +
-        "\"content\" : \" " + MC23Quotes + " \"" +
+        "\"file\" : \"" + new String(Base64.encodeBase64(MC23Quotes.getBytes())) + "\"" +
         " }\n";
 
     //When
@@ -101,7 +100,6 @@ public class ElasticIndexingAttachmentIntegrationTest extends BaseIntegrationTes
   }
 
   @Test
-  @Ignore
   public void testSearchAttachment() {
     //Given
     elasticIndexingClient.sendCreateIndexRequest("test", "");
@@ -110,9 +108,9 @@ public class ElasticIndexingAttachmentIntegrationTest extends BaseIntegrationTes
     String bulkRequest = "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"attachment\", \"_id\" : \"1\" } }\n" +
         "{ " +
         "\"title\" : \"Michael Jordan quotes\", " +
-        "\"content\" : \""+ MC23Quotes + "\", " +
+        "\"file\" : \""+ new String(Base64.encodeBase64(MC23Quotes.getBytes())) + "\", " +
         "\"permissions\" : [\"TCL\"]" +
-        " }\n";
+            " }\n";
 
     //When
     elasticIndexingClient.sendCUDRequest(bulkRequest);
@@ -126,6 +124,9 @@ public class ElasticIndexingAttachmentIntegrationTest extends BaseIntegrationTes
         null));
 
     //Then
+    assertEquals(1, documentNumber());
+    assertNotNull(searchResults);
+    assertEquals(1, searchResults.size());
     assertEquals("... Some <strong>people</strong> want it to happen, some wish it would happen, others make it happen.\n", searchResults.get(0).getExcerpt());
 
   }
