@@ -12,7 +12,6 @@
   <properties>
     <maven.compiler.target>1.7</maven.compiler.target>
     <maven.compiler.source>1.7</maven.compiler.source>
-    <exoplatform.version>4.3.x-SNAPSHOT</exoplatform.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -20,7 +19,7 @@
       <dependency>
         <groupId>org.exoplatform.platform</groupId>
         <artifactId>platform</artifactId>
-        <version>${exoplatform.version}</version>
+        <version>${org.exoplatform.platform.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
