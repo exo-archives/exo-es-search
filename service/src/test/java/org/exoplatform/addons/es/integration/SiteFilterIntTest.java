@@ -48,6 +48,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -148,7 +149,7 @@ public class SiteFilterIntTest extends BaseIntegrationTest {
     //When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getIntranetSiteInACollection(), 0, 20, null, null);
     //Then
-    Assert.assertThat(pages.size(), is(1));
+    assertThat(pages.size(), is(1));
   }
 
   @Test
@@ -162,7 +163,7 @@ public class SiteFilterIntTest extends BaseIntegrationTest {
     //When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getIntranetSiteInACollection(), 0, 20, null, null);
     //Then
-    Assert.assertThat(pages.size(), is(0));
+    assertThat(pages.size(), is(0));
   }
 
   @Test
@@ -175,7 +176,7 @@ public class SiteFilterIntTest extends BaseIntegrationTest {
     //When
     Collection<SearchResult> pages = elasticSearchServiceConnector.search(null, "test", getIntranetSiteInACollection(), 0, 20, null, null);
     //Then
-    Assert.assertThat(pages.size(), is(1));
+    assertThat(pages.size(), is(1));
   }
 
   private Document getSiteDocument(String siteName) {
