@@ -22,7 +22,6 @@ import org.exoplatform.addons.es.domain.OperationType;
 import org.exoplatform.addons.es.index.impl.QueueIndexingService;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
