@@ -12,7 +12,6 @@
   <packaging>pom</packaging>
   <modules>
     <module>service</module>
-    <module>rest</module>
     <module>webapp</module>
     <module>packaging</module>
   </modules>
