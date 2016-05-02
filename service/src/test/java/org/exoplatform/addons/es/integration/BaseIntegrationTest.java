@@ -211,10 +211,10 @@ public class BaseIntegrationTest {
   }
 
   protected long documentNumber() {
-    return node.client().prepareCount().execute().actionGet().getCount();
+    return node.client().prepareSearch().setSize(0).execute().actionGet().getHits().getTotalHits();
   }
 
   protected long documentNumber(String type) {
-    return node.client().prepareCount("_all").setQuery(QueryBuilders.termQuery("_type", type)).execute().actionGet().getCount();
+    return node.client().prepareSearch("_all").setSize(0).setQuery(QueryBuilders.termQuery("_type", type)).execute().actionGet().getHits().getTotalHits();
   }
 }
