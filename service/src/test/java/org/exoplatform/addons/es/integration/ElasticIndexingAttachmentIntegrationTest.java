@@ -47,8 +47,7 @@ public class ElasticIndexingAttachmentIntegrationTest extends BaseIntegrationTes
   public void initServices() {
     super.setup();
 
-    Identity identity = new Identity("TCL");
-    identity.setMemberships(Collections.singletonList(new MembershipEntry("BasketballPlayer")));
+    Identity identity = new Identity("TCL", Collections.singletonList(new MembershipEntry("BasketballPlayer")));
     ConversationState.setCurrent(new ConversationState(identity));
     elasticSearchServiceConnector = new ElasticSearchServiceConnector(getInitConnectorParams(), elasticSearchingClient);
   }
