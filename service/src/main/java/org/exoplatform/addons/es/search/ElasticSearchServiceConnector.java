@@ -152,8 +152,10 @@ public class ElasticSearchServiceConnector extends SearchServiceConnector {
   protected String buildFilteredQuery(String query, Collection<String> sites, List<ElasticSearchFilter> filters, int offset, int limit, String sort, String order) {
     StringBuilder esQuery = new StringBuilder();
     esQuery.append("{\n");
-    esQuery.append("     \"from\" : " + offset + ", \"size\" : " + limit + ",\n");
-
+    esQuery.append("     \"from\" : " + offset + ",\n");
+    if(limit >= 0 && limit < Integer.MAX_VALUE) {
+      esQuery.append("     \"size\" : " + limit + ",\n");
+    }
     //Score are always tracked, even with sort
     //https://www.impl.co/guide/en/elasticsearch/reference/current/search-request-sort.html#_track_scores
     esQuery.append("     \"track_scores\": true,\n");
