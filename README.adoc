@@ -49,6 +49,7 @@ The strategy for High Availability of the ES cluster depends on the client’s a
 === ES configuration for Embedded mode
 
 An ES node is embedded in the PLF server (and is hosted in the same JVM).
+All the required addons are already bundled in the addon, no need to install them.
 
 The ES node is declared as:
 
@@ -60,16 +61,24 @@ _* means mandatory_
 
 By default
 
-* the parameter es.cluster.name of the ES cluster is //exoplatform-es //by default
+* the parameter es.cluster.name of the ES cluster is _exoplatform-es_ by default
 * the parameter es.network.host is set to 127.0.0.1 (this prevents accesses from IP other than localhost and prevents other nodes to join the ES cluster)
-* the broadcast is disabled: es.discovery.zen.ping.multicast.enabled//: false//
+* the broadcast is disabled: _es.discovery.zen.ping.multicast.enabled: false_
 * ES is binded to port 9200 for HTTP connections (property es.http.port)
 
 === ES configuration for External mode
 
 ES nodes are not embedded in PLF server: PLF connects to the external ES node/cluster.
 
-As the add-ons are not supported in PLF 4.3 (community), we will not require any configuration or version of ES. Our recommendation is to use ES 1.7.x.
+The following plugins must be installed on each node:
+
+* https://www.elastic.co/guide/en/elasticsearch/plugins/2.3/mapper-attachments.html[Mapper Attachments plugin (2.3)]
+* https://www.elastic.co/guide/en/elasticsearch/plugins/2.3/plugins-delete-by-query.html[Delete By Query plugin (2.3)]
+
+This add-on is not supported in PLF 4.3.
+
+Even if theoretically this addon should be compatible with any Elasticsearch version from 2.0, it has only been tested with the version 2.3.
+So our recommendation is to use Elasticsearch 2.3.x.
 
 === Packaging
 
@@ -89,7 +98,7 @@ The data is stored in _[PLF base dir]/gatein/data/es_ (this is configurable by s
 
 == Configuration
 
-When deployed as embedded, the Elasticsearch configuration files (_elasticsearch.yml_ and _logging.yml_) are embedded in the add-on. All the properties can be set directly in exo.properties and will override the default properties in defined in //elasticsearch.yml //and //logging.yml//.
+When deployed as embedded, the Elasticsearch configuration files (_elasticsearch.yml_ and _logging.yml_) are embedded in the add-on. All the properties can be set directly in exo.properties and will override the default properties in defined in _elasticsearch.yml_ and _logging.yml_.
 
 The following elements are configurable in exo.properties:
 
