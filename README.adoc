@@ -1,6 +1,6 @@
 = Elasticsearch add-on
 ifdef::env-github[]
-:imagesdir: https://raw.githubusercontent.com/exo-addons/exo-es-search/update-readme/doc/images
+:imagesdir: https://raw.githubusercontent.com/exo-addons/exo-es-search/master/doc/images
 endif::[]
 ifndef::env-github[]
 :imagesdir: doc/images
