@@ -4,7 +4,7 @@
   <parent>
     <artifactId>exo-es-search</artifactId>
     <groupId>org.exoplatform.addons.es</groupId>
-    <version>1.0.x-SNAPSHOT</version>
+    <version>1.0.0-RC03</version>
   </parent>
   <artifactId>exo-es-search-webapp</artifactId>
   <packaging>war</packaging>
